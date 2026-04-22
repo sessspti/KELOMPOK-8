@@ -35,7 +35,18 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             // VALIDASI ROLE: Pastikan role yang dikirim sesuai dengan pilihan di FoodSave
-            'role' => ['required', 'string', 'in:konsumen,seller,lembaga_sosial'],
+            'role' => ['required', 'string', 'in:konsumen_seller,admin,lembaga_sosial'],
+        ], [
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak sesuai.',
+            'password.min' => 'Kata sandi harus terdiri dari minimal 8 karakter.',
+            'password.letters' => 'Kata sandi wajib mengandung setidaknya satu huruf.',
+            'password.numbers' => 'Kata sandi wajib mengandung setidaknya satu angka.',
+            'email.unique' => 'Alamat email ini sudah terdaftar. Silakan gunakan email lain atau masuk ke akun Anda.',
+            'email.email' => 'Format email tidak valid.',
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'role.required' => 'Anda harus memilih peran akun.',
+            'role.in' => 'Peran akun yang dipilih tidak valid.',
         ]);
 
         $user = User::create([

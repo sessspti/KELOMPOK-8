@@ -33,11 +33,6 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    /**
-     * Attempt to authenticate the request's credentials.
-     *
-     * @throws ValidationException
-     */
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
@@ -45,9 +40,16 @@ class LoginRequest extends FormRequest
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+            $user = \App\Models\User::where('email', $this->email)->first();
+            if (!$user) {
+                throw ValidationException::withMessages([
+                    'email' => 'Email tidak terdaftar di sistem kami.',
+                ]);
+            } else {
+                throw ValidationException::withMessages([
+                    'password' => 'Kata sandi yang Anda masukkan salah.',
+                ]);
+            }
         }
 
         RateLimiter::clear($this->throttleKey());
