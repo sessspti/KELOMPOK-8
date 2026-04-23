@@ -18,3 +18,15 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\CheckoutController;
+
+// Route untuk Dashboard F&B (Penjual)
+Route::prefix('seller')->group(function () {
+    Route::get('/menus/{menu}/edit-stock', [MenuController::class, 'editStock'])->name('seller.menus.editStock');
+    Route::put('/menus/{menu}/update-stock', [MenuController::class, 'updateStock'])->name('seller.menus.updateStock');
+});
+
+// Route untuk simulasi pembayaran Pembeli
+Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
