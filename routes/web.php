@@ -1,35 +1,45 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// --- Group Route untuk User yang Sudah Login ---
+Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // 1. Dashboard Umum / Konsumen
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+    // 2. Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // 3. Fitur Seller (Dashboard & Kontrol Stok dari Dev 2)
+    Route::prefix('seller')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('seller.dashboard');
+        })->name('seller.dashboard');
+
+        // Route Kontrol Stok dari Dev 2
+        Route::get('/menus/{menu}/edit-stock', [MenuController::class, 'editStock'])->name('seller.menus.editStock');
+        Route::put('/menus/{menu}/update-stock', [MenuController::class, 'updateStock'])->name('seller.menus.updateStock');
+    });
+
+    // 4. Fitur Lembaga Sosial
+    Route::get('/sosial/dashboard', function () {
+        return view('sosial.dashboard');
+    })->name('sosial.dashboard');
+
+    // 5. Fitur Checkout/Pembayaran
+    Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
 });
-
-// Route untuk Konsumen (Default Breeze)
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// Route untuk Seller FoodSave
-Route::get('/seller/dashboard', function () {
-    return view('seller.dashboard'); // Pastikan nanti buat file resources/views/seller/dashboard.blade.php
-})->middleware(['auth'])->name('seller.dashboard');
-
-// Route untuk Lembaga Sosial
-Route::get('/sosial/dashboard', function () {
-    return view('sosial.dashboard'); // Pastikan nanti buat file resources/views/sosial/dashboard.blade.php
-})->middleware(['auth'])->name('sosial.dashboard');
 
 require __DIR__ . '/auth.php';
