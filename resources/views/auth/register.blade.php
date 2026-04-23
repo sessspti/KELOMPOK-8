@@ -81,7 +81,8 @@
                         <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Daftar Sebagai</label>
                         <select id="role" name="role" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm">
                             <option value="" disabled selected>-- Pilih Peran Akun --</option>
-                            <option value="konsumen_seller">Konsumen / Seller</option>
+                            <option value="konsumen_seller">Seller</option>
+                            <option value="konsumen_seller">Konsumen</option>
                             <option value="lembaga_sosial">Lembaga Sosial</option>
                         </select>
                         <x-input-error :messages="$errors->get('role')" class="mt-2 text-red-500 text-xs" />
