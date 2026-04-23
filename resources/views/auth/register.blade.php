@@ -65,7 +65,7 @@
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
                         <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" 
                             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm" 
-                            placeholder="Contoh: Septiana Putri">
+                            placeholder="Contoh: Jokowi">
                         <x-input-error :messages="$errors->get('name')" class="mt-2 text-red-500 text-xs" />
                     </div>
 
@@ -73,7 +73,7 @@
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Alamat Email</label>
                         <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" 
                             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm" 
-                            placeholder="septiana@email.com">
+                            placeholder="ana@email.com">
                         <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-500 text-xs" />
                     </div>
 
