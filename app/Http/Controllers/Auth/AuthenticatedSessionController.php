@@ -28,8 +28,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // LOGIKA REDIRECT BERDASARKAN ROLE
-        $user = auth()->user();
-
+$user = \Illuminate\Support\Facades\Auth::user();
         if ($user->role === 'seller') {
             return redirect()->intended('/seller/dashboard');
         } elseif ($user->role === 'lembaga_sosial') {
@@ -51,6 +50,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('login');
     }
 }
