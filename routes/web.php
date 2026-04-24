@@ -6,7 +6,7 @@ use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('dashboard');
 });
 
 // --- Group Route untuk User yang Sudah Login ---
