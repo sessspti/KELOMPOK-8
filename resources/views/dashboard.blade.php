@@ -645,9 +645,51 @@ body::after {
             </svg>
             <input type="text" placeholder="Cari makanan yang bisa diselamatkan...">
         </div>
-        <div class="hdr-right">
-            <span class="pts-pill">✦ 150.000 FP</span>
+<div class="hdr-right">
+    <span class="pts-pill">✦ 150.000 FP</span>
+
+    <div class="relative ml-3" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false" style="z-index: 110;">
+        <div>
+            <button @click="open = ! open" class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm">
+                <div class="text-sm font-bold text-gray-700">{{ Auth::user()->name }}</div>
+                
+                <svg class="fill-current h-4 w-4 text-gray-400 transition-transform duration-200" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
         </div>
+
+        <div x-show="open"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="transform opacity-0 scale-95"
+             x-transition:enter-end="transform opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-75"
+             x-transition:leave-start="transform opacity-100 scale-100"
+             x-transition:leave-end="transform opacity-0 scale-95"
+             class="absolute right-0 z-[120] mt-2 w-48 rounded-2xl shadow-xl bg-white border border-gray-100 py-2 origin-top-right"
+             style="display: none; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);">
+            
+            <div class="px-4 py-2 text-[10px] text-gray-400 uppercase font-black tracking-widest border-b border-gray-50 mb-1">
+                Pengaturan Akun
+            </div>
+
+            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors font-medium">
+                {{ __('Edit Profile') }}
+            </a>
+
+            <div class="border-t border-gray-50 my-1"></div>
+
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <a href="{{ route('logout') }}"
+                        onclick="event.preventDefault(); this.closest('form').submit();"
+                        class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
+                    {{ __('Log Out') }}
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
     </div>
 </header>
 
