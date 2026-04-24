@@ -7,32 +7,30 @@
 
         <title>{{ config('app.name', 'FoodSave') }}</title>
 
-        <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-        <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         
         <style>
-            body { font-family: 'Outfit', sans-serif; }
+            body { 
+                font-family: 'Outfit', sans-serif; 
+            }
+            /* Menghilangkan scrollbar horizontal jika ada */
+            body {
+                overflow-x: hidden;
+            }
         </style>
     </head>
     <body class="antialiased bg-gray-50 text-gray-800 selection:bg-green-500 selection:text-white">
         <div class="min-h-screen bg-gray-50">
-            @include('layouts.navigation')
+            
+            {{-- 
+                Navigasi dan Header bawaan Laravel sengaja dihapus 
+                agar tidak menutupi Header FoodSave buatan Septiana.
+            --}}
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white border-b border-gray-100 shadow-sm">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
-
-            <!-- Page Content -->
             <main>
                 {{ $slot }}
             </main>
