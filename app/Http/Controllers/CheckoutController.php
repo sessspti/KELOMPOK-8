@@ -13,31 +13,30 @@ class CheckoutController extends Controller
     // Simulasi saat pesanan berhasil dibayar (Requirement 4)
     public function processPayment(Request $request, Order $order)
     {
-        // Menggunakan Database Transaction (Best Practice agar data aman)
         try {
-            DB::beginTransaction();
+            DB::transaction(function () use ($order) {
+                // Lock row menu spesifik ini agar tidak bisa dibaca/diupdate transaksi lain
+                $menu = \App\Models\Menu::where('id', $order->menu_id)->lockForUpdate()->first();
 
-            // Pastikan pesanan masih pending dan stok masih mencukupi sebelum dibayar
-            if ($order->status !== 'pending') {
-                throw new Exception("Order sudah diproses sebelumnya.");
-            }
+                // Pastikan pesanan masih pending dan stok masih mencukupi sebelum dibayar
+                if ($order->status !== 'pending') {
+                    throw new Exception("Order sudah diproses sebelumnya.");
+                }
 
-            if ($order->menu->stock < $order->quantity) {
-                throw new Exception("Stok tidak mencukupi untuk pesanan ini.");
-            }
+                if ($menu->stock < $order->quantity) {
+                    throw new Exception("Maaf, stok menu {$menu->name} tidak mencukupi atau sudah habis.");
+                }
 
-            // 1. Ubah status order menjadi paid
-            $order->update(['status' => 'paid']);
+                // 1. Update status pesanan menjadi lunas
+                $order->update(['status' => 'paid']);
 
-            // 2. Kurangi stok secara otomatis dari menu
-            $order->menu->decrement('stock', $order->quantity);
-
-            DB::commit();
+                // 2. Kurangi stok menu secara otomatis
+                $menu->decrement('stock', $order->quantity);
+            });
 
             return redirect()->back()->with('success', 'Pembayaran berhasil! Stok telah dikurangi otomatis.');
 
         } catch (Exception $e) {
-            DB::rollBack();
             return redirect()->back()->with('error', 'Pembayaran gagal: ' . $e->getMessage());
         }
     }

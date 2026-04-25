@@ -25,8 +25,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 3. Fitur Seller (Dashboard & Kontrol Stok dari Dev 2)
     Route::prefix('seller')->group(function () {
         Route::get('/dashboard', function () {
-            return view('seller.dashboard');
+            $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
+            return view('seller.dashboard', compact('menus'));
         })->name('seller.dashboard');
+
+        Route::post('/menus', [MenuController::class, 'store'])->name('seller.menus.store');
 
         // Route Kontrol Stok dari Dev 2
         Route::get('/menus/{menu}/edit-stock', [MenuController::class, 'editStock'])->name('seller.menus.editStock');
