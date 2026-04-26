@@ -6,16 +6,17 @@ use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('dashboard');
+    return redirect()->route('dashboard');
 });
+
+// 1. Dashboard Umum / Konsumen (Aksesibel untuk Guest & Auth)
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
 
 // --- Group Route untuk User yang Sudah Login ---
 Route::middleware(['auth', 'verified'])->group(function () {
     
-    // 1. Dashboard Umum / Konsumen
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
 
     // 2. Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
