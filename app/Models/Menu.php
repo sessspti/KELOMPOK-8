@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Menu extends Model
 {
-    protected $fillable = ['name', 'description', 'price', 'stock'];
+    protected $fillable = ['user_id', 'name', 'description', 'price', 'stock', 'image'];
 
     // Helper untuk cek apakah stok habis
     public function isOutOfStock(): bool
