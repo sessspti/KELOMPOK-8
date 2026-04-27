@@ -26,14 +26,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('seller')->group(function () {
         Route::get('/dashboard', function () {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
-            return view('seller.dashboard', compact('menus'));
-        })->name('seller.dashboard');
+            return view('seller.tambah-menu', compact('menus'));
+        })->name('seller.tambah-menu');
 
         Route::post('/menus', [MenuController::class, 'store'])->name('seller.menus.store');
 
         // Route Kontrol Stok dari Dev 2
-        Route::get('/menus/{menu}/edit-stock', [MenuController::class, 'editStock'])->name('seller.menus.editStock');
-        Route::put('/menus/{menu}/update-stock', [MenuController::class, 'updateStock'])->name('seller.menus.updateStock');
+        Route::get('/menus/{menu}/edit-menu', [MenuController::class, 'editMenu'])->name('seller.menus.editMenu');
+        Route::put('/menus/{menu}/update-menu', [MenuController::class, 'updateMenu'])->name('seller.menus.updateMenu');
+        Route::delete('/menus/{menu}', [MenuController::class, 'destroy'])->name('seller.menus.destroy');
     });
 
     // 4. Fitur Lembaga Sosial

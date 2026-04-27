@@ -35,26 +35,49 @@ class MenuController extends Controller
             'image' => $imagePath,
         ]);
 
-        return redirect()->route('seller.dashboard')->with('success', 'Produk berhasil ditambahkan!');
+        return redirect()->route('seller.tambah-menu')->with('success', 'Produk berhasil ditambahkan!');
     }
 
-    // Menampilkan halaman edit stok
-    public function editStock(Menu $menu)
+    // Menampilkan halaman edit menu
+    public function editMenu(Menu $menu)
     {
-        return view('seller.menus.edit-stock', compact('menu'));
+        return view('seller.menus.edit-menu', compact('menu'));
     }
 
-    // Melakukan update stok manual (Requirement 1 & 3)
-    public function updateStock(Request $request, Menu $menu)
+    // Melakukan update menu
+    public function updateMenu(Request $request, Menu $menu)
     {
-        $request->validate([
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('menus', 'public');
+            $menu->image = $imagePath;
+        }
 
         $menu->update([
-            'stock' => $request->stock,
+            'name' => $validated['name'],
+            'description' => $validated['description'],
+            'price' => $validated['price'],
+            'stock' => $validated['stock'],
+            'image' => $menu->image,
         ]);
 
-        return redirect()->back()->with('success', 'Stok berhasil diperbarui!');
+        return redirect()->route('seller.tambah-menu')->with('success', 'Menu berhasil diperbarui!');
+    }
+
+    public function destroy(Menu $menu)
+    {
+        if ($menu->image) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($menu->image);
+        }
+        $menu->delete();
+
+        return redirect()->route('seller.tambah-menu')->with('success', 'Menu berhasil dihapus!');
     }
 }
