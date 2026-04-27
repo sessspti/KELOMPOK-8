@@ -28,15 +28,15 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // LOGIKA REDIRECT BERDASARKAN ROLE
-$user = \Illuminate\Support\Facades\Auth::user();
+        $user = \Illuminate\Support\Facades\Auth::user();
         if ($user->role === 'seller') {
-            return redirect()->intended('/seller/dashboard');
+            return redirect('/seller/dashboard');
         } elseif ($user->role === 'lembaga_sosial') {
-            return redirect()->intended('/sosial/dashboard');
+            return redirect('/sosial/dashboard');
         }
 
         // Default untuk konsumen
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect(route('dashboard', absolute: false));
     }
 
     /**
