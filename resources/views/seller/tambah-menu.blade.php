@@ -51,8 +51,13 @@
                                         <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">Habis</span>
                                     @endif
                                 </td>
-                                <td class="p-4 text-right space-x-2">
-                                    <a href="{{ route('seller.menus.editStock', $menu->id) }}" class="text-blue-600 hover:text-blue-800 font-medium text-sm">Update Stok</a>
+                                <td class="p-4 text-right space-x-2 flex justify-end items-center">
+                                    <a href="{{ route('seller.menus.editMenu', $menu->id) }}" class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium text-sm transition">Update Menu</a>
+                                    <form action="{{ route('seller.menus.destroy', $menu->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus menu ini?');" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-sm transition">Hapus Menu</button>
+                                    </form>
                                 </td>
                             </tr>
                             @empty
