@@ -559,7 +559,7 @@ body::before {
         </div>
 
         {{-- CARD 2 — Kelola Menu (PINTU Dev 2) --}}
-        <a href="{{ route('seller.products') }}" class="bc c-kelola bp" style="text-decoration:none; display:block;">
+        <a href="{{ route('seller.manage') }}" class="bc c-kelola bp" style="text-decoration:none; display:block;">
             <div class="kelola-z">
                 <div class="kelola-icon">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="26" height="26">

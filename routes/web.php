@@ -18,7 +18,7 @@ Route::get('/dashboard', function () {
 // --- Group Route untuk User yang Sudah Login ---
 Route::middleware(['auth', 'verified'])->group(function () {
     
-    // 2. Profile Management (PBI 8)
+    // 2. Profile Management Umum
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -26,7 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 3. Fitur Seller (Dibagi menjadi Home & Manajemen)
     Route::prefix('seller')->group(function () {
         
-        // A. HOME DASHBOARD SELLER (Halaman Bento Grid punya kamu)
+        // A. HOME DASHBOARD SELLER (Halaman Bento Grid)
         // Lokasi file: resources/views/seller/dashboardSeller.blade.php
         Route::get('/dashboard', function () {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
@@ -44,6 +44,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/menus', [MenuController::class, 'store'])->name('seller.menus.store');
         Route::get('/menus/{menu}/edit-stock', [MenuController::class, 'editStock'])->name('seller.menus.editStock');
         Route::put('/menus/{menu}/update-stock', [MenuController::class, 'updateStock'])->name('seller.menus.updateStock');
+
+        // D. PERBAIKAN: Rute Alias untuk Profil Seller (Agar tidak error di Dashboard Bento)
+        Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('seller.profile.edit');
     });
 
     // 4. Fitur Lembaga Sosial
