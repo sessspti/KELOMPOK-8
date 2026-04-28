@@ -25,7 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 3. Fitur Seller (Dashboard & Kontrol Stok dari Dev 2)
     Route::prefix('seller')->group(function () {
-        Route::get('/dashboard', function () {
+        Route::get('/tambah-menu', function () {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
             return view('seller.tambah-menu', compact('menus'));
         })->name('seller.tambah-menu');
