@@ -35,7 +35,7 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             // VALIDASI ROLE: Pastikan role yang dikirim sesuai dengan pilihan di FoodSave
-            'role' => ['required', 'string', 'in:konsumen_seller,admin,lembaga_sosial'],
+            'role' => ['required', 'string', 'in:konsumen,seller,admin,lembaga_sosial'],
         ], [
             'password.required' => 'Kata sandi wajib diisi.',
             'password.confirmed' => 'Konfirmasi kata sandi tidak sesuai.',
@@ -59,8 +59,6 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('login', absolute: false))->with('status', 'Pendaftaran berhasil. Silakan login untuk melanjutkan.');
     }
 }
