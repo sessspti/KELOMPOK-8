@@ -30,7 +30,7 @@ class AuthenticatedSessionController extends Controller
         // LOGIKA REDIRECT BERDASARKAN ROLE
         $user = \Illuminate\Support\Facades\Auth::user();
         if ($user->role === 'seller') {
-            return redirect('/seller/tambah-menu');
+            return redirect('/seller/dashboard');
         } elseif ($user->role === 'lembaga_sosial') {
             return redirect('/sosial/dashboard');
         }
