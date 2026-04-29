@@ -227,7 +227,7 @@ body::before {
                        value="{{ old('name', $menu->name) }}" required>
             </div>
 
-            {{-- Harga & Stok --}}
+            {{-- Harga & Porsi --}}
             <div class="form-row">
                 <div class="form-group">
                     <label for="price">Harga (Rp) <span class="req">*</span></label>
@@ -235,16 +235,17 @@ body::before {
                            value="{{ old('price', $menu->price) }}" min="0" required>
                 </div>
                 <div class="form-group">
-                    <label for="stock">Jumlah Stok <span class="req">*</span></label>
+                    <label for="stock">Porsi <span class="req">*</span></label>
                     <input type="number" id="stock" name="stock" class="form-control"
                            value="{{ old('stock', $menu->stock) }}" min="0" required>
                 </div>
             </div>
 
-            {{-- Deskripsi --}}
+            {{-- Diskon --}}
             <div class="form-group">
-                <label for="description">Deskripsi Produk</label>
-                <textarea id="description" name="description" class="form-control" rows="3">{{ old('description', $menu->description) }}</textarea>
+                <label for="discount">Total Diskon (%) <span class="req">*</span></label>
+                <input type="number" id="discount" name="discount" class="form-control"
+                       value="{{ old('discount', $menu->discount) }}" min="0" max="100" required>
             </div>
 
             {{-- Ganti Foto --}}
