@@ -46,7 +46,7 @@ class SocialAuthController extends Controller
                     'provider' => $provider,
                     'provider_id' => $socialUser->getId(),
                     'password' => null, // Pastikan nullable di database
-                    'role' => 'konsumen', // Default role yang lebih aman
+                    'role' => 'konsumen_seller', // Disesuaikan dengan enum di tabel users
                 ]);
 
                 Auth::login($user);
