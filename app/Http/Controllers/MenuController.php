@@ -14,11 +14,11 @@ class MenuController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:1',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'name'     => 'required|string|max:255',
+            'price'    => 'required|numeric|min:0',
+            'discount' => 'required|integer|min:0|max:100',
+            'stock'    => 'required|integer|min:1',
+            'image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $imagePath = null;
@@ -27,15 +27,15 @@ class MenuController extends Controller
         }
 
         Menu::create([
-            'user_id' => auth()->id(),
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'price' => $validated['price'],
-            'stock' => $validated['stock'],
-            'image' => $imagePath,
+            'user_id'  => auth()->id(),
+            'name'     => $validated['name'],
+            'price'    => $validated['price'],
+            'discount' => $validated['discount'],
+            'stock'    => $validated['stock'],
+            'image'    => $imagePath,
         ]);
 
-        return redirect()->route('seller.tambah-menu')->with('success', 'Produk berhasil ditambahkan!');
+        return redirect()->route('seller.manage')->with('success', 'Produk berhasil ditambahkan!');
     }
 
     // Menampilkan halaman edit menu
@@ -48,11 +48,11 @@ class MenuController extends Controller
     public function updateMenu(Request $request, Menu $menu)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'name'     => 'required|string|max:255',
+            'price'    => 'required|numeric|min:0',
+            'discount' => 'required|integer|min:0|max:100',
+            'stock'    => 'required|integer|min:0',
+            'image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
@@ -61,14 +61,14 @@ class MenuController extends Controller
         }
 
         $menu->update([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'price' => $validated['price'],
-            'stock' => $validated['stock'],
-            'image' => $menu->image,
+            'name'     => $validated['name'],
+            'price'    => $validated['price'],
+            'discount' => $validated['discount'],
+            'stock'    => $validated['stock'],
+            'image'    => $menu->image,
         ]);
 
-        return redirect()->route('seller.tambah-menu')->with('success', 'Menu berhasil diperbarui!');
+        return redirect()->route('seller.manage')->with('success', 'Menu berhasil diperbarui!');
     }
 
     public function destroy(Menu $menu)
@@ -78,6 +78,6 @@ class MenuController extends Controller
         }
         $menu->delete();
 
-        return redirect()->route('seller.tambah-menu')->with('success', 'Menu berhasil dihapus!');
+        return redirect()->route('seller.manage')->with('success', 'Menu berhasil dihapus!');
     }
 }

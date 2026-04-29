@@ -33,17 +33,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return view('seller.dashboardSeller', compact('menus'));
         })->name('seller.dashboard');
 
-        // B. MANAJEMEN PRODUK (Halaman Tabel & Form punya Dev 2)
-        // Lokasi file: resources/views/seller/dashboard.blade.php
+        // Alias: agar URL /seller/dashboardSeller juga bisa diakses langsung
+        Route::get('/dashboardSeller', function () {
+            return redirect()->route('seller.dashboard');
+        });
+
+        // B. ETALASE MENU (Daftar menu + tombol tambah/edit/hapus)
+        // Lokasi file: resources/views/seller/etalase.blade.php
         Route::get('/manage-inventory', function () {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
-            return view('seller.dashboard', compact('menus'));
+            return view('seller.etalase', compact('menus'));
         })->name('seller.manage');
 
-        // C. PROSES CRUD (Tambah & Update)
+        // C. PROSES CRUD (Tambah, Edit, Update, Hapus)
         Route::post('/menus', [MenuController::class, 'store'])->name('seller.menus.store');
-        Route::get('/menus/{menu}/edit-stock', [MenuController::class, 'editStock'])->name('seller.menus.editStock');
-        Route::put('/menus/{menu}/update-stock', [MenuController::class, 'updateStock'])->name('seller.menus.updateStock');
+        Route::get('/menus/{menu}/edit', [MenuController::class, 'editMenu'])->name('seller.menus.editMenu');
+        Route::put('/menus/{menu}/update', [MenuController::class, 'updateMenu'])->name('seller.menus.updateMenu');
+        Route::delete('/menus/{menu}', [MenuController::class, 'destroy'])->name('seller.menus.destroy');
+
+        // Alias nama route agar redirect di controller bisa menemukan seller.tambah-menu
+        Route::get('/tambah-menu', function () {
+            $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
+            return view('seller.tambah-menu', compact('menus'));
+        })->name('seller.tambah-menu');
 
         // D. PERBAIKAN: Rute Alias untuk Profil Seller (Agar tidak error di Dashboard Bento)
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('seller.profile.edit');

@@ -6,14 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Menu extends Model
 {
-    protected $fillable = ['user_id', 'name', 'description', 'price', 'stock', 'image'];
+    protected $fillable = ['user_id', 'name', 'price', 'discount', 'stock', 'image'];
+
+    // Hitung harga setelah diskon
+    public function getFinalPriceAttribute(): float
+    {
+        return $this->price - ($this->price * ($this->discount / 100));
+    }
 
     // Helper untuk cek apakah stok habis
     public function isOutOfStock(): bool
     {
         return $this->stock <= 0;
     }
-    
+
     // Relasi ke tabel Order
     public function orders()
     {
