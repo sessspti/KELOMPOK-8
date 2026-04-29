@@ -177,7 +177,7 @@ body::before {
                        placeholder="Contoh: Nasi Box Surplus Katering">
             </div>
 
-            {{-- Harga & Stok --}}
+            {{-- Harga & Porsi --}}
             <div class="form-row">
                 <div class="form-group">
                     <label for="price">Harga (Rp) <span class="req">*</span></label>
@@ -185,17 +185,17 @@ body::before {
                            value="{{ old('price') }}" min="0" required placeholder="15000">
                 </div>
                 <div class="form-group">
-                    <label for="stock">Stok Awal <span class="req">*</span></label>
+                    <label for="stock">Porsi <span class="req">*</span></label>
                     <input type="number" id="stock" name="stock" class="form-control"
                            value="{{ old('stock') }}" min="1" required placeholder="10">
                 </div>
             </div>
 
-            {{-- Deskripsi --}}
+            {{-- Diskon --}}
             <div class="form-group">
-                <label for="description">Deskripsi Produk</label>
-                <textarea id="description" name="description" class="form-control" rows="3"
-                          placeholder="Ceritakan sedikit tentang menu ini...">{{ old('description') }}</textarea>
+                <label for="discount">Total Diskon (%) <span class="req">*</span></label>
+                <input type="number" id="discount" name="discount" class="form-control"
+                       value="{{ old('discount', 0) }}" min="0" max="100" required placeholder="Misal: 20">
             </div>
 
             {{-- Foto --}}

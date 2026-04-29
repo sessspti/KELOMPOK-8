@@ -135,11 +135,15 @@ body::before {
     display: -webkit-box; -webkit-line-clamp: 1;
     -webkit-box-orient: vertical; overflow: hidden;
 }
-.card-desc {
-    font-size: 0.8125rem; color: var(--muted); line-height: 1.5;
-    display: -webkit-box; -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical; overflow: hidden;
-    margin-bottom: 0.875rem; min-height: 2.4em;
+.card-discount-info {
+    font-size: 0.8125rem; color: var(--muted);
+    margin-bottom: 0.875rem; min-height: 1.5em;
+    display: flex; align-items: center; gap: 6px;
+}
+.strikethrough { text-decoration: line-through; opacity: 0.7; }
+.discount-badge {
+    background: #fee2e2; color: #dc2626; font-weight: 700;
+    padding: 2px 6px; border-radius: 6px; font-size: 0.7rem;
 }
 .card-meta {
     display: flex; align-items: center;
@@ -147,7 +151,7 @@ body::before {
     padding-bottom: 1rem;
 }
 .card-price {
-    font-weight: 800; font-size: 1.0625rem;
+    font-weight: 800; font-size: 1.25rem;
     color: var(--mint-600); letter-spacing: -0.03em;
 }
 .stock-badge {
@@ -264,9 +268,16 @@ body::before {
 
             <div class="card-body">
                 <div class="card-name">{{ $menu->name }}</div>
-                <div class="card-desc">{{ $menu->description ?: 'Tidak ada deskripsi.' }}</div>
+                
+                <div class="card-discount-info">
+                    @if($menu->discount > 0)
+                        <span class="strikethrough">Rp {{ number_format($menu->price, 0, ',', '.') }}</span>
+                        <span class="discount-badge">{{ $menu->discount }}%</span>
+                    @endif
+                </div>
+
                 <div class="card-meta">
-                    <div class="card-price">Rp {{ number_format($menu->price, 0, ',', '.') }}</div>
+                    <div class="card-price">Rp {{ number_format($menu->final_price, 0, ',', '.') }}</div>
                     @if($menu->stock > 5)
                         <span class="stock-badge stock-ok">{{ $menu->stock }} Porsi</span>
                     @elseif($menu->stock > 0)
