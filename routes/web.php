@@ -62,9 +62,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // 4. Fitur Lembaga Sosial
-    // Route::get('/sosial/dashboard', function () {
-    //     return view('sosial.dashboard');
-    // })->name('sosial.dashboard');
+    Route::get('/sosial/dashboard', function () {
+        return view('sosial.dashboard');
+    })->name('sosial.dashboard');
 
     // 5. Fitur Checkout/Pembayaran
     Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
