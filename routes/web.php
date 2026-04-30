@@ -68,6 +68,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 5. Fitur Checkout/Pembayaran
     Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
+
+    // 6. Eksplorasi & Transaksi (FoodSave Features)
+    Route::get('/checkout-summary', function () {
+        return view('transaction.checkout');
+    })->name('checkout.summary');
 });
 
 require __DIR__ . '/auth.php';
