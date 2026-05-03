@@ -75,4 +75,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('checkout.summary');
 });
 
+// Route untuk Pemilihan Role dan Password Google Auth
+Route::get('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'showRoleForm'])->name('google.role.form');
+Route::post('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'storeRolePassword'])->name('google.role.store');
+
 require __DIR__ . '/auth.php';

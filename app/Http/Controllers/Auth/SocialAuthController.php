@@ -38,28 +38,79 @@ class SocialAuthController extends Controller
                     ]);
                 }
                 Auth::login($user);
+                
+                // Redirect based on role
+                if ($user->role === 'seller') {
+                    return redirect()->intended(route('seller.dashboard', absolute: false));
+                } elseif ($user->role === 'lembaga_sosial') {
+                    return redirect()->intended(route('sosial.dashboard', absolute: false));
+                }
+                return redirect()->intended(route('dashboard', absolute: false));
             } else {
-                // Create a new user
-                $user = User::create([
+                // Simpan data Google ke session sementara
+                session(['google_user' => [
                     'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'User ' . Str::random(5),
                     'email' => $socialUser->getEmail(),
                     'provider' => $provider,
                     'provider_id' => $socialUser->getId(),
-                    'password' => null, // Pastikan nullable di database
-                    'role' => 'konsumen', // Disesuaikan dengan enum di tabel users
-                ]);
+                ]]);
 
-                Auth::login($user);
+                return redirect()->route('google.role.form');
             }
-
-            return redirect()->intended(route('dashboard', absolute: false));
 
         } catch (\Exception $e) {
             // SEMENTARA UNTUK DEBUG: tampilkan pesan error aslinya
             dd('Error di Socialite Callback:', $e->getMessage(), $e->getTraceAsString());
-            
-            // Kode asli untuk production:
-            // return redirect('/login')->withErrors(['email' => 'Gagal login menggunakan ' . ucfirst($provider) . '. Silakan coba lagi.']);
         }
+    }
+
+    /**
+     * Tampilkan form untuk memilih role dan mengisi password.
+     */
+    public function showRoleForm()
+    {
+        if (!session()->has('google_user')) {
+            return redirect()->route('login');
+        }
+
+        return view('auth.google.role-password');
+    }
+
+    /**
+     * Proses penyimpanan role dan password untuk user baru dari Google.
+     */
+    public function storeRolePassword(\Illuminate\Http\Request $request)
+    {
+        if (!session()->has('google_user')) {
+            return redirect()->route('login');
+        }
+
+        $request->validate([
+            'role' => ['required', 'string', 'in:seller,konsumen,lembaga_sosial'],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+        ]);
+
+        $googleUser = session('google_user');
+
+        $user = User::create([
+            'name' => $googleUser['name'],
+            'email' => $googleUser['email'],
+            'provider' => $googleUser['provider'],
+            'provider_id' => $googleUser['provider_id'],
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+            'role' => $request->role,
+        ]);
+
+        session()->forget('google_user');
+
+        Auth::login($user);
+
+        if ($user->role === 'seller') {
+            return redirect()->route('seller.dashboard');
+        } elseif ($user->role === 'lembaga_sosial') {
+            return redirect()->route('sosial.dashboard');
+        }
+        
+        return redirect()->route('dashboard');
     }
 }
