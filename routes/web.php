@@ -10,13 +10,13 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-// 1. Dashboard Umum / Konsumen
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard');
-
 // --- Group Route untuk User yang Sudah Login ---
 Route::middleware(['auth', 'verified'])->group(function () {
+
+    // 1. Dashboard Umum / Konsumen
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->middleware('role:konsumen')->name('dashboard');
     
     // 2. Profile Management Umum
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -24,7 +24,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // 3. Fitur Seller (Dibagi menjadi Home & Manajemen)
-    Route::prefix('seller')->group(function () {
+    Route::prefix('seller')->middleware('role:seller')->group(function () {
         
         // A. HOME DASHBOARD SELLER (Halaman Bento Grid)
         // Lokasi file: resources/views/seller/dashboardSeller.blade.php
@@ -64,15 +64,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 4. Fitur Lembaga Sosial
     Route::get('/sosial/dashboard', function () {
         return view('sosial.dashboard');
-    })->name('sosial.dashboard');
+    })->middleware('role:lembaga_sosial')->name('sosial.dashboard');
 
-    // 5. Fitur Checkout/Pembayaran
-    Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
+    // 5. Fitur Checkout/Pembayaran (Hanya Konsumen)
+    Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->middleware('role:konsumen')->name('checkout.pay');
 
-    // 6. Eksplorasi & Transaksi (FoodSave Features)
+    // 6. Eksplorasi & Transaksi (FoodSave Features) - Hanya Konsumen
     Route::get('/checkout-summary', function () {
         return view('transaction.checkout');
-    })->name('checkout.summary');
+    })->middleware('role:konsumen')->name('checkout.summary');
 });
+
+// Route untuk Pemilihan Role dan Password Google Auth
+Route::get('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'showRoleForm'])->name('google.role.form');
+Route::post('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'storeRolePassword'])->name('google.role.store');
 
 require __DIR__ . '/auth.php';
