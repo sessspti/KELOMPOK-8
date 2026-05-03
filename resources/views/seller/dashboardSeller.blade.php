@@ -521,6 +521,12 @@ body::before {
                 <span class="ndot"></span>
             </button>
             <span class="pts-pill">✦ 150.000 FP</span>
+            <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+                @csrf
+                <button type="submit" class="pts-pill" style="cursor:pointer; background: #fee2e2; color: #991b1b; border: 2px solid rgba(239,68,68,0.2); transition: background 0.2s;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'">
+                    Keluar
+                </button>
+            </form>
         </div>
     </div>
 </header>
