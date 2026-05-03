@@ -59,6 +59,14 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        return redirect(route('login', absolute: false))->with('status', 'Pendaftaran berhasil. Silakan login untuk melanjutkan.');
+        Auth::login($user);
+
+        if ($user->role === 'seller') {
+            return redirect()->route('seller.dashboard');
+        } elseif ($user->role === 'lembaga_sosial') {
+            return redirect()->route('sosial.dashboard');
+        }
+
+        return redirect()->route('dashboard');
     }
 }
