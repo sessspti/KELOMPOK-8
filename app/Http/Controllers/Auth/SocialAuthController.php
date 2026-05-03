@@ -30,6 +30,18 @@ class SocialAuthController extends Controller
             $user = User::where('email', $socialUser->getEmail())->first();
 
             if ($user) {
+                // Jika password masih null, berarti akun terbuat dari versi auth google sebelumnya yang belum lengkap
+                if (is_null($user->password)) {
+                    session(['google_user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'provider' => $provider,
+                        'provider_id' => $socialUser->getId(),
+                    ]]);
+                    return redirect()->route('google.role.form');
+                }
+
                 // Update provider if not set
                 if (!$user->provider) {
                     $user->update([
@@ -92,25 +104,43 @@ class SocialAuthController extends Controller
 
         $googleUser = session('google_user');
 
-        $user = User::create([
-            'name' => $googleUser['name'],
-            'email' => $googleUser['email'],
-            'provider' => $googleUser['provider'],
-            'provider_id' => $googleUser['provider_id'],
-            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
-            'role' => $request->role,
-        ]);
+        if (isset($googleUser['id'])) {
+            // Update akun lama yang belum punya password/role valid
+            $user = User::find($googleUser['id']);
+            if ($user) {
+                $user->update([
+                    'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+                    'role' => $request->role,
+                    'provider' => $googleUser['provider'],
+                    'provider_id' => $googleUser['provider_id'],
+                ]);
+            }
+        } else {
+            // Buat akun baru
+            $user = User::create([
+                'name' => $googleUser['name'],
+                'email' => $googleUser['email'],
+                'provider' => $googleUser['provider'],
+                'provider_id' => $googleUser['provider_id'],
+                'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+                'role' => $request->role,
+            ]);
+        }
 
         session()->forget('google_user');
 
-        Auth::login($user);
+        if (isset($user)) {
+            Auth::login($user);
 
-        if ($user->role === 'seller') {
-            return redirect()->route('seller.dashboard');
-        } elseif ($user->role === 'lembaga_sosial') {
-            return redirect()->route('sosial.dashboard');
+            if ($user->role === 'seller') {
+                return redirect()->route('seller.dashboard');
+            } elseif ($user->role === 'lembaga_sosial') {
+                return redirect()->route('sosial.dashboard');
+            }
+            
+            return redirect()->route('dashboard');
         }
-        
-        return redirect()->route('dashboard');
+
+        return redirect()->route('login');
     }
 }
