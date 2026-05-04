@@ -25,36 +25,41 @@ class SocialAuthController extends Controller
     {
         try {
             $socialUser = Socialite::driver($provider)->user();
-        } catch (\Exception $e) {
-            return redirect('/login')->withErrors(['email' => 'Gagal login menggunakan ' . ucfirst($provider) . '. Silakan coba lagi.']);
-        }
+            
+            // Check if user already exists
+            $user = User::where('email', $socialUser->getEmail())->first();
 
-        // Check if user already exists
-        $user = User::where('email', $socialUser->getEmail())->first();
-
-        if ($user) {
-            // Update provider if not set
-            if (!$user->provider) {
-                $user->update([
+            if ($user) {
+                // Update provider if not set
+                if (!$user->provider) {
+                    $user->update([
+                        'provider' => $provider,
+                        'provider_id' => $socialUser->getId(),
+                    ]);
+                }
+                Auth::login($user);
+            } else {
+                // Create a new user
+                $user = User::create([
+                    'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'User ' . Str::random(5),
+                    'email' => $socialUser->getEmail(),
                     'provider' => $provider,
                     'provider_id' => $socialUser->getId(),
+                    'password' => null, // Pastikan nullable di database
+                    'role' => 'konsumen', // Disesuaikan dengan enum di tabel users
                 ]);
+
+                Auth::login($user);
             }
-            Auth::login($user);
-        } else {
-            // Create a new user
-            $user = User::create([
-                'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'User ' . Str::random(5),
-                'email' => $socialUser->getEmail(),
-                'provider' => $provider,
-                'provider_id' => $socialUser->getId(),
-                // 'password' is null
-                // Default role is 'konsumen_seller' as per migration
-            ]);
 
-            Auth::login($user);
+            return redirect()->intended(route('dashboard', absolute: false));
+
+        } catch (\Exception $e) {
+            // SEMENTARA UNTUK DEBUG: tampilkan pesan error aslinya
+            dd('Error di Socialite Callback:', $e->getMessage(), $e->getTraceAsString());
+            
+            // Kode asli untuk production:
+            // return redirect('/login')->withErrors(['email' => 'Gagal login menggunakan ' . ucfirst($provider) . '. Silakan coba lagi.']);
         }
-
-        return redirect()->intended(route('dashboard', absolute: false));
     }
 }

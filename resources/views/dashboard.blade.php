@@ -614,249 +614,272 @@ body::after {
 .edu-card:nth-child(3){ animation: fadeUp 0.5s ease 0.19s both; }
 </style>
 
-{{-- ── FAB CART ── --}}
-<a href="#" class="fab">
-    <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-    </svg>
-    Keranjang
-    <span class="fab-num">3</span>
-</a>
-
-{{-- ── HEADER ── --}}
-<header class="hdr">
-    <div class="hdr-inner">
-        <a href="#" class="logo">
-            <span class="logo-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+<div x-data="foodSaveApp()" class="min-h-screen">
+    {{-- ── FAB CART & BACK ── --}}
+    <div class="fixed bottom-8 left-8 right-8 z-[210] flex items-center justify-between pointer-events-none">
+        <!-- Left Side: Back Button -->
+        <div class="flex-1 flex justify-start">
+            <button 
+                x-show="isCartOpen" 
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 -translate-x-10"
+                x-transition:enter-end="opacity-100 translate-x-0"
+                @click="isCartOpen = false" 
+                class="fab border-none cursor-pointer pointer-events-auto bg-red-500 hover:bg-red-600 shadow-red-200"
+                style="position: relative; left: 0; right: auto; bottom: 0;"
+            >
+                <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
-            </span>
-            Food<span class="logo-text-save">Save</span>
-        </a>
-        <div class="hdr-search">
-            <svg class="hdr-search-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <input type="text" placeholder="Cari makanan yang bisa diselamatkan...">
-        </div>
-<div class="hdr-right">
-    <span class="pts-pill">✦ 150.000 FP</span>
-
-    <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false">
-        <button @click="open = !open" class="relative p-2 text-gray-500 hover:bg-gray-100 rounded-xl transition-all focus:outline-none">
-            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-            </svg>
-            <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
-        </button>
-
-        <div x-show="open" 
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="transform opacity-0 scale-95"
-             x-transition:enter-end="transform opacity-100 scale-100"
-             class="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-2xl shadow-xl z-[130] py-2 origin-top-right"
-             style="display: none;">
-            
-            <div class="px-4 py-2 border-b border-gray-50 flex justify-between items-center">
-                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Notifikasi</span>
-                <span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">3 Terbaru</span>
-            </div>
-
-            <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-50">
-                <p class="text-xs font-bold text-gray-800">✅ Pesanan siap diambil!</p>
-                <p class="text-[10px] text-gray-500 mt-0.5">Ayam Geprek Berkah sudah dikemas.</p>
-            </div>
-            <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-50">
-                <p class="text-xs font-bold text-gray-800">🤝 Donasi baru tersedia</p>
-                <p class="text-[10px] text-gray-500 mt-0.5">Lembaga Kasih butuh 5 paket makanan.</p>
-            </div>
-            <div class="px-4 py-3 hover:bg-gray-50">
-                <p class="text-xs font-bold text-gray-800">✨ Poin FP Bertambah</p>
-                <p class="text-[10px] text-gray-500 mt-0.5">Kamu baru saja menyelamatkan bumi!</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="relative ml-3" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false" style="z-index: 110;">
-        <div>
-            <button @click="open = ! open" class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm">
-                <div class="text-sm font-bold text-gray-700">{{ Auth::user()?->name ?? 'Guest' }}</div>                
-                <svg class="fill-current h-4 w-4 text-gray-400 transition-transform duration-200" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
+                Kembali
             </button>
         </div>
 
-        <div x-show="open"
-             class="absolute right-0 z-[120] mt-2 w-48 rounded-2xl shadow-xl bg-white border border-gray-100 py-2 origin-top-right"
-             style="display: none;">
-            <div class="px-4 py-2 text-[10px] text-gray-400 uppercase font-black tracking-widest border-b border-gray-50 mb-1">
-                Pengaturan Akun
-            </div>
-            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors font-medium">
-                {{ __('Edit Profile') }}
-            </a>
-            <div class="border-t border-gray-50 my-1"></div>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
-                    {{ __('Log Out') }}
-                </a>
-            </form>
-        </div>
-    </div>
-</div>
-    </div>
-</header>
-
-<div class="page">
-
-    {{-- ── HERO BENTO ── --}}
-    <section class="hero-bento">
-        <div class="bento-main">
-            <div>
-                <p class="bento-eyebrow">
-                    <span class="bento-eyebrow-dot"></span>
-                    Dampak Lingkunganmu
-                </p>
-                <h1 class="bento-heading">
-                    "Langkah<br><em>kecilmu,</em><br>nafas baru<br>untuk bumi."
-                </h1>
-            </div>
-            <div class="bento-stats">
-                <div class="stat-chip">
-                    <div class="stat-num">12.5 <span class="stat-unit">Kg</span></div>
-                    <div class="stat-lbl">Food Saved</div>
-                </div>
-                <div class="stat-chip">
-                    <div class="stat-num">3.2 <span class="stat-unit">Kg</span></div>
-                    <div class="stat-lbl">CO₂ Reduced</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bento-img-card">
-            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=700" alt="Fresh healthy food">
-        </div>
-
-        <div class="bento-tracker">
-            <div class="bento-tracker-label">Visual Impact Tracker</div>
-            <div class="bento-tracker-sub">Coming Soon ✦</div>
-        </div>
-    </section>
-
-    {{-- ── TICKER ── --}}
-    <div class="ticker-wrap">
-        <div class="ticker-track">
-            @foreach(range(1,8) as $i)
-            <div class="ticker-item">
-                <span class="ticker-star">✦</span>
-                Selamatkan Makanan Hari Ini
-                <span class="ticker-star">✦</span>
-                Kurangi Food Waste
-                <span class="ticker-star">✦</span>
-                Hemat Lebih Banyak
-                <span class="ticker-star">✦</span>
-                Jaga Bumi Kita
-            </div>
-            @endforeach
-        </div>
-    </div>
-
-    {{-- ── RESCUE DEALS ── --}}
-    <section class="sec">
-        <div class="sec-hdr">
-            <div>
-                <p class="sec-label"><span class="sec-label-dot"></span> Penawaran Terbaik</p>
-                <h2 class="sec-title">Rescue Deals Hari Ini</h2>
-                <p class="sec-sub">Makanan berkualitas dengan harga penyelamat.</p>
-            </div>
-            <div class="arrow-row">
-                <button class="arr-btn" aria-label="Sebelumnya">←</button>
-                <button class="arr-btn" aria-label="Berikutnya">→</button>
-            </div>
-        </div>
-
-        <div class="pgrid">
-            @for ($i = 0; $i < 4; $i++)
-            <div class="pcard">
-                <div class="pcard-img">
-                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500" alt="Paket Ayam Geprek Surplus">
-                    <div class="bdg-dist">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        </svg>
-                        0.5 km
-                    </div>
-                    <div class="bdg-urgent">Sisa 2!</div>
-                </div>
-                <div class="pcard-body">
-                    <p class="pcard-store">Resto Ayam Berkah</p>
-                    <h3 class="pcard-name">Paket Ayam Geprek Surplus</h3>
-                    <div class="pcard-ft">
-                        <div>
-                            <div class="price-was">Rp 25.000</div>
-                            <div class="price-now">Rp 12.500</div>
-                        </div>
-                        <button class="add-btn" aria-label="Tambah ke keranjang">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            @endfor
-        </div>
-    </section>
-
-    <hr class="divider">
-
-    {{-- ── EDUKASI ── --}}
-    <section class="sec">
-        <div class="sec-hdr">
-            <div>
-                <p class="sec-label"><span class="sec-label-dot"></span> Wawasan & Inspirasi</p>
-                <h2 class="sec-title">Edukasi & Lingkungan</h2>
-            </div>
-            <a href="#" class="see-all">
-                Lihat Semua Artikel
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        <!-- Right Side: Cart FAB -->
+        <div class="flex-1 flex justify-end">
+            <button 
+                x-show="!isCartOpen" 
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-90 translate-y-10"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                @click="isCartOpen = true" 
+                class="fab border-none cursor-pointer pointer-events-auto"
+                style="position: relative; right: 0; left: auto; bottom: 0;"
+            >
+                <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-            </a>
+                Keranjang
+                <span class="fab-num" x-text="cart.length"></span>
+            </button>
+        </div>
+    </div>
+
+    {{-- ── HEADER ── --}}
+    <x-header />
+
+    <div class="page">
+
+        {{-- ── HERO BENTO ── --}}
+        <section class="hero-bento">
+            <div class="bento-main">
+                <div>
+                    <p class="bento-eyebrow">
+                        <span class="bento-eyebrow-dot"></span>
+                        Dampak Lingkunganmu
+                    </p>
+                    <h1 class="bento-heading">
+                        "Langkah<br><em>kecilmu,</em><br>nafas baru<br>untuk bumi."
+                    </h1>
+                </div>
+                <div class="bento-stats">
+                    <div class="stat-chip">
+                        <div class="stat-num">12.5 <span class="stat-unit">Kg</span></div>
+                        <div class="stat-lbl">Food Saved</div>
+                    </div>
+                    <div class="stat-chip">
+                        <div class="stat-num">3.2 <span class="stat-unit">Kg</span></div>
+                        <div class="stat-lbl">CO₂ Reduced</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bento-img-card">
+                <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=700" alt="Fresh healthy food">
+            </div>
+
+            <div class="bento-tracker">
+                <div class="bento-tracker-label">Visual Impact Tracker</div>
+                <div class="bento-tracker-sub">Coming Soon ✦</div>
+            </div>
+        </section>
+
+        {{-- ── TICKER ── --}}
+        <div class="ticker-wrap">
+            <div class="ticker-track">
+                @foreach(range(1,8) as $i)
+                <div class="ticker-item">
+                    <span class="ticker-star">✦</span>
+                    Selamatkan Makanan Hari Ini
+                    <span class="ticker-star">✦</span>
+                    Kurangi Food Waste
+                    <span class="ticker-star">✦</span>
+                    Hemat Lebih Banyak
+                    <span class="ticker-star">✦</span>
+                    Jaga Bumi Kita
+                </div>
+                @endforeach
+            </div>
         </div>
 
-        <div class="edu-grid">
-            <div class="edu-card">
-                <div class="edu-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500" alt="Tips Penyimpanan">
+        {{-- ── RESCUE DEALS ── --}}
+        <section class="sec">
+            <div class="sec-hdr">
+                <div>
+                    <p class="sec-label"><span class="sec-label-dot"></span> Penawaran Terbaik</p>
+                    <h2 class="sec-title">Rescue Deals Hari Ini</h2>
+                    <p class="sec-sub">Makanan berkualitas dengan harga penyelamat.</p>
                 </div>
-                <span class="edu-tag">Tips Penyimpanan</span>
-                <h3 class="edu-title">5 Cara Agar Sayuran Tetap Segar Selama Seminggu</h3>
-                <p class="edu-desc">Admin FoodSave membagikan tips rahasia menyimpan bahan makanan agar tidak cepat terbuang dan tetap bergizi optimal.</p>
+                <div class="arrow-row">
+                    <button class="arr-btn" aria-label="Sebelumnya">←</button>
+                    <button class="arr-btn" aria-label="Berikutnya">→</button>
+                </div>
             </div>
 
-            <div class="edu-card">
-                <div class="edu-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=500" alt="Global Issue">
-                </div>
-                <span class="edu-tag">Global Issue</span>
-                <h3 class="edu-title">Dampak Mengerikan Food Waste bagi Perubahan Iklim</h3>
-                <p class="edu-desc">Mengetahui seberapa besar pengaruh sisa makanan terhadap lapisan ozon bumi kita.</p>
+            <!-- Product Grid (Dynamic Search) -->
+            <div class="pgrid">
+                <template x-for="product in filteredProducts" :key="product.id">
+                    <div class="pcard">
+                        <div class="pcard-img">
+                            <img :src="product.image" :alt="product.name">
+                            <div class="bdg-dist">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                </svg>
+                                <span x-text="product.distance"></span>
+                            </div>
+                            <div class="bdg-urgent" x-text="product.urgent"></div>
+                        </div>
+                        <div class="pcard-body">
+                            <p class="pcard-store" x-text="product.store"></p>
+                            <h3 class="pcard-name" x-text="product.name"></h3>
+                            <div class="pcard-ft">
+                                <div>
+                                    <div class="price-was" x-text="formatRupiah(product.originalPrice)"></div>
+                                    <div class="price-now" x-text="formatRupiah(product.price)"></div>
+                                </div>
+                                <button @click="addToCart(product)" class="add-btn" aria-label="Tambah ke keranjang">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </div>
 
-            <div class="edu-empty">
-                <div class="edu-empty-ico">
+            <!-- Empty State -->
+            <div x-show="filteredProducts.length === 0" class="text-center py-20">
+                <p class="text-gray-400 italic">Maaf, makanan tidak ditemukan...</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        {{-- ── EDUKASI ── --}}
+        <section class="sec">
+            <div class="sec-hdr">
+                <div>
+                    <p class="sec-label"><span class="sec-label-dot"></span> Wawasan & Inspirasi</p>
+                    <h2 class="sec-title">Edukasi & Lingkungan</h2>
+                </div>
+                <a href="#" class="see-all">
+                    Lihat Semua Artikel
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                     </svg>
-                </div>
-                <p>Artikel lainnya sedang disiapkan oleh Admin kami...</p>
+                </a>
             </div>
-        </div>
-    </section>
 
+            <div class="edu-grid">
+                <div class="edu-card">
+                    <div class="edu-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500" alt="Tips Penyimpanan">
+                    </div>
+                    <span class="edu-tag">Tips Penyimpanan</span>
+                    <h3 class="edu-title">5 Cara Agar Sayuran Tetap Segar Selama Seminggu</h3>
+                    <p class="edu-desc">Admin FoodSave membagikan tips rahasia menyimpan bahan makanan agar tidak cepat terbuang dan tetap bergizi optimal.</p>
+                </div>
+
+                <div class="edu-card">
+                    <div class="edu-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=500" alt="Global Issue">
+                    </div>
+                    <span class="edu-tag">Global Issue</span>
+                    <h3 class="edu-title">Dampak Mengerikan Food Waste bagi Perubahan Iklim</h3>
+                    <p class="edu-desc">Mengetahui seberapa besar pengaruh sisa makanan terhadap lapisan ozon bumi kita.</p>
+                </div>
+
+                <div class="edu-empty">
+                    <div class="edu-empty-ico">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                    </div>
+                    <p>Artikel lainnya sedang disiapkan oleh Admin kami...</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Cart Sidebar -->
+    <x-transaction.cart-sidebar />
 </div>
+
+<script>
+    function foodSaveApp() {
+        return {
+            isCartOpen: false,
+            searchQuery: '',
+            cart: JSON.parse(localStorage.getItem('foodsave_cart')) || [],
+            
+            products: [
+                { id: 1, name: 'Paket Ayam Geprek Surplus', store: 'Resto Ayam Berkah', price: 12500, originalPrice: 25000, distance: '0.5 km', urgent: 'Sisa 2!', image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=500' },
+                { id: 2, name: 'Nasi Goreng Spesial', store: 'Warung Bu Siti', price: 15000, originalPrice: 25000, distance: '1.2 km', urgent: 'Sisa 1!', image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&q=80&w=500' },
+                { id: 3, name: 'Es Teh Manis Jumbo', store: 'Resto Ayam Berkah', price: 5000, originalPrice: 8000, distance: '0.5 km', urgent: 'Sisa 5!', image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&q=80&w=500' },
+                { id: 4, name: 'Pisang Goreng Keju', store: 'Camilan Enak', price: 10000, originalPrice: 15000, distance: '2.0 km', urgent: 'Sisa 3!', image: 'https://images.unsplash.com/photo-1590004953392-5aba2e72269a?auto=format&fit=crop&q=80&w=500' },
+            ],
+
+            get filteredProducts() {
+                return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || p.store.toLowerCase().includes(this.searchQuery.toLowerCase()));
+            },
+
+            get cartTotal() {
+                return this.cart.reduce((total, item) => total + (item.price * item.qty), 0);
+            },
+
+            addToCart(product) {
+                const existing = this.cart.find(item => item.id === product.id);
+                if (existing) {
+                    existing.qty++;
+                } else {
+                    this.cart.push({ ...product, qty: 1 });
+                }
+                this.saveCart();
+            },
+
+            removeFromCart(id) {
+                this.cart = this.cart.filter(item => item.id !== id);
+                this.saveCart();
+            },
+
+            updateQty(id, delta) {
+                const item = this.cart.find(i => i.id === id);
+                if (item) {
+                    item.qty += delta;
+                    if (item.qty <= 0) this.removeFromCart(id);
+                    else this.saveCart();
+                }
+            },
+
+            saveCart() {
+                localStorage.setItem('foodsave_cart', JSON.stringify(this.cart));
+            },
+
+            saveCartToSession() {
+                this.saveCart();
+            },
+
+            formatRupiah(number) {
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(number);
+            }
+        };
+    }
+</script>
 </x-app-layout>
