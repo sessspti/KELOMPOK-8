@@ -73,7 +73,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/checkout-summary', function () {
         return view('transaction.checkout');
     })->middleware('role:konsumen')->name('checkout.summary');
+
+    // 7. Fitur Admin (Pusat Kendali Platform)
+   
+    Route::prefix('admin')->middleware('role:admin')->group(function () {
+        
+        // Dashboard Utama Admin
+        // File: resources/views/admin/dashboard.blade.php
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('admin.dashboard');
+
+        // Manajemen User (PBI-007)
+        Route::get('/users', function () {
+            // Logic untuk mengambil semua user bisa diletakkan di controller nanti
+            return view('admin.users.index'); 
+        })->name('admin.users.index');
+
+        // Validasi Merchant & Lembaga
+        Route::get('/verifikasi', function () {
+            return view('admin.verifikasi');
+        })->name('admin.verifikasi');
+
+        // Manajemen Konten/Artikel Edukasi
+        Route::get('/edukasi', function () {
+            return view('admin.edukasi.index');
+        })->name('admin.edukasi');
+    });
 });
+
 
 // Route untuk Pemilihan Role dan Password Google Auth
 Route::get('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'showRoleForm'])->name('google.role.form');
