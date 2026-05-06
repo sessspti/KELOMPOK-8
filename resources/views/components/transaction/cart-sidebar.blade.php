@@ -35,25 +35,26 @@
             <div class="flex-grow overflow-y-auto p-6 space-y-6">
                 <template x-if="cart.length === 0">
                     <div class="text-center py-12">
-                        <div class="bg-gray-50 rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        <div class="bg-green-50 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6 animate-float">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
                         </div>
-                        <p class="text-gray-400">Keranjangmu masih kosong.</p>
-                        <button @click="isCartOpen = false" class="mt-4 text-green-600 font-semibold text-sm hover:underline">Mulai Belanja &rarr;</button>
+                        <h3 class="text-gray-900 font-bold text-lg mb-2">Keranjang Kosong</h3>
+                        <p class="text-gray-400 text-sm px-8">Ayo selamatkan makanan lezat sebelum mereka terbuang!</p>
+                        <button @click="isCartOpen = false" class="mt-8 px-6 py-2.5 bg-green-50 text-green-600 font-bold text-sm rounded-xl hover:bg-green-100 transition-all">Mulai Belanja &rarr;</button>
                     </div>
                 </template>
 
-                <template x-for="item in cart" :key="item.id">
-                    <div class="flex gap-4 group">
-                        <div class="relative overflow-hidden rounded-2xl h-20 w-20 shadow-sm border border-gray-100">
-                            <img :src="item.image" class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500">
+                <template x-for="(item, index) in cart" :key="item.id">
+                    <div class="flex gap-4 group item-appear" :style="'animation-delay: ' + (index * 0.05) + 's'">
+                        <div class="relative overflow-hidden rounded-2xl h-20 w-20 shadow-sm border border-gray-100 flex-shrink-0">
+                            <img :src="item.image" class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700">
                         </div>
                         <div class="flex-grow">
-                            <div class="flex justify-between mb-1">
-                                <h4 class="font-bold text-gray-900 text-sm" x-text="item.name"></h4>
-                                <button @click="removeFromCart(item.id)" class="text-gray-300 hover:text-red-500 transition-colors">
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="font-bold text-gray-900 text-sm leading-tight pr-4" x-text="item.name"></h4>
+                                <button @click="removeFromCart(item.id)" class="p-1.5 rounded-lg text-gray-300 hover:bg-red-50 hover:text-red-500 transition-all duration-300 flex-shrink-0" title="Hapus">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
@@ -61,9 +62,9 @@
                             </div>
                             <p class="text-sm font-semibold text-green-600 mb-3" x-text="formatRupiah(item.price)"></p>
                             <div class="flex items-center gap-3">
-                                <button @click="updateQty(item.id, -1)" class="w-8 h-8 rounded-lg border border-gray-100 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all text-gray-500 font-bold">-</button>
+                                <button @click="updateQty(item.id, -1)" class="w-8 h-8 rounded-lg border border-gray-100 flex items-center justify-center hover:bg-gray-50 hover:border-green-300 hover:text-green-600 active:scale-90 transition-all text-gray-500 font-bold">-</button>
                                 <span class="font-black text-gray-800 w-4 text-center text-sm" x-text="item.qty"></span>
-                                <button @click="updateQty(item.id, 1)" class="w-8 h-8 rounded-lg border border-gray-100 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all text-gray-500 font-bold">+</button>
+                                <button @click="updateQty(item.id, 1)" class="w-8 h-8 rounded-lg border border-gray-100 flex items-center justify-center hover:bg-gray-50 hover:border-green-300 hover:text-green-600 active:scale-90 transition-all text-gray-500 font-bold">+</button>
                             </div>
                         </div>
                     </div>
@@ -79,7 +80,7 @@
                 <a 
                     :href="cart.length > 0 ? '{{ route('checkout.summary') }}' : '#'"
                     @click="saveCartToSession"
-                    :class="cart.length > 0 ? 'bg-green-600 hover:bg-green-700 shadow-xl shadow-green-600/20 active:scale-[0.98]' : 'bg-gray-300 cursor-not-allowed opacity-50'"
+                    :class="cart.length > 0 ? 'bg-green-600 hover:bg-green-700 shadow-xl shadow-green-600/20 active:scale-[0.98] animate-pulse-subtle' : 'bg-gray-300 cursor-not-allowed opacity-50'"
                     class="block w-full py-4 text-center text-white font-black rounded-[1.25rem] transition-all duration-300 tracking-tight"
                 >
                     Checkout Sekarang

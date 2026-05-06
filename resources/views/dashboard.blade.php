@@ -594,10 +594,6 @@ body::after {
 }
 .see-all:hover { color: var(--mint-700); border-color: var(--mint-500); gap: 8px; }
 .see-all svg { width: 14px; height: 14px; }
-
-/* ══════════════════════════════════
-   ANIMATIONS
-══════════════════════════════════ */
 @keyframes fadeUp {
     from { opacity:0; transform: translateY(24px); }
     to   { opacity:1; transform: translateY(0); }
@@ -612,49 +608,86 @@ body::after {
 .edu-card:nth-child(1){ animation: fadeUp 0.5s ease 0.05s both; }
 .edu-card:nth-child(2){ animation: fadeUp 0.5s ease 0.12s both; }
 .edu-card:nth-child(3){ animation: fadeUp 0.5s ease 0.19s both; }
+
+/* ══════════════════════════════════
+   INTERACTIVE ANIMATIONS
+   ══════════════════════════════════ */
+@keyframes cart-wiggle {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.1) rotate(-8deg); }
+    50% { transform: scale(1.1) rotate(8deg); }
+    75% { transform: scale(1.1) rotate(-4deg); }
+}
+.animate-wiggle { animation: cart-wiggle 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
+@keyframes pulse-subtle {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.03); opacity: 0.9; }
+}
+.animate-pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
+
+@keyframes float-slow {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-12px) rotate(2deg); }
+}
+.animate-float { animation: float-slow 4s ease-in-out infinite; }
+
+@keyframes slide-in-right {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+.item-appear { animation: slide-in-right 0.4s ease-out forwards; }
+
+/* ─── FLYING ITEM ─── */
+.fly-item {
+    position: fixed;
+    z-index: 1000;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    pointer-events: none;
+    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 25px rgba(34,197,94,0.4);
+    border: 3px solid #fff;
+}
+
 </style>
 
 <div x-data="foodSaveApp()" class="min-h-screen">
     {{-- ── FAB CART & BACK (Hanya untuk Konsumen yang login) ── --}}
     @auth
         @if(Auth::user()->role === 'konsumen')
-        <div class="fixed bottom-8 left-8 right-8 z-[210] flex items-center justify-between pointer-events-none">
-            <!-- Left Side: Back Button (closes cart) -->
-            <div class="flex-1 flex justify-start">
-                <button 
-                    x-show="isCartOpen" 
-                    x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 -translate-x-10"
-                    x-transition:enter-end="opacity-100 translate-x-0"
-                    @click="isCartOpen = false" 
-                    class="fab border-none cursor-pointer pointer-events-auto bg-red-500 hover:bg-red-600 shadow-red-200"
-                    style="position: relative; left: 0; right: auto; bottom: 0;"
-                >
-                    <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    Kembali
-                </button>
-            </div>
+        <div class="fixed bottom-8 right-8 z-[210] pointer-events-none">
+            <button 
+                x-show="isCartOpen" 
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-90 translate-y-10"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                @click="isCartOpen = false" 
+                class="fab border-none cursor-pointer pointer-events-auto bg-red-500 hover:bg-red-600 shadow-red-200"
+            >
+                <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Kembali
+            </button>
 
-            <!-- Right Side: Cart FAB -->
-            <div class="flex-1 flex justify-end">
-                <button 
-                    x-show="!isCartOpen" 
-                    x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 scale-90 translate-y-10"
-                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                    @click="isCartOpen = true" 
-                    class="fab border-none cursor-pointer pointer-events-auto"
-                    style="position: relative; right: 0; left: auto; bottom: 0;"
-                >
-                    <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>
-                    Keranjang
-                    <span class="fab-num" x-text="cart.length"></span>
-                </button>
-            </div>
+            <button 
+                x-show="!isCartOpen" 
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-90 translate-y-10"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                @click="isCartOpen = true" 
+                class="fab border-none cursor-pointer pointer-events-auto"
+                :class="{'animate-wiggle': cartAnimation}"
+            >
+                <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Keranjang
+                <span class="fab-num" x-text="cart.length"></span>
+            </button>
         </div>
         @endif
     @endauth
@@ -753,7 +786,7 @@ body::after {
                                     <div class="price-now" x-text="formatRupiah(product.price)"></div>
                                 </div>
                                 {{-- Tombol Keranjang: hanya untuk Konsumen yang login --}}
-                                <button x-show="isKonsumen" @click="addToCart(product)" class="add-btn" aria-label="Tambah ke keranjang">
+                                <button x-show="isKonsumen" @click="addToCart(product, $event)" class="add-btn" aria-label="Tambah ke keranjang">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                     </svg>
@@ -761,6 +794,17 @@ body::after {
                                 {{-- CTA Masuk: untuk guest / role bukan konsumen --}}
                                 <a x-show="!isKonsumen" href="{{ route('login') }}"
                                    class="add-btn" aria-label="Masuk untuk membeli"
+                                   style="background:var(--ink); text-decoration:none; width:auto; padding: 0 12px; font-family:'Space Grotesk',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; gap:5px; white-space:nowrap;">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3 3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                                    </svg>
+                                    Masuk
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </template>
                                    style="background:var(--ink); text-decoration:none; width:auto; padding: 0 12px; font-family:'Space Grotesk',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; gap:5px; white-space:nowrap;">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
@@ -847,6 +891,7 @@ body::after {
             isKonsumen: _isKonsumen,
             searchQuery: '',
             cart: JSON.parse(localStorage.getItem('foodsave_cart')) || [],
+            cartAnimation: false,
             
             products: [
                 { id: 1, name: 'Paket Ayam Geprek Surplus', store: 'Resto Ayam Berkah', price: 12500, originalPrice: 25000, distance: '0.5 km', urgent: 'Sisa 2!', image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=500' },
@@ -863,7 +908,8 @@ body::after {
                 return this.cart.reduce((total, item) => total + (item.price * item.qty), 0);
             },
 
-            addToCart(product) {
+            addToCart(product, event) {
+                // 1. Logic Update Cart
                 const existing = this.cart.find(item => item.id === product.id);
                 if (existing) {
                     existing.qty++;
@@ -871,6 +917,41 @@ body::after {
                     this.cart.push({ ...product, qty: 1 });
                 }
                 this.saveCart();
+
+                // 2. Fly to Cart Animation
+                if (event) {
+                    const btn = event.currentTarget;
+                    const rect = btn.getBoundingClientRect();
+                    const cartBtn = document.querySelector('.fab:not(.bg-red-500)'); // Find the cart button (not the back button)
+                    const cartRect = cartBtn.getBoundingClientRect();
+
+                    const flyEl = document.createElement('img');
+                    flyEl.src = product.image;
+                    flyEl.className = 'fly-item';
+                    flyEl.style.left = `${rect.left}px`;
+                    flyEl.style.top = `${rect.top}px`;
+                    document.body.appendChild(flyEl);
+
+                    // Force reflow
+                    flyEl.offsetWidth;
+
+                    // Animate to cart
+                    flyEl.style.left = `${cartRect.left + 15}px`;
+                    flyEl.style.top = `${cartRect.top + 15}px`;
+                    flyEl.style.transform = 'scale(0.2) rotate(360deg)';
+                    flyEl.style.opacity = '0.7';
+
+                    setTimeout(() => {
+                        flyEl.remove();
+                        // 3. Trigger FAB animation on arrival
+                        this.cartAnimation = true;
+                        setTimeout(() => { this.cartAnimation = false; }, 600);
+                    }, 800);
+                } else {
+                    // Fallback for non-event triggers
+                    this.cartAnimation = true;
+                    setTimeout(() => { this.cartAnimation = false; }, 600);
+                }
             },
 
             removeFromCart(id) {
