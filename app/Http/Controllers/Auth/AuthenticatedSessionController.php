@@ -21,6 +21,7 @@ class AuthenticatedSessionController extends Controller
 
     /**
      * Handle an incoming authentication request.
+     * Redirect setelah login berdasarkan role pengguna.
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -29,14 +30,15 @@ class AuthenticatedSessionController extends Controller
 
         // LOGIKA REDIRECT BERDASARKAN ROLE
         $user = \Illuminate\Support\Facades\Auth::user();
+
         if ($user->role === 'seller') {
-            return redirect('/seller/dashboard');
+            return redirect()->route('seller.dashboard');
         } elseif ($user->role === 'lembaga_sosial') {
-            return redirect('/sosial/dashboard');
+            return redirect()->route('sosial.dashboard');
         }
 
-        // Default untuk konsumen
-        return redirect(route('dashboard', absolute: false));
+        // Default untuk konsumen → dashboard publik
+        return redirect()->route('dashboard');
     }
 
     /**

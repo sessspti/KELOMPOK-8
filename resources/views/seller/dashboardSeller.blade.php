@@ -537,7 +537,7 @@ body::before {
     <div class="greet-wrap">
         <div>
             <p class="greet-kicker" id="greetKicker">Selamat Pagi</p>
-            <h1 class="greet-title">Halo, <em>Katering Berkah!</em></h1>
+            <h1 class="greet-title">Halo, <em>{{ Auth::user()->name ?? 'Seller' }}!</em></h1>
             <p class="greet-sub">Pantau aktivitas tokomu hari ini dari sini.</p>
         </div>
         <div class="perf-chip">
@@ -584,13 +584,15 @@ body::before {
         {{-- CARD 3 — Profil Toko --}}
         <div class="bc c-profil bp">
             <div class="profil-top">
-                <div class="profil-av">KB</div>
-                <a href="{{ route('seller.profile.edit') }}" class="edit-btn">
+                <div class="profil-av">
+                    {{ strtoupper(substr(Auth::user()->name ?? 'S', 0, 2)) }}
+                </div>
+                <a href="{{ route('profile.edit') }}" class="edit-btn">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     Edit Profil
                 </a>
             </div>
-            <div class="profil-name">Katering Berkah</div>
+            <div class="profil-name">{{ Auth::user()->name ?? 'Nama Toko' }}</div>
             <div class="profil-row">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
                 Jl. Cihampelas No. 42, Bandung

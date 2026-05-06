@@ -615,45 +615,49 @@ body::after {
 </style>
 
 <div x-data="foodSaveApp()" class="min-h-screen">
-    {{-- ── FAB CART & BACK ── --}}
-    <div class="fixed bottom-8 left-8 right-8 z-[210] flex items-center justify-between pointer-events-none">
-        <!-- Left Side: Back Button -->
-        <div class="flex-1 flex justify-start">
-            <button 
-                x-show="isCartOpen" 
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 -translate-x-10"
-                x-transition:enter-end="opacity-100 translate-x-0"
-                @click="isCartOpen = false" 
-                class="fab border-none cursor-pointer pointer-events-auto bg-red-500 hover:bg-red-600 shadow-red-200"
-                style="position: relative; left: 0; right: auto; bottom: 0;"
-            >
-                <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                Kembali
-            </button>
-        </div>
+    {{-- ── FAB CART & BACK (Hanya untuk Konsumen yang login) ── --}}
+    @auth
+        @if(Auth::user()->role === 'konsumen')
+        <div class="fixed bottom-8 left-8 right-8 z-[210] flex items-center justify-between pointer-events-none">
+            <!-- Left Side: Back Button (closes cart) -->
+            <div class="flex-1 flex justify-start">
+                <button 
+                    x-show="isCartOpen" 
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 -translate-x-10"
+                    x-transition:enter-end="opacity-100 translate-x-0"
+                    @click="isCartOpen = false" 
+                    class="fab border-none cursor-pointer pointer-events-auto bg-red-500 hover:bg-red-600 shadow-red-200"
+                    style="position: relative; left: 0; right: auto; bottom: 0;"
+                >
+                    <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Kembali
+                </button>
+            </div>
 
-        <!-- Right Side: Cart FAB -->
-        <div class="flex-1 flex justify-end">
-            <button 
-                x-show="!isCartOpen" 
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 scale-90 translate-y-10"
-                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                @click="isCartOpen = true" 
-                class="fab border-none cursor-pointer pointer-events-auto"
-                style="position: relative; right: 0; left: auto; bottom: 0;"
-            >
-                <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                Keranjang
-                <span class="fab-num" x-text="cart.length"></span>
-            </button>
+            <!-- Right Side: Cart FAB -->
+            <div class="flex-1 flex justify-end">
+                <button 
+                    x-show="!isCartOpen" 
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 scale-90 translate-y-10"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    @click="isCartOpen = true" 
+                    class="fab border-none cursor-pointer pointer-events-auto"
+                    style="position: relative; right: 0; left: auto; bottom: 0;"
+                >
+                    <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    Keranjang
+                    <span class="fab-num" x-text="cart.length"></span>
+                </button>
+            </div>
         </div>
-    </div>
+        @endif
+    @endauth
 
     {{-- ── HEADER ── --}}
     <x-header />
@@ -748,12 +752,23 @@ body::after {
                                     <div class="price-was" x-text="formatRupiah(product.originalPrice)"></div>
                                     <div class="price-now" x-text="formatRupiah(product.price)"></div>
                                 </div>
-                                <button @click="addToCart(product)" class="add-btn" aria-label="Tambah ke keranjang">
+                                {{-- Tombol Keranjang: hanya untuk Konsumen yang login --}}
+                                <button x-show="isKonsumen" @click="addToCart(product)" class="add-btn" aria-label="Tambah ke keranjang">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                     </svg>
                                 </button>
+                                {{-- CTA Masuk: untuk guest / role bukan konsumen --}}
+                                <a x-show="!isKonsumen" href="{{ route('login') }}"
+                                   class="add-btn" aria-label="Masuk untuk membeli"
+                                   style="background:var(--ink); text-decoration:none; width:auto; padding: 0 12px; font-family:'Space Grotesk',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; gap:5px; white-space:nowrap;">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                                    </svg>
+                                    Masuk
+                                </a>
                             </div>
+
                         </div>
                     </div>
                 </template>
@@ -814,14 +829,22 @@ body::after {
 
     </div>
 
-    <!-- Cart Sidebar -->
-    <x-transaction.cart-sidebar />
+    {{-- Cart Sidebar: hanya untuk konsumen yang login --}}
+    @auth
+        @if(Auth::user()->role === 'konsumen')
+            <x-transaction.cart-sidebar />
+        @endif
+    @endauth
 </div>
 
 <script>
+    // Flag dari PHP: apakah user adalah konsumen yang sudah login?
+    const _isKonsumen = {{ (Auth::check() && Auth::user()->role === 'konsumen') ? 'true' : 'false' }};
+
     function foodSaveApp() {
         return {
             isCartOpen: false,
+            isKonsumen: _isKonsumen,
             searchQuery: '',
             cart: JSON.parse(localStorage.getItem('foodsave_cart')) || [],
             

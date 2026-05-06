@@ -635,7 +635,7 @@ body::after {
 {{-- ── HEADER ── --}}
 <header class="hdr">
     <div class="hdr-inner">
-        <a href="#" class="logo">
+        <a href="{{ route('sosial.dashboard') }}" class="logo">
             <span class="logo-icon">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
@@ -652,15 +652,60 @@ body::after {
         </div>
         <div class="hdr-right">
             <span class="pts-pill">✦ 150.000 FP</span>
-            <form method="POST" action="{{ route('logout') }}" style="display:inline;">
-                @csrf
-                <button type="submit" class="pts-pill" style="cursor:pointer; background: #fee2e2; color: #991b1b; border: 2px solid rgba(239,68,68,0.2); transition: background 0.2s;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'">
-                    Keluar
+
+            {{-- Profile Dropdown --}}
+            <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false" style="z-index: 110;">
+                <button @click="open = !open"
+                        class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm"
+                        style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#fff;border:1.5px solid rgba(22,163,74,0.2);border-radius:12px;cursor:pointer;">
+                    {{-- Initials Avatar --}}
+                    <div style="width:28px;height:28px;border-radius:8px;background:#e0f2fe;border:1.5px solid rgba(14,165,233,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.6875rem;color:#0284c7;flex-shrink:0;">
+                        {{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 2)) }}
+                    </div>
+                    <span style="font-size:0.8125rem;font-weight:700;color:#111;">{{ Auth::user()->name ?? 'Lembaga' }}</span>
+                    <svg class="fill-current h-4 w-4" style="color:#9ca3af;transition:transform 0.2s;" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
                 </button>
-            </form>
+
+                <div x-show="open"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     class="absolute right-0 z-[120] mt-2 w-52 rounded-2xl shadow-xl bg-white border border-gray-100 py-2 origin-top-right"
+                     style="display: none;">
+                    <div style="padding:8px 16px 6px;font-size:0.5625rem;color:#9ca3af;text-transform:uppercase;font-weight:900;letter-spacing:0.15em;border-bottom:1px solid #f9fafb;margin-bottom:4px;">
+                        Pengaturan Akun
+                    </div>
+                    <a href="{{ route('profile.edit') }}"
+                       style="display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:0.875rem;color:#374151;text-decoration:none;font-weight:500;transition:background 0.15s;"
+                       onmouseover="this.style.background='#f0fdf4';this.style.color='#15803d';"
+                       onmouseout="this.style.background='';this.style.color='#374151';">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        Edit Profil
+                    </a>
+                    <div style="border-top:1px solid #f9fafb;margin:4px 0;"></div>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <a href="{{ route('logout') }}"
+                           onclick="event.preventDefault(); this.closest('form').submit();"
+                           style="display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:0.875rem;color:#dc2626;text-decoration:none;font-weight:500;transition:background 0.15s;"
+                           onmouseover="this.style.background='#fef2f2';"
+                           onmouseout="this.style.background='';">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            Keluar
+                        </a>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </header>
+
 
 <div class="page">
 
