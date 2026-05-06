@@ -4,26 +4,44 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
-// Redirect halaman utama ke dashboard
+// ─── ROOT: Redirect berdasarkan role ───
 Route::get('/', function () {
-    return redirect()->route('dashboard');
+    if (Auth::check()) {
+        $role = Auth::user()->role;
+        if ($role === 'seller') {
+            return redirect()->route('seller.dashboard');
+        } elseif ($role === 'lembaga_sosial') {
+            return redirect()->route('sosial.dashboard');
+        } elseif ($role === 'konsumen') {
+            return redirect()->route('dashboard');
+        }
+    }
+    // Guest yang belum login → halaman publik
+    return redirect()->route('guest.dashboard');
 });
+
+// ─── ROUTE PUBLIK: Dashboard Guest/Konsumen ───
+// Dapat diakses oleh siapapun (guest maupun konsumen yang login)
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
+
+// Alias /home → sama dengan /dashboard (friendly URL)
+Route::get('/home', function () {
+    return view('dashboard');
+})->name('guest.dashboard');
 
 // --- Group Route untuk User yang Sudah Login ---
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // 1. Dashboard Umum / Konsumen
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->middleware('role:konsumen')->name('dashboard');
-    
-    // 2. Profile Management Umum
+    // 1. Profile Management Umum (bisa diakses semua role yang login)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // 3. Fitur Seller (Dibagi menjadi Home & Manajemen)
+    // 2. Fitur Seller (Dibagi menjadi Home & Manajemen)
     Route::prefix('seller')->middleware('role:seller')->group(function () {
         
         // A. HOME DASHBOARD SELLER (Halaman Bento Grid)
@@ -57,36 +75,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return view('seller.tambah-menu', compact('menus'));
         })->name('seller.tambah-menu');
 
-        // D. PERBAIKAN: Rute Alias untuk Profil Seller (Agar tidak error di Dashboard Bento)
+        // D. Rute Alias untuk Profil Seller (Agar tidak error di Dashboard Bento)
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('seller.profile.edit');
     });
 
-    // 4. Fitur Lembaga Sosial
-    Route::get('/sosial/dashboard', function () {
-        return view('sosial.dashboard');
-    })->middleware('role:lembaga_sosial')->name('sosial.dashboard');
+    // 3. Fitur Lembaga Sosial
+    Route::prefix('sosial')->middleware('role:lembaga_sosial')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('sosial.dashboard');
+        })->name('sosial.dashboard');
 
-    // 5. Fitur Checkout/Pembayaran (Hanya Konsumen)
+        // Profil untuk Lembaga Sosial
+        Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('sosial.profile.edit');
+    });
+
+    // 4. Fitur Checkout/Pembayaran (Hanya Konsumen)
     Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->middleware('role:konsumen')->name('checkout.pay');
 
-    // 6. Eksplorasi & Transaksi (FoodSave Features) - Hanya Konsumen
+    // 5. Eksplorasi & Transaksi (FoodSave Features) - Hanya Konsumen
     Route::get('/checkout-summary', function () {
         return view('transaction.checkout');
     })->middleware('role:konsumen')->name('checkout.summary');
 
-    // 7. Fitur Admin (Pusat Kendali Platform)
-   
+    // 6. Fitur Admin (Pusat Kendali Platform)
     Route::prefix('admin')->middleware('role:admin')->group(function () {
         
         // Dashboard Utama Admin
-        // File: resources/views/admin/dashboard.blade.php
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
         })->name('admin.dashboard');
 
         // Manajemen User (PBI-007)
         Route::get('/users', function () {
-            // Logic untuk mengambil semua user bisa diletakkan di controller nanti
             return view('admin.users.index'); 
         })->name('admin.users.index');
 
