@@ -714,11 +714,11 @@ body.no-scroll { overflow: hidden; }
                 <div class="stat-icon sky">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 </div>
-                <div class="stat-label">Merchant Aktif</div>
+                <div class="stat-label">Pedagang Aktif</div>
                 <div class="stat-num">312</div>
                 <div class="stat-delta up">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                    +24 merchant baru
+                    +24 pedagang baru
                 </div>
             </div>
             <div class="stat-card mint">
@@ -761,7 +761,7 @@ body.no-scroll { overflow: hidden; }
                         <button class="ftab on" onclick="setTab(this,'all')">Semua</button>
                         <button class="ftab" onclick="setTab(this,'konsumen')">Konsumen</button>
                         <button class="ftab" onclick="setTab(this,'lembaga')">Lembaga</button>
-                        <button class="ftab" onclick="setTab(this,'fnb')">F&B</button>
+                        <button class="ftab" onclick="setTab(this,'fnb')">Seller</button>
                     </div>
                     <button class="btn btn-primary" onclick="openModal('addUser')">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
@@ -823,7 +823,7 @@ body.no-scroll { overflow: hidden; }
                             <td><span class="pill konsumen">Konsumen</span></td>
                             <td class="td-mono">01 Apr 2025</td>
                             <td class="td-mono">8</td>
-                            <td><span class="pill suspend">Suspend</span></td>
+                            <td><span class="pill suspend">ditangguhkan</span></td>
                             <td><div class="actions">
                                 <button class="btn btn-outline btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
                                 <button class="btn btn-success btn-xs btn-icon" title="Aktifkan kembali"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>

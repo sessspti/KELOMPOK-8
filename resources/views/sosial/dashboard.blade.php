@@ -728,7 +728,7 @@ body::after {
                 </div>
                 <div class="stat-chip">
                     <div class="stat-num">3.2 <span class="stat-unit">Kg</span></div>
-                    <div class="stat-lbl">CO₂ Reduced</div>
+                    <div class="stat-lbl">CO₂ Dikurangi</div>
                 </div>
             </div>
         </div>
@@ -752,7 +752,7 @@ body::after {
                 <span class="ticker-star">✦</span>
                 Bersama Akhiri Kelaparan
                 <span class="ticker-star">✦</span>
-                Kurangi Food Waste
+                Kurangi Limbah Makanan
                 <span class="ticker-star">✦</span>
                 Salurkan Senyuman Lewat Makanan
                 <span class="ticker-star">✦</span>
