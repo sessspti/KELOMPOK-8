@@ -573,7 +573,7 @@ body::before {
                     </svg>
                 </div>
                 <div class="kelola-title">Kelola Menu<br>& Stok</div>
-                <div class="kelola-desc">Tambah listing baru, update stok cepat, atur harga rescue deal produkmu.</div>
+                <div class="kelola-desc">Tambah daftar baru, perbarui stok cepat, atur harga rescue deal produkmu.</div>
                 <div class="kelola-cta">
                     Buka Halaman
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>

@@ -716,7 +716,7 @@ body::after {
                     </div>
                     <div class="stat-chip">
                         <div class="stat-num">3.2 <span class="stat-unit">Kg</span></div>
-                        <div class="stat-lbl">CO₂ Reduced</div>
+                        <div class="stat-lbl">CO₂ dikurangi</div>
                     </div>
                 </div>
             </div>
@@ -739,7 +739,7 @@ body::after {
                     <span class="ticker-star">✦</span>
                     Selamatkan Makanan Hari Ini
                     <span class="ticker-star">✦</span>
-                    Kurangi Food Waste
+                    Kurangi limbah makanan
                     <span class="ticker-star">✦</span>
                     Hemat Lebih Banyak
                     <span class="ticker-star">✦</span>
@@ -855,7 +855,7 @@ body::after {
                     <div class="edu-img-wrap">
                         <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=500" alt="Global Issue">
                     </div>
-                    <span class="edu-tag">Global Issue</span>
+                    <span class="edu-tag">Isu Global</span>
                     <h3 class="edu-title">Dampak Mengerikan Food Waste bagi Perubahan Iklim</h3>
                     <p class="edu-desc">Mengetahui seberapa besar pengaruh sisa makanan terhadap lapisan ozon bumi kita.</p>
                 </div>
