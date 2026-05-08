@@ -1,12 +1,8 @@
 <header class="hdr">
     <div class="hdr-inner">
         <a href="{{ route('dashboard') }}" class="logo">
-            <span class="logo-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                </svg>
-            </span>
-            Food<span class="logo-text-save">Save</span>
+            <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-20 w-auto object-contain">
+            <span class="ml-2">Food<span class="logo-text-save">Save</span></span>
         </a>
         <div class="hdr-search">
             <svg class="hdr-search-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24">
