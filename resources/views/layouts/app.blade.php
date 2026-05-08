@@ -64,13 +64,7 @@
                 text-decoration: none;
                 display: flex;
                 align-items: center;
-                gap: 8px;
-            }
-            .logo-icon {
-                width: 32px; height: 32px;
-                background: var(--mint-400);
-                border-radius: 10px;
-                display: flex; align-items: center; justify-content: center;
+                gap: 12px;
             }
             .logo-text-save { color: var(--mint-600); }
 

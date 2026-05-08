@@ -609,9 +609,7 @@ body::after {
 .edu-card:nth-child(2){ animation: fadeUp 0.5s ease 0.12s both; }
 .edu-card:nth-child(3){ animation: fadeUp 0.5s ease 0.19s both; }
 
-/* ══════════════════════════════════
-   INTERACTIVE ANIMATIONS
-   ══════════════════════════════════ */
+
 @keyframes cart-wiggle {
     0%, 100% { transform: scale(1); }
     25% { transform: scale(1.1) rotate(-8deg); }
@@ -805,17 +803,6 @@ body::after {
                         </div>
                     </div>
                 </template>
-                                   style="background:var(--ink); text-decoration:none; width:auto; padding: 0 12px; font-family:'Space Grotesk',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; gap:5px; white-space:nowrap;">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                                    </svg>
-                                    Masuk
-                                </a>
-                            </div>
-
-                        </div>
-                    </div>
-                </template>
             </div>
 
             <!-- Empty State -->
@@ -974,6 +961,25 @@ body::after {
 
             saveCartToSession() {
                 this.saveCart();
+                
+                // Sync to database
+                if (this.isKonsumen && this.cart.length > 0) {
+                    fetch('{{ route('cart.sync') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ cart: this.cart })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Cart synced to database');
+                    })
+                    .catch(error => {
+                        console.error('Error syncing cart:', error);
+                    });
+                }
             },
 
             formatRupiah(number) {
