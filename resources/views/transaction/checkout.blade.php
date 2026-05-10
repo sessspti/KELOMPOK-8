@@ -102,13 +102,9 @@
                             <span>Subtotal Pesanan</span>
                             <span class="text-white" x-text="formatRupiah(cartTotal)"></span>
                         </div>
-                        <div class="flex justify-between text-gray-400 font-medium">
-                            <span>Pajak (11%)</span>
-                            <span class="text-white" x-text="formatRupiah(taxAmount)"></span>
-                        </div>
                         <div class="flex justify-between text-gray-400 font-medium border-b border-white/10 pb-4">
-                            <span>Biaya Layanan & Ongkir</span>
-                            <span class="text-white" x-text="formatRupiah(shippingFee)"></span>
+                            <span>Biaya Layanan</span>
+                            <span class="text-white" x-text="formatRupiah(serviceFee)"></span>
                         </div>
                         <div class="flex justify-between items-center pt-4 mb-8">
                             <span class="text-lg font-bold">Total Pembayaran</span>
@@ -150,60 +146,15 @@
             </div>
         </div>
 
-        <!-- Success Modal (Invoice Simulation) -->
-        <div 
-            x-show="showSuccess" 
-            class="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-        >
-            <div class="absolute inset-0 bg-gray-900/90 backdrop-blur-md"></div>
-            
-            <div class="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl relative z-10 overflow-hidden text-center p-12">
-                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                
-                <h2 class="text-3xl font-black text-gray-900 mb-2">Pembayaran Berhasil!</h2>
-                <p class="text-gray-500 mb-8">Horee! Pesananmu sedang disiapkan. Cek detail invoice di bawah ini.</p>
-                
-                <div class="bg-gray-50 rounded-3xl p-6 mb-8 text-left space-y-3">
-                    <div class="flex justify-between">
-                        <span class="text-gray-400 text-sm">No. Invoice</span>
-                        <span class="font-bold text-gray-900" x-text="invoiceNumber"></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-400 text-sm">Status</span>
-                        <span class="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black rounded-full uppercase tracking-widest">Dibayar</span>
-                    </div>
-                    <div class="flex justify-between border-t border-gray-200 pt-3 mt-3">
-                        <span class="text-gray-900 font-bold">Total</span>
-                        <span class="text-green-600 font-black text-xl" x-text="formatRupiah(grandTotal)"></span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <button @click="showSuccess = false; window.location.href='/dashboard'" class="py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all">Tutup</button>
-                    <button @click="printInvoice" class="py-4 bg-green-600 text-white font-bold rounded-2xl shadow-lg shadow-green-600/30 hover:bg-green-700 transition-all">Download Invoice</button>
-                </div>
-                
-                <p class="mt-8 text-xs text-gray-400 italic">Mock notification: Penjual telah menerima notifikasi pesanan baru!</p>
-            </div>
-        </div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function foodSaveCheckout() {
             return {
                 cart: JSON.parse(localStorage.getItem('foodsave_cart')) || [],
                 selectedMethod: '',
                 isProcessing: false,
-                showSuccess: false,
                 invoiceNumber: '',
-                shippingFee: 15000,
+                serviceFee: 2000,
                 
                 paymentMethods: [
                     { id: 'bank', name: 'Transfer Bank', description: 'BCA, Mandiri, BNI', icon: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
@@ -215,12 +166,8 @@
                     return this.cart.reduce((total, item) => total + (item.price * item.qty), 0);
                 },
 
-                get taxAmount() {
-                    return this.cartTotal * 0.11;
-                },
-
                 get grandTotal() {
-                    return this.cartTotal + this.taxAmount + this.shippingFee;
+                    return this.cartTotal + this.serviceFee;
                 },
 
                 processPayment() {
@@ -231,19 +178,32 @@
                     // Simulated Delay (Network Mock)
                     setTimeout(() => {
                         this.isProcessing = false;
-                        this.showSuccess = true;
                         this.invoiceNumber = 'INV-' + Math.floor(Math.random() * 1000000);
                         
+                        // SweetAlert 2 Success
+                        Swal.fire({
+                            title: "Pembayaran Berhasil!",
+                            text: "Pesananmu dengan nomor " + this.invoiceNumber + " sedang diproses. Terima kasih telah menyelamatkan makanan!",
+                            icon: "success",
+                            draggable: true,
+                            confirmButtonText: "Lihat Detail Transaksi",
+                            confirmButtonColor: "#22c55e",
+                            background: "#ffffff",
+                            customClass: {
+                                title: 'font-bold text-gray-900',
+                                popup: 'rounded-[2.5rem] p-8'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = '/detail-transaksi'; // Redirection to transaction detail (placeholder)
+                            }
+                        });
+
                         // Clear Cart
                         localStorage.removeItem('foodsave_cart');
                         
-                        // Mock Real-time notification trigger
                         console.log("TRIGGER: Notification sent to Buyer & Seller");
-                    }, 2500);
-                },
-
-                printInvoice() {
-                    alert('Download Invoice: ' + this.invoiceNumber + ' berhasil disiapkan!');
+                    }, 2000);
                 },
 
                 formatRupiah(number) {

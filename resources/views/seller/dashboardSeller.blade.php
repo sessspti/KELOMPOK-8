@@ -60,26 +60,19 @@ body::before {
 }
 .hdr-inner {
     max-width: 1400px; margin: 0 auto;
-    padding: 0 2rem; height: 68px;
+    padding: 0 2rem; height: 90px;
     display: flex; align-items: center; gap: 1.25rem;
 }
 .logo {
-    font-family: 'Sora', sans-serif; font-weight: 800;
-    font-size: 1.3rem; letter-spacing: -0.05em;
-    color: var(--ink); text-decoration: none;
-    display: flex; align-items: center; gap: 9px; flex-shrink: 0;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
-.logo-icon {
-    width: 30px; height: 30px; border-radius: 9px;
-    background: var(--mint-400);
-    display: flex; align-items: center; justify-content: center;
-    animation: logo-sway 3.5s ease-in-out infinite;
-}
-.logo-icon svg { width: 16px; height: 16px; color: #fff; }
-@keyframes logo-sway {
-    0%,100%{transform:rotate(0deg)} 30%{transform:rotate(-6deg)} 70%{transform:rotate(4deg)}
-}
-.logo em { color: var(--mint-600); font-style: normal; }
+.logo-text-save { color: var(--mint-600); }
 .hdr-divider { width: 1px; height: 28px; background: var(--border-md); flex-shrink: 0; }
 .hdr-role {
     background: var(--mint-100); color: var(--mint-700);
@@ -132,6 +125,21 @@ body::before {
     padding: 0.4rem 1rem; border-radius: var(--r-pill);
     letter-spacing: -0.01em; border: 2px solid rgba(0,0,0,0.07);
 }
+
+.logout-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff; border: 1.5px solid #fee2e2;
+    border-radius: var(--r-sm); padding: 0.45rem 1rem;
+    font-family: 'Sora', sans-serif; font-size: 0.8125rem;
+    font-weight: 700; color: #dc2626;
+    cursor: pointer; transition: all 0.2s;
+}
+.logout-btn:hover {
+    background: #fef2f2; border-color: #fca5a5;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08);
+}
+.logout-btn svg { width: 16px; height: 16px; }
 
 /* ─── PAGE ─── */
 .page {
@@ -501,11 +509,9 @@ body::before {
 {{-- ── HEADER ── --}}
 <header class="hdr">
     <div class="hdr-inner">
-        <a href="#" class="logo">
-            <span class="logo-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
-            </span>
-            Food<em>Save</em>
+        <a href="{{ route('seller.dashboard') }}" class="logo">
+            <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-20 w-auto object-contain">
+            <span class="ml-1">Food<span class="logo-text-save">Save</span></span>
         </a>
         <div class="hdr-divider"></div>
         <span class="hdr-role">✦ Seller Dashboard</span>
@@ -521,9 +527,12 @@ body::before {
                 <span class="ndot"></span>
             </button>
             <span class="pts-pill">✦ 150.000 FP</span>
-            <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+            <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="pts-pill" style="cursor:pointer; background: #fee2e2; color: #991b1b; border: 2px solid rgba(239,68,68,0.2); transition: background 0.2s;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'">
+                <button type="submit" class="logout-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
                     Keluar
                 </button>
             </form>
