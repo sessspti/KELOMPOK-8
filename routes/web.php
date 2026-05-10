@@ -125,3 +125,6 @@ Route::get('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthC
 Route::post('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'storeRolePassword'])->name('google.role.store');
 
 require __DIR__ . '/auth.php';
+
+// Cart Synchronization
+Route::post('/cart/sync', [App\Http\Controllers\CartController::class, 'sync'])->name('cart.sync')->middleware('auth');

@@ -609,9 +609,7 @@ body::after {
 .edu-card:nth-child(2){ animation: fadeUp 0.5s ease 0.12s both; }
 .edu-card:nth-child(3){ animation: fadeUp 0.5s ease 0.19s both; }
 
-/* ══════════════════════════════════
-   INTERACTIVE ANIMATIONS
-   ══════════════════════════════════ */
+
 @keyframes cart-wiggle {
     0%, 100% { transform: scale(1); }
     25% { transform: scale(1.1) rotate(-8deg); }
@@ -840,6 +838,12 @@ body::after {
                         <div class="pcard-body">
                             <p class="pcard-store" x-text="product.store"></p>
                             <h3 class="pcard-name" x-text="product.name"></h3>
+                            <div class="flex items-center gap-1.5 mb-3" style="font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
+                                </svg>
+                                <span>Expired: <span x-text="product.expired_at"></span></span>
+                            </div>
                             <div class="pcard-ft">
                                 <div>
                                     <div class="price-was" x-text="formatRupiah(product.originalPrice)"></div>
@@ -857,17 +861,6 @@ body::after {
                                    style="background:var(--ink); text-decoration:none; width:auto; padding: 0 12px; font-family:'Space Grotesk',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; gap:5px; white-space:nowrap;">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3 3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                                    </svg>
-                                    Masuk
-                                </a>
-                            </div>
-
-                        </div>
-                    </div>
-                </template>
-                                   style="background:var(--ink); text-decoration:none; width:auto; padding: 0 12px; font-family:'Space Grotesk',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; gap:5px; white-space:nowrap;">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
                                     </svg>
                                     Masuk
                                 </a>
@@ -954,10 +947,10 @@ body::after {
             cartAnimation: false,
             
             products: [
-                { id: 1, name: 'Paket Ayam Geprek Surplus', store: 'Resto Ayam Berkah', price: 12500, originalPrice: 25000, distance: '0.5 km', urgent: 'Sisa 2!', image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=500' },
-                { id: 2, name: 'Nasi Goreng Spesial', store: 'Warung Bu Siti', price: 15000, originalPrice: 25000, distance: '1.2 km', urgent: 'Sisa 1!', image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&q=80&w=500' },
-                { id: 3, name: 'Es Teh Manis Jumbo', store: 'Resto Ayam Berkah', price: 5000, originalPrice: 8000, distance: '0.5 km', urgent: 'Sisa 5!', image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&q=80&w=500' },
-                { id: 4, name: 'Pisang Goreng Keju', store: 'Camilan Enak', price: 10000, originalPrice: 15000, distance: '2.0 km', urgent: 'Sisa 3!', image: 'https://images.unsplash.com/photo-1590004953392-5aba2e72269a?auto=format&fit=crop&q=80&w=500' },
+                { id: 1, name: 'Paket Ayam Geprek Surplus', store: 'Resto Ayam Berkah', price: 12500, originalPrice: 25000, distance: '0.5 km', urgent: 'Sisa 2!', expired_at: '10 Mei 2026', image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=500' },
+                { id: 2, name: 'Nasi Goreng Spesial', store: 'Warung Bu Siti', price: 15000, originalPrice: 25000, distance: '1.2 km', urgent: 'Sisa 1!', expired_at: '11 Mei 2026', image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&q=80&w=500' },
+                { id: 3, name: 'Es Teh Manis Jumbo', store: 'Resto Ayam Berkah', price: 5000, originalPrice: 8000, distance: '0.5 km', urgent: 'Sisa 5!', expired_at: '10 Mei 2026', image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&q=80&w=500' },
+                { id: 4, name: 'Pisang Goreng Keju', store: 'Camilan Enak', price: 10000, originalPrice: 15000, distance: '2.0 km', urgent: 'Sisa 3!', expired_at: '12 Mei 2026', image: 'https://images.unsplash.com/photo-1590004953392-5aba2e72269a?auto=format&fit=crop&q=80&w=500' },
             ],
 
             get filteredProducts() {
@@ -1034,6 +1027,25 @@ body::after {
 
             saveCartToSession() {
                 this.saveCart();
+                
+                // Sync to database
+                if (this.isKonsumen && this.cart.length > 0) {
+                    fetch('{{ route('cart.sync') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ cart: this.cart })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Cart synced to database');
+                    })
+                    .catch(error => {
+                        console.error('Error syncing cart:', error);
+                    });
+                }
             },
 
             formatRupiah(number) {
