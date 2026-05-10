@@ -97,8 +97,64 @@ body::before {
 /* ─── CARD CONTAINER ─── */
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.25rem;
+}
+@media(max-width: 900px) {
+    .menu-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media(max-width: 600px) {
+    .menu-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── SEARCH BAR ─── */
+.search-form {
+    display: flex; gap: 0.5rem; margin-bottom: 1.5rem;
+    animation: fadeUp 0.45s ease 0.08s both;
+}
+.search-input {
+    flex: 1; padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border-md);
+    border-radius: var(--r-sm);
+    font-family: 'Sora', sans-serif;
+    outline: none; transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--mint-500); }
+.btn-search {
+    background: var(--mint-600); color: #fff;
+    border: none; border-radius: var(--r-sm);
+    padding: 0 1.5rem; font-weight: 700;
+    cursor: pointer; transition: background 0.2s;
+}
+.btn-search:hover { background: var(--green-800); }
+
+/* ─── PAGINATION ─── */
+.custom-pagination {
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+    margin-top: 2.5rem; flex-wrap: wrap;
+    animation: fadeUp 0.45s ease 0.15s both;
+}
+.btn-paginate {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #fff; color: var(--mint-600);
+    border: 1.5px solid var(--mint-600); border-radius: var(--r-pill);
+    padding: 0.5rem 1rem; min-width: 40px;
+    font-family: 'Sora', sans-serif; font-weight: 700;
+    font-size: 0.875rem; cursor: pointer; text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-paginate:hover:not(.disabled):not(.active) {
+    background: var(--mint-600); color: #fff; transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(22,163,74,0.28);
+}
+.btn-paginate.active {
+    background: var(--mint-600); color: #fff;
+    box-shadow: 0 4px 14px rgba(22,163,74,0.28);
+    border-color: var(--mint-600); cursor: default;
+}
+.btn-paginate.disabled {
+    border-color: var(--border-md); color: var(--muted);
+    background: var(--off); cursor: not-allowed; opacity: 0.6;
 }
 
 /* ─── MENU CARD ─── */
@@ -246,6 +302,12 @@ body::before {
     </div>
     @endif
 
+    {{-- ── SEARCH BAR ── --}}
+    <form action="{{ route('seller.manage') }}" method="GET" class="search-form">
+        <input type="text" name="search" placeholder="Cari nama menu..." value="{{ request('search') }}" class="search-input">
+        <button type="submit" class="btn-search">Cari</button>
+    </form>
+
     {{-- ── MENU GRID ── --}}
     @if($menus->isEmpty())
         <div class="empty-state">
@@ -308,6 +370,11 @@ body::before {
         </div>
         @endforeach
     </div>
+    
+    {{-- ── PAGINATION ── --}}
+    @if($menus->hasPages())
+        {{ $menus->links('seller.pagination') }}
+    @endif
     @endif
 
 </div>

@@ -49,7 +49,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         Route::get('/manage-inventory', function () {
-            $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
+            $query = \App\Models\Menu::where('user_id', auth()->id());
+            
+            if (request()->has('search') && request('search') != '') {
+                $query->where('name', 'like', '%' . request('search') . '%');
+            }
+
+            $menus = $query->paginate(6)->withQueryString();
             return view('seller.etalase', compact('menus'));
         })->name('seller.manage');
 
