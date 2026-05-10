@@ -28,7 +28,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        $orders = \App\Models\Order::where('id_user', auth()->id())
+            ->with('menu.user')
+            ->latest()
+            ->get();
+        return view('dashboard', compact('orders'));
     })->middleware('role:konsumen')->name('dashboard');
     
     // 2. Profile Management Umum
@@ -41,7 +45,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         Route::get('/dashboard', function () {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
-            return view('seller.dashboardSeller', compact('menus'));
+            $orders = \App\Models\Order::whereHas('menu', function ($query) {
+                $query->where('user_id', auth()->id());
+            })->with(['menu', 'user'])->latest()->get();
+            return view('seller.dashboardSeller', compact('menus', 'orders'));
         })->name('seller.dashboard');
 
         Route::get('/dashboardSeller', function () {
@@ -68,7 +75,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 4. Fitur Lembaga Sosial
     Route::get('/sosial/dashboard', function () {
-        return view('sosial.dashboard');
+        $orders = \App\Models\Order::where('id_user', auth()->id())
+            ->with('menu.user')
+            ->latest()
+            ->get();
+        return view('sosial.dashboard', compact('orders'));
     })->middleware('role:lembaga_sosial')->name('sosial.dashboard');
 
     // 5. Fitur Checkout/Pembayaran (Hanya Konsumen)
@@ -83,7 +94,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('admin')->middleware('role:admin')->group(function () {
         
         Route::get('/dashboard', function () {
-            return view('admin.dashboard');
+            $orders = \App\Models\Order::with(['menu.user', 'user'])->latest()->get();
+            // Group by seller name for the monitoring view
+            $ordersGrouped = $orders->groupBy(function($order) {
+                return $order->menu->user->name ?? 'Unknown Store';
+            });
+            return view('admin.dashboard', compact('ordersGrouped'));
         })->name('admin.dashboard');
 
         Route::get('/users', function () {
@@ -98,6 +114,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return view('admin.edukasi.index');
         })->name('admin.edukasi');
     });
+
+    // 8. Order Management & Invoice
+    Route::post('/orders/{order}/update-status', [App\Http\Controllers\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::get('/orders/{order}/invoice', [App\Http\Controllers\OrderController::class, 'invoice'])->name('orders.invoice');
 });
 
 // Route untuk Pemilihan Role dan Password Google Auth
