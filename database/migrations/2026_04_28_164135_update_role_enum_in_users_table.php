@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('konsumen_seller', 'admin', 'lembaga_sosial', 'konsumen', 'seller') DEFAULT 'konsumen'");
+        if (config('database.default') === 'mysql') {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('konsumen_seller', 'admin', 'lembaga_sosial', 'konsumen', 'seller') DEFAULT 'konsumen'");
+        }
     }
 
     /**
@@ -19,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('konsumen_seller', 'admin', 'lembaga_sosial') DEFAULT 'konsumen_seller'");
+        if (config('database.default') === 'mysql') {
+            \Illuminate\Support\Facades\DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('konsumen_seller', 'admin', 'lembaga_sosial') DEFAULT 'konsumen_seller'");
+        }
     }
 };
