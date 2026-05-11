@@ -28,7 +28,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        $menus = \App\Models\Menu::with('user')->get()->map(function($menu) {
+            return [
+                'id' => $menu->id,
+                'name' => $menu->name,
+                'store' => $menu->user->name ?? 'Resto FoodSave',
+                'price' => $menu->price,
+                'originalPrice' => $menu->price + ($menu->discount ?? 0),
+                'distance' => (rand(1, 20) / 10) . ' km',
+                'urgent' => $menu->stock <= 3 ? 'Sisa ' . $menu->stock . '!' : '',
+                'expired_at' => \Carbon\Carbon::now()->addDays(rand(1, 3))->format('d M Y'),
+                'image' => $menu->image ? asset('storage/' . $menu->image) : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=500'
+            ];
+        });
+        return view('dashboard', compact('menus'));
     })->middleware('role:konsumen')->name('dashboard');
     
     // 2. Profile Management Umum
@@ -103,6 +116,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/edukasi', function () {
             return view('admin.edukasi.index');
         })->name('admin.edukasi');
+    });
+    // 8. Riwayat Transaksi & Invoice
+    Route::middleware('role:konsumen')->group(function () {
+        Route::get('/history', [\App\Http\Controllers\TransactionController::class, 'history'])->name('transaction.history');
+        Route::get('/invoice/{transaction_id}', [\App\Http\Controllers\TransactionController::class, 'invoice'])->name('transaction.invoice');
+        Route::post('/transaction/store', [\App\Http\Controllers\TransactionController::class, 'store'])->name('transaction.store');
     });
 });
 
