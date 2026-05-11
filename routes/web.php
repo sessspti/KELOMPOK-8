@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\DonationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -124,7 +125,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'showRoleForm'])->name('google.role.form');
 Route::post('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'storeRolePassword'])->name('google.role.store');
 
-require __DIR__ . '/auth.php';
+<<<<<<< Updated upstream
+require __DIR__ . '/auth.php'; 
 
 // Cart Synchronization
 Route::post('/cart/sync', [App\Http\Controllers\CartController::class, 'sync'])->name('cart.sync')->middleware('auth');
+======= 
+// Route Eksplorasi Donasi
+Route::get('/donasi', [DonationController::class, 'index'])->name('donations.index');
+
+require __DIR__ . '/auth.php';
+>>>>>>> Stashed changes
