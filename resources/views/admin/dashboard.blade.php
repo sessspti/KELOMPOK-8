@@ -610,6 +610,23 @@ textarea.nf-input { resize: none; height: 72px; font-family: inherit; }
 
 /* page scroll */
 body.no-scroll { overflow: hidden; }
+
+/* ─── MONITORING ─── */
+.mon-store-group { margin-bottom: 2rem; }
+.mon-store-hdr {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.75rem 1.75rem; background: var(--blue-50);
+    border-bottom: 1.5px solid var(--border);
+}
+.mon-store-name { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 0.9375rem; color: var(--blue-700); }
+.mon-table { width: 100%; border-collapse: collapse; }
+.mon-table th {
+    padding: 0.75rem 1.75rem; text-align: left;
+    font-size: 0.625rem; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--faint);
+    background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.mon-table td { padding: 1rem 1.75rem; border-bottom: 1px solid var(--border); font-size: 0.8125rem; }
 </style>
 
 {{-- ════════════ SIDEBAR ════════════ --}}
@@ -714,11 +731,11 @@ body.no-scroll { overflow: hidden; }
                 <div class="stat-icon sky">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 </div>
-                <div class="stat-label">Merchant Aktif</div>
+                <div class="stat-label">Pedagang Aktif</div>
                 <div class="stat-num">312</div>
                 <div class="stat-delta up">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                    +24 merchant baru
+                    +24 pedagang baru
                 </div>
             </div>
             <div class="stat-card mint">
@@ -761,7 +778,7 @@ body.no-scroll { overflow: hidden; }
                         <button class="ftab on" onclick="setTab(this,'all')">Semua</button>
                         <button class="ftab" onclick="setTab(this,'konsumen')">Konsumen</button>
                         <button class="ftab" onclick="setTab(this,'lembaga')">Lembaga</button>
-                        <button class="ftab" onclick="setTab(this,'fnb')">F&B</button>
+                        <button class="ftab" onclick="setTab(this,'fnb')">Seller</button>
                     </div>
                     <button class="btn btn-primary" onclick="openModal('addUser')">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
@@ -823,7 +840,7 @@ body.no-scroll { overflow: hidden; }
                             <td><span class="pill konsumen">Konsumen</span></td>
                             <td class="td-mono">01 Apr 2025</td>
                             <td class="td-mono">8</td>
-                            <td><span class="pill suspend">Suspend</span></td>
+                            <td><span class="pill suspend">ditangguhkan</span></td>
                             <td><div class="actions">
                                 <button class="btn btn-outline btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
                                 <button class="btn btn-success btn-xs btn-icon" title="Aktifkan kembali"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
@@ -888,105 +905,69 @@ body.no-scroll { overflow: hidden; }
             </div>
         </div>
 
-        {{-- ══ 3. MONITORING & LOG ══ --}}
-        <div id="sec-monitor" class="two-col">
-            {{-- Log Transaksi --}}
-            <div class="sec">
-                <div class="sec-hdr">
-                    <div class="sec-hdr-left">
-                        <div class="sec-kicker">Monitoring</div>
-                        <div class="sec-title">Log Transaksi</div>
-                    </div>
-                    <div class="sec-hdr-right">
-                        <button class="btn btn-outline btn-xs">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            Ekspor
-                        </button>
+        {{-- ══ 3. MONITORING TRANSAKSI PUSAT ══ --}}
+        <div id="sec-monitor" class="sec">
+            <div class="sec-hdr">
+                <div class="sec-hdr-left">
+                    <div class="sec-kicker">Monitoring Pusat</div>
+                    <div class="sec-title">Semua Transaksi & Donasi</div>
+                </div>
+                <div class="sec-hdr-right">
+                    <div class="tbl-search" style="margin:0; background:var(--white); border:1.5px solid var(--border); border-radius:12px; padding:0 12px; display:flex; align-items:center; gap:8px;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16" style="color:var(--faint);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" placeholder="Filter toko..." style="border:none; background:transparent; padding:0.6rem 0; font-size:0.8125rem; outline:none; width:180px;">
                     </div>
                 </div>
-                <div class="tbl-wrap">
-                    <table>
+            </div>
+            
+            <div class="tbl-wrap">
+                @forelse($ordersGrouped as $storeName => $orders)
+                <div class="mon-store-group">
+                    <div class="mon-store-hdr">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--blue-500)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        <span class="mon-store-name">{{ $storeName }}</span>
+                        <span class="pill blue" style="margin-left:8px; font-size:0.65rem;">{{ $orders->count() }} Transaksi</span>
+                    </div>
+                    <table class="mon-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Dari → Ke</th>
-                                <th>Item</th>
-                                <th>Status</th>
+                                <th style="width: 30%;">Nama Makanan</th>
+                                <th style="width: 25%;">Pemesan</th>
+                                <th style="width: 25%;">Jenis Transaksi</th>
+                                <th style="width: 20%;">Status</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach($orders as $order)
                             <tr>
-                                <td><span class="log-id">#TRX-0081</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Katering Berkah</strong><br><span style="color:var(--muted);">→ Andi Pratama</span></td>
-                                <td style="font-size:0.8125rem;">Nasi Box × 3</td>
-                                <td><span class="pill selesai">Selesai</span></td>
+                                <td style="font-weight: 600;">{{ $order->menu->name }}</td>
+                                <td>
+                                    <div style="font-weight: 500;">{{ $order->user->name }}</div>
+                                    <div style="font-size: 0.7rem; color: var(--faint); text-transform: uppercase;">{{ $order->user->role === 'lembaga_sosial' ? 'Lembaga' : 'Konsumen' }}</div>
+                                </td>
+                                <td>
+                                    @if($order->user->role === 'lembaga_sosial')
+                                        <span class="pill lembaga">Donasi: {{ $order->quantity }} Porsi</span>
+                                    @else
+                                        <span class="pill konsumen">Diskon: Rp {{ number_format(($order->menu->price * ($order->menu->discount / 100)) * $order->quantity, 0, ',', '.') }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="pill {{ strtolower($order->status) === 'selesai' ? 'selesai' : 'proses' }}">
+                                        {{ $order->status }}
+                                    </span>
+                                </td>
                             </tr>
-                            <tr>
-                                <td><span class="log-id">#DON-0042</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Bakery Sari Rasa</strong><br><span style="color:var(--muted);">→ Rumah Yatim</span></td>
-                                <td style="font-size:0.8125rem;">Roti Sisa × 25</td>
-                                <td><span class="pill proses">Proses</span></td>
-                            </tr>
-                            <tr>
-                                <td><span class="log-id">#TRX-0080</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Warung Bu Yanti</strong><br><span style="color:var(--muted);">→ Siti Rahma</span></td>
-                                <td style="font-size:0.8125rem;">Sayur Segar × 2kg</td>
-                                <td><span class="pill selesai">Selesai</span></td>
-                            </tr>
-                            <tr>
-                                <td><span class="log-id">#DON-0041</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Katering Berkah</strong><br><span style="color:var(--muted);">→ Bank Makanan</span></td>
-                                <td style="font-size:0.8125rem;">Paket Hemat × 10</td>
-                                <td><span class="pill proses">Proses</span></td>
-                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
-            </div>
-
-            {{-- Laporan Keluhan --}}
-            <div class="sec">
-                <div class="sec-hdr">
-                    <div class="sec-hdr-left">
-                        <div class="sec-kicker">Laporan</div>
-                        <div class="sec-title">Keluhan Pengguna</div>
-                    </div>
-                    <div class="sec-hdr-right">
-                        <span class="pill keluhan">2 Baru</span>
-                    </div>
+                @empty
+                <div style="padding: 4rem; text-align: center; color: var(--faint);">
+                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0.2; margin-bottom: 1rem;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <p>Belum ada data transaksi yang tercatat di sistem.</p>
                 </div>
-                <div class="keluhan-card">
-                    <div class="keluhan-top">
-                        <div class="keluhan-title">Makanan Tidak Layak Konsumsi</div>
-                        <span class="pill keluhan">Baru</span>
-                    </div>
-                    <div class="keluhan-meta">Andi Pratama · Katering Berkah · 30 menit lalu</div>
-                    <div class="keluhan-desc">Nasi box yang diterima sudah basi dan berbau. Perlu tindakan segera dari pihak Admin untuk menangguhkan listing ini.</div>
-                    <div style="margin-top:0.75rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs">Tangani</button>
-                        <button class="btn btn-outline btn-xs">Detail</button>
-                    </div>
-                </div>
-                <div class="keluhan-card">
-                    <div class="keluhan-top">
-                        <div class="keluhan-title">Stok Tidak Sesuai</div>
-                        <span class="pill keluhan">Baru</span>
-                    </div>
-                    <div class="keluhan-meta">Rumah Yatim Al-Ikhlas · Warung Bu Yanti · 3 jam lalu</div>
-                    <div class="keluhan-desc">Kami memesan 20 porsi namun saat pengambilan hanya tersedia 8 porsi. Mohon seller dikonfirmasi ulang sebelum publish listing.</div>
-                    <div style="margin-top:0.75rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs">Tangani</button>
-                        <button class="btn btn-outline btn-xs">Detail</button>
-                    </div>
-                </div>
-                <div class="keluhan-card">
-                    <div class="keluhan-top">
-                        <div class="keluhan-title">Waktu Pickup Tidak Akurat</div>
-                        <span class="pill ditangani">Ditangani</span>
-                    </div>
-                    <div class="keluhan-meta">Bank Makanan Komunitas · Bakery Sari Rasa · Kemarin</div>
-                    <div class="keluhan-desc">Jadwal pickup tertulis pukul 18.00 namun restoran sudah tutup sejak 17.00. Telah dikonfirmasi dan seller sudah update jam operasional.</div>
-                </div>
+                @endforelse
             </div>
         </div>
 
