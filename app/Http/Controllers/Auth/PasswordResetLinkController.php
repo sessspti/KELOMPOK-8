@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use App\Models\User;
 
 class PasswordResetLinkController extends Controller
 {
@@ -37,9 +38,16 @@ class PasswordResetLinkController extends Controller
             $request->only('email')
         );
 
-        return $status == Password::RESET_LINK_SENT
-                    ? back()->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        if ($status == Password::RESET_LINK_SENT) {
+            $user = User::where('email', $request->email)->first();
+            $token = Password::broker()->createToken($user);
+            
+            return back()->with('status', __($status))
+                        ->with('reset_token', $token)
+                        ->with('reset_email', $request->email);
+        }
+
+        return back()->withInput($request->only('email'))
+                    ->withErrors(['email' => __($status)]);
     }
 }
