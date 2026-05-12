@@ -493,6 +493,38 @@ body::before {
 .s-done { background: var(--mint-100); color: var(--mint-700); }
 .s-proc { background: var(--yellow-200); color: #78350f; }
 
+/* ─── DYNAMIC TABLE ─── */
+.sel-table { width: 100%; border-collapse: collapse; }
+.sel-table th {
+    padding: 1rem 1.75rem; text-align: left;
+    font-size: 0.625rem; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--faint);
+    background: var(--off); border-bottom: 1.5px solid var(--border);
+}
+.sel-table td {
+    padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--border);
+    font-size: 0.875rem; vertical-align: middle;
+}
+.status-select {
+    appearance: none;
+    background: #fff;
+    border: 1.5px solid var(--border-md);
+    border-radius: var(--r-sm);
+    padding: 0.4rem 2rem 0.4rem 1rem;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234b6358'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 12px;
+}
+.status-select.selesai { border-color: var(--mint-400); color: var(--mint-600); }
+.status-select.proses { border-color: var(--red-400); color: #dc2626; }
+.status-select:focus { outline: none; border-color: var(--mint-500); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+
 /* ─── ANIMATIONS ─── */
 @keyframes fadeUp {
     from { opacity:0; transform: translateY(20px); }
@@ -717,47 +749,56 @@ body::before {
                 </div>
             </div>
 
-            {{-- Pane: Riwayat --}}
+            {{-- Pane: Riwayat (Dynamic Table) --}}
             <div class="tab-pane" id="pane-riwayat">
-                <div class="ritem">
-                    <div class="rico">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <div class="rinfo">
-                        <div class="rname">Nasi Box Surplus × 3</div>
-                        <div class="rsub">Siti Rahma · Hari ini 11:30 <span class="spill s-done">Selesai</span></div>
-                    </div>
-                    <div class="rprice">Rp 37.500<small>hemat 50%</small></div>
-                </div>
-                <div class="ritem">
-                    <div class="rico">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <div class="rinfo">
-                        <div class="rname">Paket Hemat Sore × 5</div>
-                        <div class="rsub">Budi Santoso · Hari ini 09:15 <span class="spill s-proc">Proses</span></div>
-                    </div>
-                    <div class="rprice">Rp 62.500<small>hemat 48%</small></div>
-                </div>
-                <div class="ritem">
-                    <div class="rico">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <div class="rinfo">
-                        <div class="rname">Ayam Geprek Surplus × 2</div>
-                        <div class="rsub">Rumah Yatim Al-Ikhlas · Kemarin <span class="spill s-done">Selesai</span></div>
-                    </div>
-                    <div class="rprice">Rp 25.000<small>hemat 50%</small></div>
-                </div>
-                <div class="ritem">
-                    <div class="rico">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <div class="rinfo">
-                        <div class="rname">Nasi Uduk Sisa × 4</div>
-                        <div class="rsub">Dewi Larasati · Kemarin <span class="spill s-done">Selesai</span></div>
-                    </div>
-                    <div class="rprice">Rp 44.000<small>hemat 45%</small></div>
+                <div style="overflow-x: auto;">
+                    <table class="sel-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Makanan</th>
+                                <th>Pemesan</th>
+                                <th>Keterangan Transaksi</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($orders as $order)
+                            <tr>
+                                <td style="font-weight: 700;">{{ $order->menu->name }}</td>
+                                <td>
+                                    <div style="font-weight: 600;">{{ $order->user->name }}</div>
+                                    <div style="font-size: 0.65rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em;">
+                                        {{ $order->user->role === 'lembaga_sosial' ? 'Lembaga' : 'Konsumen' }}
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($order->user->role === 'lembaga_sosial')
+                                        <div style="color: #0284c7; font-weight: 700;">
+                                            {{ $order->quantity }} porsi (Donasi)
+                                        </div>
+                                    @else
+                                        <div style="color: var(--mint-600); font-weight: 700;">
+                                            Rp {{ number_format(($order->menu->price * ($order->menu->discount / 100)) * $order->quantity, 0, ',', '.') }} (Diskon)
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>
+                                    <form action="{{ route('orders.updateStatus', $order) }}" method="POST">
+                                        @csrf
+                                        <select name="status" class="status-select {{ strtolower($order->status) === 'selesai' ? 'selesai' : 'proses' }}" onchange="this.form.submit()">
+                                            <option value="Proses" {{ $order->status === 'Proses' ? 'selected' : '' }}>Proses</option>
+                                            <option value="Selesai" {{ $order->status === 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--faint); padding: 3rem;">Belum ada pesanan masuk.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

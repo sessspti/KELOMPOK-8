@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\DonationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,20 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
-        $menus = \App\Models\Menu::with('user')->get()->map(function($menu) {
-            return [
-                'id' => $menu->id,
-                'name' => $menu->name,
-                'store' => $menu->user->name ?? 'Resto FoodSave',
-                'price' => $menu->price,
-                'originalPrice' => $menu->price + ($menu->discount ?? 0),
-                'distance' => (rand(1, 20) / 10) . ' km',
-                'urgent' => $menu->stock <= 3 ? 'Sisa ' . $menu->stock . '!' : '',
-                'expired_at' => \Carbon\Carbon::now()->addDays(rand(1, 3))->format('d M Y'),
-                'image' => $menu->image ? asset('storage/' . $menu->image) : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=500'
-            ];
-        });
-        return view('dashboard', compact('menus'));
+        return view('dashboard');
     })->middleware('role:konsumen')->name('dashboard');
     
     // 2. Profile Management Umum
@@ -54,7 +42,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         Route::get('/dashboard', function () {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
-            return view('seller.dashboardSeller', compact('menus'));
+            $orders = \App\Models\Order::whereHas('menu', function ($query) {
+                $query->where('user_id', auth()->id());
+            })->with(['menu', 'user'])->latest()->get();
+            return view('seller.dashboardSeller', compact('menus', 'orders'));
         })->name('seller.dashboard');
 
         Route::get('/dashboardSeller', function () {
@@ -87,7 +78,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 4. Fitur Lembaga Sosial
     Route::get('/sosial/dashboard', function () {
-        return view('sosial.dashboard');
+        $orders = \App\Models\Order::where('id_user', auth()->id())
+            ->with('menu.user')
+            ->latest()
+            ->get();
+        return view('sosial.dashboard', compact('orders'));
     })->middleware('role:lembaga_sosial')->name('sosial.dashboard');
 
     // 5. Fitur Checkout/Pembayaran (Hanya Konsumen)
@@ -102,7 +97,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('admin')->middleware('role:admin')->group(function () {
         
         Route::get('/dashboard', function () {
-            return view('admin.dashboard');
+            $orders = \App\Models\Order::with(['menu.user', 'user'])->latest()->get();
+            // Group by seller name for the monitoring view
+            $ordersGrouped = $orders->groupBy(function($order) {
+                return $order->menu->user->name ?? 'Unknown Store';
+            });
+            return view('admin.dashboard', compact('ordersGrouped'));
         })->name('admin.dashboard');
 
         Route::get('/users', function () {
@@ -117,19 +117,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return view('admin.edukasi.index');
         })->name('admin.edukasi');
     });
-    // 8. Riwayat Transaksi & Invoice
-    Route::middleware('role:konsumen')->group(function () {
-        Route::get('/history', [\App\Http\Controllers\TransactionController::class, 'history'])->name('transaction.history');
-        Route::get('/invoice/{transaction_id}', [\App\Http\Controllers\TransactionController::class, 'invoice'])->name('transaction.invoice');
-        Route::post('/transaction/store', [\App\Http\Controllers\TransactionController::class, 'store'])->name('transaction.store');
-    });
 });
 
 // Route untuk Pemilihan Role dan Password Google Auth
 Route::get('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'showRoleForm'])->name('google.role.form');
 Route::post('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'storeRolePassword'])->name('google.role.store');
 
-require __DIR__ . '/auth.php';
+require __DIR__ . '/auth.php'; 
 
 // Cart Synchronization
 Route::post('/cart/sync', [App\Http\Controllers\CartController::class, 'sync'])->name('cart.sync')->middleware('auth');
+
+// Route Eksplorasi Donasi
+Route::get('/donasi', [DonationController::class, 'index'])->name('donations.index');
+
+
+
