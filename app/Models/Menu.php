@@ -25,4 +25,10 @@ class Menu extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    // Relasi ke User (Seller)
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

@@ -886,12 +886,7 @@ body::after {
             cart: JSON.parse(localStorage.getItem('foodsave_cart')) || [],
             cartAnimation: false,
             
-            products: [
-                { id: 1, name: 'Paket Ayam Geprek Surplus', store: 'Resto Ayam Berkah', price: 12500, originalPrice: 25000, distance: '0.5 km', urgent: 'Sisa 2!', expired_at: '10 Mei 2026', image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&q=80&w=500' },
-                { id: 2, name: 'Nasi Goreng Spesial', store: 'Warung Bu Siti', price: 15000, originalPrice: 25000, distance: '1.2 km', urgent: 'Sisa 1!', expired_at: '11 Mei 2026', image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&q=80&w=500' },
-                { id: 3, name: 'Es Teh Manis Jumbo', store: 'Resto Ayam Berkah', price: 5000, originalPrice: 8000, distance: '0.5 km', urgent: 'Sisa 5!', expired_at: '10 Mei 2026', image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&q=80&w=500' },
-                { id: 4, name: 'Pisang Goreng Keju', store: 'Camilan Enak', price: 10000, originalPrice: 15000, distance: '2.0 km', urgent: 'Sisa 3!', expired_at: '12 Mei 2026', image: 'https://images.unsplash.com/photo-1590004953392-5aba2e72269a?auto=format&fit=crop&q=80&w=500' },
-            ],
+            products: @json($menus),
 
             get filteredProducts() {
                 return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || p.store.toLowerCase().includes(this.searchQuery.toLowerCase()));
