@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DonationController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,9 +29,32 @@ Route::get('/', function () {
 // --- Group Route untuk User yang Sudah Login ---
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    // 0. Shared Routes (Konsumen & Lembaga Sosial)
+    Route::get('/transaction/history', [TransactionController::class, 'history'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.history');
+    Route::get('/transaction/invoice/{id}', [TransactionController::class, 'invoice'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.invoice');
+
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        $menus = \App\Models\Menu::with('user')->get()->map(function($menu) {
+            return [
+                'id' => $menu->id,
+                'name' => $menu->name,
+                'price' => $menu->price,
+                'originalPrice' => $menu->price + 5000,
+                'image' => $menu->image,
+                'store' => $menu->user->name ?? 'Restoran',
+                'distance' => '1.2 km',
+                'urgent' => 'Sisa ' . $menu->stock,
+                'expired_at' => '20:00',
+            ];
+        });
+
+        $orders = \App\Models\Order::where('id_user', auth()->id())
+            ->with('menu.user')
+            ->latest()
+            ->get();
+
+        return view('dashboard', compact('menus', 'orders'));
     })->middleware('role:konsumen')->name('dashboard');
     
     // 2. Profile Management Umum
@@ -74,6 +99,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('seller.tambah-menu');
 
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('seller.profile.edit');
+        
+        // Order Management for Seller
+        Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+        Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     });
 
     // 4. Fitur Lembaga Sosial
@@ -92,6 +121,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/checkout-summary', function () {
         return view('transaction.checkout');
     })->middleware('role:konsumen')->name('checkout.summary');
+
+    Route::post('/transaction/store', [TransactionController::class, 'store'])->middleware('role:konsumen')->name('transaction.store');
 
     // 7. Fitur Admin (Pusat Kendali Platform)
     Route::prefix('admin')->middleware('role:admin')->group(function () {
@@ -130,6 +161,7 @@ Route::post('/cart/sync', [App\Http\Controllers\CartController::class, 'sync'])-
 
 // Route Eksplorasi Donasi
 Route::get('/donasi', [DonationController::class, 'index'])->name('donations.index');
+
 
 
 
