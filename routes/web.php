@@ -29,11 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
-        $orders = \App\Models\Order::where('id_user', auth()->id())
-            ->with('menu.user')
-            ->latest()
-            ->get();
-        return view('dashboard', compact('orders'));
+        return view('dashboard');
     })->middleware('role:konsumen')->name('dashboard');
     
     // 2. Profile Management Umum
@@ -57,7 +53,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         Route::get('/manage-inventory', function () {
-            $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
+            $query = \App\Models\Menu::where('user_id', auth()->id());
+            
+            if (request()->has('search') && request('search') != '') {
+                $query->where('name', 'like', '%' . request('search') . '%');
+            }
+
+            $menus = $query->paginate(6)->withQueryString();
             return view('seller.etalase', compact('menus'));
         })->name('seller.manage');
 
@@ -115,10 +117,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return view('admin.edukasi.index');
         })->name('admin.edukasi');
     });
-
-    // 8. Order Management & Invoice
-    Route::post('/orders/{order}/update-status', [App\Http\Controllers\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
-    Route::get('/orders/{order}/invoice', [App\Http\Controllers\OrderController::class, 'invoice'])->name('orders.invoice');
 });
 
 // Route untuk Pemilihan Role dan Password Google Auth

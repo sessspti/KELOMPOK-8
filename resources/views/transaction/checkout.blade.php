@@ -175,35 +175,54 @@
                     
                     this.isProcessing = true;
                     
-                    // Simulated Delay (Network Mock)
-                    setTimeout(() => {
+                    fetch('{{ route('transaction.store') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            cart: this.cart,
+                            payment_method: this.paymentMethods.find(m => m.id === this.selectedMethod).name
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
                         this.isProcessing = false;
-                        this.invoiceNumber = 'INV-' + Math.floor(Math.random() * 1000000);
                         
-                        // SweetAlert 2 Success
-                        Swal.fire({
-                            title: "Pembayaran Berhasil!",
-                            text: "Pesananmu dengan nomor " + this.invoiceNumber + " sedang diproses. Terima kasih telah menyelamatkan makanan!",
-                            icon: "success",
-                            draggable: true,
-                            confirmButtonText: "Lihat Detail Transaksi",
-                            confirmButtonColor: "#22c55e",
-                            background: "#ffffff",
-                            customClass: {
-                                title: 'font-bold text-gray-900',
-                                popup: 'rounded-[2.5rem] p-8'
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = '/detail-transaksi'; // Redirection to transaction detail (placeholder)
-                            }
-                        });
-
-                        // Clear Cart
-                        localStorage.removeItem('foodsave_cart');
-                        
-                        console.log("TRIGGER: Notification sent to Buyer & Seller");
-                    }, 2000);
+                        if (data.success) {
+                            // SweetAlert 2 Success
+                            Swal.fire({
+                                title: "Pembayaran Berhasil!",
+                                text: "Pesananmu dengan nomor " + data.transaction_id + " sedang diproses. Terima kasih telah menyelamatkan makanan!",
+                                icon: "success",
+                                draggable: true,
+                                confirmButtonText: "Lihat Detail Transaksi",
+                                confirmButtonColor: "#22c55e",
+                                background: "#ffffff",
+                                customClass: {
+                                    title: 'font-bold text-gray-900',
+                                    popup: 'rounded-[2.5rem] p-8'
+                                }
+                            }).then((result) => {
+                                // Clear Cart
+                                localStorage.removeItem('foodsave_cart');
+                                
+                                if (result.isConfirmed) {
+                                    window.location.href = data.redirect_url;
+                                } else {
+                                    window.location.href = '{{ route('dashboard') }}';
+                                }
+                            });
+                        } else {
+                            Swal.fire("Gagal", data.message || "Terjadi kesalahan saat memproses pesanan.", "error");
+                        }
+                    })
+                    .catch(error => {
+                        this.isProcessing = false;
+                        console.error('Error:', error);
+                        Swal.fire("Error", "Gagal menghubungi server.", "error");
+                    });
                 },
 
                 formatRupiah(number) {
