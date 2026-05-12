@@ -649,7 +649,6 @@ body::after {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(34,197,94,0.3);
 }
-</style>
 
 .bento-main    { animation: fadeUp 0.6s ease 0.05s both; }
 .bento-img-card{ animation: fadeUp 0.6s ease 0.1s  both; }
@@ -698,9 +697,13 @@ body::after {
                 <button @click="open = !open"
                         class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm"
                         style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#fff;border:1.5px solid rgba(22,163,74,0.2);border-radius:12px;cursor:pointer;">
-                    {{-- Initials Avatar --}}
-                    <div style="width:28px;height:28px;border-radius:8px;background:#e0f2fe;border:1.5px solid rgba(14,165,233,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.6875rem;color:#0284c7;flex-shrink:0;">
-                        {{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 2)) }}
+                    {{-- Avatar --}}
+                    <div style="width:32px;height:32px;border-radius:8px;background:#e0f2fe;border:1.5px solid rgba(14,165,233,0.3);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+                        @if(Auth::user()->avatar)
+                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" style="width:100%;height:100%;object-fit:cover;">
+                        @else
+                            <span style="font-weight:800;font-size:0.75rem;color:#0284c7;">{{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 1)) }}</span>
+                        @endif
                     </div>
                     <span style="font-size:0.8125rem;font-weight:700;color:#111;">{{ Auth::user()->name ?? 'Lembaga' }}</span>
                     <svg class="fill-current h-4 w-4" style="color:#9ca3af;transition:transform 0.2s;" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">

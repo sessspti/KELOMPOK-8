@@ -55,8 +55,12 @@
                     @auth
                         {{-- Logged in: show user name --}}
                         <button @click="open = ! open" class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm">
-                            <div class="w-7 h-7 rounded-lg bg-green-100 border border-green-200 flex items-center justify-center text-green-700 font-extrabold text-xs flex-shrink-0">
-                                {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                            <div class="w-7 h-7 rounded-lg bg-green-100 border border-green-200 flex items-center justify-center text-green-700 font-extrabold text-xs flex-shrink-0 overflow-hidden">
+                                @if(Auth::user()->avatar)
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                                @else
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                @endif
                             </div>
                             <div class="text-sm font-bold text-gray-700">{{ Auth::user()->name }}</div>
                             <svg class="fill-current h-4 w-4 text-gray-400 transition-transform duration-200" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -102,6 +106,17 @@
                             Edit Profil
                         </div>
                     </a>
+
+                    @if(Auth::user()->role === 'konsumen')
+                    <a href="{{ route('transaction.history') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors font-medium">
+                        <div class="flex items-center gap-2">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            Riwayat Pesanan
+                        </div>
+                    </a>
+                    @endif
                     <div class="border-t border-gray-50 my-1"></div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

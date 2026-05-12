@@ -64,8 +64,12 @@
             @endphp
 
             <div class="flex items-center gap-3 px-1">
-                <div class="w-12 h-12 rounded-2xl bg-green-100 border-2 border-green-200 flex items-center justify-center font-extrabold text-green-700 text-lg">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                <div class="w-12 h-12 rounded-2xl bg-green-100 border-2 border-green-200 flex items-center justify-center font-extrabold text-green-700 text-lg overflow-hidden">
+                    @if(Auth::user()->avatar)
+                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                    @else
+                        {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                    @endif
                 </div>
                 <div>
                     <p class="text-lg font-bold text-gray-800 leading-tight">{{ Auth::user()->name }}</p>
