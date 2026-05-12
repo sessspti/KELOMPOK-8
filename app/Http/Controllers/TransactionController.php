@@ -4,24 +4,31 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Models\Menu;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
     /**
-     * Display the order history for the consumer.
+     * Menampilkan riwayat pesanan untuk konsumen.
      */
     public function history()
     {
         $userId = Auth::id();
         
-        // Group orders by transaction_id to show as a single invoice entry
-        // We only show 'paid' orders in history
+        // Group orders by transaction_id untuk ditampilkan sebagai satu entri invoice
+        // Hanya menampilkan order dengan status 'paid'
         $transactions = Order::where('id_user', $userId)
             ->whereNotNull('transaction_id')
             ->where('status', 'paid')
-            ->select('transaction_id', 'payment_method', 'status', DB::raw('MAX(created_at) as date'), DB::raw('SUM(quantity * (select price from menus where menus.id = orders.menu_id)) as total_price'))
+            ->select(
+                'transaction_id', 
+                'payment_method', 
+                'status', 
+                DB::raw('MAX(created_at) as date'), 
+                DB::raw('SUM(quantity * (select price from menus where menus.id = orders.menu_id)) as total_price')
+            )
             ->groupBy('transaction_id', 'payment_method', 'status')
             ->orderBy('date', 'desc')
             ->get();
@@ -30,12 +37,13 @@ class TransactionController extends Controller
     }
 
     /**
-     * Display the invoice for a specific transaction.
+     * Menampilkan invoice untuk transaksi spesifik.
      */
     public function invoice($transactionId)
     {
         $userId = Auth::id();
         
+        // Mengambil semua item dalam satu transaksi
         $orders = Order::with('menu')
             ->where('id_user', $userId)
             ->where('transaction_id', $transactionId)
@@ -45,20 +53,24 @@ class TransactionController extends Controller
             return redirect()->route('dashboard')->with('error', 'Invoice tidak ditemukan.');
         }
 
+        // Membuat variabel tunggal $order untuk data umum invoice (menghindari error 'Property [id] does not exist')
+        $order = $orders->first();
+
         $transaction = (object) [
             'id' => $transactionId,
-            'date' => $orders->first()->created_at,
-            'payment_method' => $orders->first()->payment_method,
-            'status' => $orders->first()->status,
+            'date' => $order->created_at,
+            'payment_method' => $order->payment_method,
+            'status' => $order->status,
             'customer_name' => Auth::user()->name,
             'customer_email' => Auth::user()->email,
         ];
 
-        return view('transaction.invoice', compact('orders', 'transaction'));
+        // Mengirimkan $orders (untuk list tabel) dan $order (untuk info header)
+        return view('transaction.invoice', compact('orders', 'order', 'transaction'));
     }
 
     /**
-     * Store a new transaction from the checkout.
+     * Menyimpan transaksi baru dari checkout.
      */
     public function store(Request $request)
     {
@@ -75,10 +87,10 @@ class TransactionController extends Controller
             DB::beginTransaction();
 
             foreach ($cart as $item) {
-                $menu = \App\Models\Menu::find($item['id']);
+                $menu = Menu::find($item['id']);
                 
                 if (!$menu) {
-                    throw new \Exception("Menu dengan ID {$item['id']} tidak ditemukan di database. Silakan hapus item ini dari keranjang.");
+                    throw new \Exception("Menu dengan ID {$item['id']} tidak ditemukan. Silakan periksa kembali keranjang Anda.");
                 }
 
                 Order::create([
@@ -90,10 +102,11 @@ class TransactionController extends Controller
                     'payment_method' => $paymentMethod,
                 ]);
 
+                // Mengurangi stok menu
                 $menu->decrement('stock', $item['qty']);
             }
 
-            // Clean up other pending orders if any
+            // Hapus pesanan pending lainnya jika ada agar tidak menumpuk
             Order::where('id_user', $userId)->where('status', 'pending')->delete();
 
             DB::commit();
