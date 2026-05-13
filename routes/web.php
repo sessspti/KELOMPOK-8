@@ -5,7 +5,11 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\TransactionController;
+<<<<<<< HEAD
 use App\Http\Controllers\CartController;
+=======
+use App\Http\Controllers\OrderController;
+>>>>>>> origin/bantuin
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,10 +32,37 @@ Route::get('/', function () {
 // --- Group Route Auth ---
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    // 0. Shared Routes (Konsumen & Lembaga Sosial)
+    Route::get('/transaction/history', [TransactionController::class, 'history'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.history');
+    Route::get('/transaction/invoice/{id}', [TransactionController::class, 'invoice'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.invoice');
+
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
+<<<<<<< HEAD
         $menus = \App\Models\Menu::with('user')->latest()->get();
         return view('dashboard', compact('menus'));
+=======
+        $menus = \App\Models\Menu::with('user')->get()->map(function($menu) {
+            return [
+                'id' => $menu->id,
+                'name' => $menu->name,
+                'price' => $menu->price,
+                'originalPrice' => $menu->price + 5000,
+                'image' => $menu->image,
+                'store' => $menu->user->name ?? 'Restoran',
+                'distance' => '1.2 km',
+                'urgent' => 'Sisa ' . $menu->stock,
+                'expired_at' => '20:00',
+            ];
+        });
+
+        $orders = \App\Models\Order::where('id_user', auth()->id())
+            ->with('menu.user')
+            ->latest()
+            ->get();
+
+        return view('dashboard', compact('menus', 'orders'));
+>>>>>>> origin/bantuin
     })->middleware('role:konsumen')->name('dashboard');
 
     // 2. Fitur Transaksi (History, Invoice, & Store)
@@ -79,6 +110,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/tambah-menu', function () {
             return view('seller.tambah-menu');
         })->name('seller.tambah-menu');
+        Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('seller.profile.edit');
+        
+        // Order Management for Seller
+        Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+        Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
+
     });
 
     // 5. Fitur Lembaga Sosial
@@ -101,6 +138,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
         Route::post('/cart/sync', [CartController::class, 'sync'])->name('cart.sync');
     });
+
+    Route::post('/transaction/store', [TransactionController::class, 'store'])->middleware('role:konsumen')->name('transaction.store');
 
     // 7. Fitur Admin (Pusat Kendali Platform)
     Route::prefix('admin')->middleware('role:admin')->group(function () {
@@ -130,3 +169,4 @@ Route::get('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthC
 Route::post('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'storeRolePassword'])->name('google.role.store');
 
 require __DIR__ . '/auth.php';
+

@@ -725,6 +725,15 @@ body::after {
                         </svg>
                         Edit Profil
                     </a>
+                    <a href="{{ route('transaction.history') }}"
+                       style="display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:0.875rem;color:#374151;text-decoration:none;font-weight:500;transition:background 0.15s;"
+                       onmouseover="this.style.background='#f0fdf4';this.style.color='#15803d';"
+                       onmouseout="this.style.background='';this.style.color='#374151';">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Riwayat Klaim
+                    </a>
                     <div style="border-top:1px solid #f9fafb;margin:4px 0;"></div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
@@ -931,59 +940,6 @@ body::after {
         </div>
     </section>
 
-    <hr class="divider">
-
-    {{-- ── TRANSACTION HISTORY ── --}}
-    <section class="sec" style="padding-top: 0;">
-        <div class="sec-hdr">
-            <div>
-                <p class="sec-label"><span class="sec-label-dot"></span> Riwayat Klaim</p>
-                <h2 class="sec-title">Klaim Kamu</h2>
-                <p class="sec-sub">Pantau status klaim donasi surplus kamu di sini.</p>
-            </div>
-        </div>
-
-        <div class="tx-table-card">
-            <table class="tx-table">
-                <thead>
-                    <tr>
-                        <th>Nama Makanan</th>
-                        <th>Jumlah Donasi</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($orders as $order)
-                    <tr>
-                        <td style="font-weight: 700;">{{ $order->menu->name }}</td>
-                        <td style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; color: #0284c7;">
-                            {{ $order->quantity }} porsi
-                        </td>
-                        <td>
-                            <span class="tx-status {{ strtolower($order->status) === 'selesai' ? 'selesai' : 'proses' }}">
-                                {{ $order->status }}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="{{ strtolower($order->status) === 'selesai' ? route('orders.invoice', $order) : 'javascript:void(0)' }}" 
-                               class="btn-action {{ strtolower($order->status) === 'selesai' ? 'active' : '' }}"
-                               title="{{ strtolower($order->status) === 'selesai' ? 'Lihat Invoice' : 'Klaim belum selesai' }}">
-                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                </svg>
-                            </a>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: var(--faint); padding: 3rem;">Belum ada riwayat klaim.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </section>
 
     {{-- ── EDUCATION ── --}}
     <section class="sec">
