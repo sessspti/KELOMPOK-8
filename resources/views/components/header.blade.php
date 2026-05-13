@@ -55,8 +55,12 @@
                     @auth
                         {{-- Logged in: show user name --}}
                         <button @click="open = ! open" class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm">
-                            <div class="w-7 h-7 rounded-lg bg-green-100 border border-green-200 flex items-center justify-center text-green-700 font-extrabold text-xs flex-shrink-0">
-                                {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                            <div class="w-7 h-7 rounded-lg bg-green-100 border border-green-200 flex items-center justify-center text-green-700 font-extrabold text-xs flex-shrink-0 overflow-hidden">
+                                @if(Auth::user()->avatar)
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                                @else
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                @endif
                             </div>
                             <div class="text-sm font-bold text-gray-700">{{ Auth::user()->name }}</div>
                             <svg class="fill-current h-4 w-4 text-gray-400 transition-transform duration-200" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
