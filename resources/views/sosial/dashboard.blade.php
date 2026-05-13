@@ -831,102 +831,58 @@ body::after {
         .loc-pill svg{width:11px;height:11px;color:var(--mint-600);}
         </style>
         <div class="pgrid">
-            {{-- Card 1 GRATIS --}}
+            @foreach($menus as $menu)
             <div class="pcard">
                 <div class="pcard-img">
-                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500" alt="Paket Ayam Geprek Surplus">
-                    <div class="bdg-dist"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>0.5 km</div>
-                    <div class="bdg-urgent">Ambil sebelum 20.00!</div>
-                    <div class="bdg-gratis">Gratis</div>
+                    @if($menu->image_url)
+                        <img src="{{ $menu->image_url }}" alt="{{ $menu->name }}">
+                    @else
+                        <div class="flex items-center justify-center h-full bg-mint-100">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="48" height="48" style="opacity:0.4;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                    @endif
+                    <div class="bdg-dist">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        </svg>
+                        0.5 km
+                    </div>
+                    @if($menu->discount > 50)
+                        <div class="bdg-urgent">Sangat Murah!</div>
+                    @endif
+                    <div class="{{ $menu->final_price == 0 ? 'bdg-gratis' : 'bdg-donasi' }}">
+                        {{ $menu->final_price == 0 ? 'Gratis' : 'Donasi' }}
+                    </div>
                 </div>
                 <div class="pcard-body">
-                    <p class="pcard-store">Resto Ayam Berkah</p>
-                    <h3 class="pcard-name">Paket Ayam Geprek Surplus</h3>
+                    <p class="pcard-store">{{ $menu->user->name ?? 'Toko FoodSave' }}</p>
+                    <h3 class="pcard-name">{{ $menu->name }}</h3>
                     <div class="flex items-center gap-1.5 mb-2" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
                         </svg>
-                        <span>Expired: 10 Mei 2026</span>
+                        <span>Tersedia Hari Ini</span>
                     </div>
-                    <p class="pcard-qty">Tersedia 12 porsi</p>
+                    <p class="pcard-qty">Tersedia {{ $menu->stock }} porsi</p>
                     <div class="pcard-ft">
-                        <div class="price-tag gratis"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>Gratis</div>
-                        <button class="req-btn" onclick="openCart()" aria-label="Ajukan pengambilan"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/></svg>Ajukan</button>
+                        <div class="price-tag {{ $menu->final_price == 0 ? 'gratis' : 'donasi' }}">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                            {{ $menu->final_price == 0 ? 'Gratis' : 'Rp ' . number_format($menu->final_price, 0, ',', '.') }}
+                        </div>
+                        <button class="req-btn" onclick="openCart()" aria-label="Ajukan pengambilan">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
+                            </svg>
+                            Ajukan
+                        </button>
                     </div>
                 </div>
             </div>
-            {{-- Card 2 DONASI KHUSUS --}}
-            <div class="pcard">
-                <div class="pcard-img">
-                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500" alt="Nasi Box Surplus">
-                    <div class="bdg-dist"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>1.2 km</div>
-                    <div class="bdg-urgent">Ambil sebelum 19.30!</div>
-                    <div class="bdg-donasi">Donasi Khusus</div>
-                </div>
-                <div class="pcard-body">
-                    <p class="pcard-store">Katering Berkah</p>
-                    <h3 class="pcard-name">Nasi Box Surplus Sore</h3>
-                    <div class="flex items-center gap-1.5 mb-2" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
-                        </svg>
-                        <span>Expired: 09 Mei 2026</span>
-                    </div>
-                    <p class="pcard-qty">Tersedia 20 porsi</p>
-                    <div class="pcard-ft">
-                        <div class="price-tag donasi"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Donasi Khusus</div>
-                        <button class="req-btn" onclick="openCart()" aria-label="Ajukan pengambilan"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/></svg>Ajukan</button>
-                    </div>
-                </div>
-            </div>
-            {{-- Card 3 GRATIS --}}
-            <div class="pcard">
-                <div class="pcard-img">
-                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500" alt="Roti Surplus">
-                    <div class="bdg-dist"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>2.1 km</div>
-                    <div class="bdg-urgent">Ambil sebelum 21.00!</div>
-                    <div class="bdg-gratis">Gratis</div>
-                </div>
-                <div class="pcard-body">
-                    <p class="pcard-store">Bakery Sari Rasa</p>
-                    <h3 class="pcard-name">Roti & Kue Sisa Hari Ini</h3>
-                    <div class="flex items-center gap-1.5 mb-2" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
-                        </svg>
-                        <span>Expired: 10 Mei 2026</span>
-                    </div>
-                    <p class="pcard-qty">Tersedia 35 pcs</p>
-                    <div class="pcard-ft">
-                        <div class="price-tag gratis"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>Gratis</div>
-                        <button class="req-btn" onclick="openCart()" aria-label="Ajukan pengambilan"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/></svg>Ajukan</button>
-                    </div>
-                </div>
-            </div>
-            {{-- Card 4 DONASI KHUSUS --}}
-            <div class="pcard">
-                <div class="pcard-img">
-                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=500" alt="Sayur Surplus">
-                    <div class="bdg-dist"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>3.0 km</div>
-                    <div class="bdg-urgent">Ambil sebelum 18.00!</div>
-                    <div class="bdg-donasi">Donasi Khusus</div>
-                </div>
-                <div class="pcard-body">
-                    <p class="pcard-store">Warung Sayur Bu Yanti</p>
-                    <h3 class="pcard-name">Sayur Segar Surplus Pagi</h3>
-                    <div class="flex items-center gap-1.5 mb-2" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
-                        </svg>
-                        <span>Expired: 11 Mei 2026</span>
-                    </div>
-                    <p class="pcard-qty">Tersedia 8 kg</p>
-                    <div class="pcard-ft">
-                        <div class="price-tag donasi"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Donasi Khusus</div>
-                        <button class="req-btn" onclick="openCart()" aria-label="Ajukan pengambilan"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/></svg>Ajukan</button>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
     </section>
 
@@ -1298,13 +1254,15 @@ function updateCount(){
             e.stopPropagation();
 
             const card = btn.closest('.pcard');
+            const imgEl = card.querySelector('img');
+            const urgentEl = card.querySelector('.bdg-urgent');
             const product = {
                 name: card.querySelector('.pcard-name').textContent,
                 store: card.querySelector('.pcard-store').textContent,
                 qty: card.querySelector('.pcard-qty').textContent,
                 price: card.querySelector('.price-tag').textContent.trim(),
-                image: card.querySelector('img').src,
-                urgent: card.querySelector('.bdg-urgent').textContent,
+                image: imgEl ? imgEl.src : '',
+                urgent: urgentEl ? urgentEl.textContent : 'Hari Ini',
             };
 
             addItemToPickup(product);

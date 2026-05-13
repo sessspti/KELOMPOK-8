@@ -7,6 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Menu extends Model
 {
     protected $fillable = ['user_id', 'name', 'price', 'discount', 'stock', 'image'];
+    protected $appends = ['final_price', 'image_url'];
+
+    // Accessor untuk URL foto
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : null;
+    }
 
     // Hitung harga setelah diskon
     public function getFinalPriceAttribute(): float

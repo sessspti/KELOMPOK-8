@@ -85,7 +85,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('sosial')->middleware('role:lembaga_sosial')->group(function () {
         Route::get('/dashboard', function () {
             $orders = \App\Models\Order::where('id_user', auth()->id())->with('menu.user')->latest()->get();
-            return view('sosial.dashboard', compact('orders'));
+            $menus = \App\Models\Menu::with('user')->where('stock', '>', 0)->latest()->get();
+            return view('sosial.dashboard', compact('orders', 'menus'));
         })->name('sosial.dashboard');
 
         // Profil untuk Lembaga Sosial
