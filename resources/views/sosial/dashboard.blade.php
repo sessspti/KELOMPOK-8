@@ -588,6 +588,68 @@ body::after {
     from { opacity:0; transform: translateY(24px); }
     to   { opacity:1; transform: translateY(0); }
 }
+
+/* ─── TRANSACTION TABLE ─── */
+.tx-table-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    margin-top: 2rem;
+}
+.tx-table { width: 100%; border-collapse: collapse; }
+.tx-table th {
+    background: var(--mint-50);
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--mint-600);
+    border-bottom: 1.5px solid var(--border);
+}
+.tx-table td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+}
+.tx-table tr:last-child td { border-bottom: none; }
+.tx-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--r-pill);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.tx-status.selesai { background: var(--mint-100); color: var(--mint-700); }
+.tx-status.proses { background: #fee2e2; color: #dc2626; }
+.tx-status::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+.btn-action {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--faint);
+    color: #fff;
+    border: none;
+    cursor: not-allowed;
+    transition: all 0.2s;
+}
+.btn-action.active {
+    background: var(--mint-500);
+    cursor: pointer;
+}
+.btn-action.active:hover {
+    background: var(--mint-600);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+}
+</style>
+
 .bento-main    { animation: fadeUp 0.6s ease 0.05s both; }
 .bento-img-card{ animation: fadeUp 0.6s ease 0.1s  both; }
 .bento-tracker { animation: fadeUp 0.6s ease 0.15s both; }
@@ -875,7 +937,59 @@ body::after {
 
     <hr class="divider">
 
-    {{-- ── EDUKASI ── --}}
+    {{-- ── TRANSACTION HISTORY ── --}}
+    <section class="sec" style="padding-top: 0;">
+        <div class="sec-hdr">
+            <div>
+                <p class="sec-label"><span class="sec-label-dot"></span> Riwayat Klaim</p>
+                <h2 class="sec-title">Klaim Kamu</h2>
+                <p class="sec-sub">Pantau status klaim donasi surplus kamu di sini.</p>
+            </div>
+        </div>
+
+        <div class="tx-table-card">
+            <table class="tx-table">
+                <thead>
+                    <tr>
+                        <th>Nama Makanan</th>
+                        <th>Jumlah Donasi</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($orders as $order)
+                    <tr>
+                        <td style="font-weight: 700;">{{ $order->menu->name }}</td>
+                        <td style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; color: #0284c7;">
+                            {{ $order->quantity }} porsi
+                        </td>
+                        <td>
+                            <span class="tx-status {{ strtolower($order->status) === 'selesai' ? 'selesai' : 'proses' }}">
+                                {{ $order->status }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ strtolower($order->status) === 'selesai' ? route('orders.invoice', $order) : 'javascript:void(0)' }}" 
+                               class="btn-action {{ strtolower($order->status) === 'selesai' ? 'active' : '' }}"
+                               title="{{ strtolower($order->status) === 'selesai' ? 'Lihat Invoice' : 'Klaim belum selesai' }}">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--faint); padding: 3rem;">Belum ada riwayat klaim.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {{-- ── EDUCATION ── --}}
     <section class="sec">
         <div class="sec-hdr">
             <div>

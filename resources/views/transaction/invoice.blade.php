@@ -1,148 +1,112 @@
 <x-app-layout>
-    <div class="min-h-screen bg-gray-50 py-12 px-4">
-        <div class="max-w-3xl mx-auto">
-            
-            <!-- Back Action -->
-            <div class="mb-8 flex items-center justify-between">
-                <a href="{{ route('transaction.history') }}" class="flex items-center text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    Kembali ke Riwayat
-                </a>
-                <button onclick="window.print()" class="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2 print:hidden">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                    Cetak Invoice
-                </button>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --mint-50: #f0fdf6;
+        --mint-100: #dcfce9;
+        --mint-500: #22c55e;
+        --mint-600: #16a34a;
+        --ink: #111917;
+        --muted: #4b6358;
+        --white: #ffffff;
+        --r-xl: 32px;
+    }
+    body { font-family: 'Space Grotesk', sans-serif; background: #f8fafc; color: var(--ink); }
+    .invoice-card {
+        max-width: 600px; margin: 4rem auto; background: var(--white);
+        border-radius: var(--r-xl); padding: 3rem;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.03);
+        position: relative; overflow: hidden;
+    }
+    .invoice-card::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px;
+        background: linear-gradient(to right, var(--mint-400), var(--mint-600));
+    }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; }
+    .logo-text { font-weight: 800; font-size: 1.5rem; letter-spacing: -0.05em; }
+    .logo-text em { color: var(--mint-600); font-style: normal; }
+    .inv-number { font-size: 0.875rem; color: var(--muted); font-weight: 500; }
+    
+    .section-title { font-size: 0.625rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mint-600); margin-bottom: 0.75rem; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2.5rem; }
+    .info-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
+    .info-value { font-weight: 600; font-size: 0.9375rem; }
+
+    .item-list { border-top: 1.5px dashed #e2e8f0; border-bottom: 1.5px dashed #e2e8f0; padding: 1.5rem 0; margin-bottom: 2rem; }
+    .item-row { display: flex; justify-content: space-between; align-items: center; }
+    .item-name { font-weight: 700; font-size: 1.125rem; }
+    .item-qty { font-size: 0.875rem; color: var(--muted); }
+    .item-price { font-weight: 700; color: var(--mint-600); font-size: 1.125rem; }
+
+    .pickup-box {
+        background: var(--mint-50); border: 2px dashed var(--mint-200);
+        border-radius: 20px; padding: 1.5rem; text-align: center;
+    }
+    .pickup-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mint-700); margin-bottom: 0.5rem; }
+    .pickup-code { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 2.5rem; letter-spacing: 0.1em; color: var(--ink); line-height: 1; }
+    
+    .footer { text-align: center; margin-top: 3rem; font-size: 0.8125rem; color: var(--muted); }
+    .btn-print {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: var(--ink); color: #fff; padding: 0.75rem 1.5rem;
+        border-radius: 99px; font-weight: 600; text-decoration: none; margin-top: 2rem;
+        transition: all 0.2s;
+    }
+    .btn-print:hover { background: #000; transform: translateY(-2px); }
+</style>
+
+<div class="invoice-card">
+    <div class="header">
+        <div class="logo-text">Food<em>Save</em></div>
+        <div class="inv-number">#INV-{{ str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</div>
+    </div>
+
+    <div class="info-grid">
+        <div>
+            <div class="section-title">Pemesan</div>
+            <div class="info-value">{{ $order->user->name }}</div>
+            <div class="info-label">{{ $order->user->email }}</div>
+        </div>
+        <div style="text-align: right;">
+            <div class="section-title">Toko</div>
+            <div class="info-value">{{ $order->menu->user->name }}</div>
+            <div class="info-label">Tanggal: {{ $order->created_at->format('d M Y') }}</div>
+        </div>
+    </div>
+
+    <div class="item-list">
+        <div class="item-row">
+            <div>
+                <div class="item-name">{{ $order->menu->name }}</div>
+                <div class="item-qty">Kuantitas: {{ $order->quantity }} porsi</div>
             </div>
-
-            <!-- Invoice Card -->
-            <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 overflow-hidden border border-gray-100 relative">
-                <!-- Branding Header -->
-                <div class="bg-green-600 p-12 text-white relative">
-                    <div class="absolute top-0 right-0 p-12 opacity-10">
-                        <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                        </svg>
-                    </div>
-                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                        <div>
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                    </svg>
-                                </div>
-                                <span class="text-2xl font-black tracking-tighter">FoodSave</span>
-                            </div>
-                            <h1 class="text-4xl font-black tracking-tight mb-2">Invoice</h1>
-                            <p class="text-green-100 font-medium">Terima kasih telah menyelamatkan makanan!</p>
-                        </div>
-                        <div class="text-left md:text-right">
-                            <p class="text-green-100 text-xs font-bold uppercase tracking-widest mb-1">Nomor Invoice</p>
-                            <p class="text-2xl font-black mb-4">{{ $transaction->id }}</p>
-                            <div class="inline-flex px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold uppercase tracking-wider">
-                                Status: {{ $transaction->status }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Info Grid -->
-                <div class="p-12">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
-                        <div>
-                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Ditujukan Untuk</h4>
-                            <p class="text-xl font-black text-gray-900">{{ $transaction->customer_name }}</p>
-                            <p class="text-gray-500 font-medium mt-1">{{ $transaction->customer_email }}</p>
-                        </div>
-                        <div class="md:text-right">
-                            <h4 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Detail Transaksi</h4>
-                            <p class="text-gray-900 font-bold">Tanggal: <span class="font-medium text-gray-500 ml-1">{{ \Carbon\Carbon::parse($transaction->date)->format('d F Y, H:i') }}</span></p>
-                            <p class="text-gray-900 font-bold mt-1">Metode: <span class="font-medium text-gray-500 ml-1">{{ $transaction->payment_method }}</span></p>
-                        </div>
-                    </div>
-
-                    <!-- Items Table -->
-                    <div class="border-t border-gray-100 pt-10">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="text-left">
-                                    <th class="pb-6 text-xs font-black text-gray-400 uppercase tracking-widest">Item Pesanan</th>
-                                    <th class="pb-6 text-center text-xs font-black text-gray-400 uppercase tracking-widest">Qty</th>
-                                    <th class="pb-6 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Harga</th>
-                                    <th class="pb-6 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-50">
-                                @php $total = 0; @endphp
-                                @foreach($orders as $order)
-                                    @php $subtotal = $order->quantity * $order->menu->price; $total += $subtotal; @endphp
-                                    <tr>
-                                        <td class="py-6">
-                                            <div class="flex items-center gap-4">
-                                                <img src="{{ $order->menu->image }}" class="w-12 h-12 rounded-xl object-cover shadow-sm">
-                                                <div>
-                                                    <p class="font-bold text-gray-900">{{ $order->menu->name }}</p>
-                                                    <p class="text-xs text-gray-400 font-medium">{{ $order->menu->user->name ?? 'Restoran' }}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="py-6 text-center font-bold text-gray-900">{{ $order->quantity }}</td>
-                                        <td class="py-6 text-right font-medium text-gray-500">Rp {{ number_format($order->menu->price, 0, ',', '.') }}</td>
-                                        <td class="py-6 text-right font-black text-gray-900">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Summary -->
-                    <div class="mt-10 border-t-2 border-gray-900 pt-10 flex flex-col items-end">
-                        <div class="w-full md:w-64 space-y-4">
-                            <div class="flex justify-between text-gray-500 font-bold">
-                                <span>Subtotal</span>
-                                <span class="text-gray-900">Rp {{ number_format($total, 0, ',', '.') }}</span>
-                            </div>
-                            <div class="flex justify-between text-gray-500 font-bold pb-4 border-b border-gray-100">
-                                <span>Biaya Layanan</span>
-                                <span class="text-gray-900">Rp 2.000</span>
-                            </div>
-                            <div class="flex justify-between items-center pt-2">
-                                <span class="text-lg font-black text-gray-900">Total</span>
-                                <span class="text-3xl font-black text-green-600">Rp {{ number_format($total + 2000, 0, ',', '.') }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer Note -->
-                    <div class="mt-20 pt-10 border-t border-dashed border-gray-200 text-center">
-                        <p class="text-sm text-gray-400 font-medium italic">Simpan invoice ini sebagai bukti penyelamatan makananmu. Setiap gram yang kamu selamatkan sangat berarti bagi bumi.</p>
-                    </div>
-                </div>
-
-                <!-- Bottom Bar -->
-                <div class="bg-gray-50 p-8 flex items-center justify-center gap-12">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                        </div>
-                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Verified Payment</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                        </div>
-                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Stock Updated</span>
-                    </div>
-                </div>
+            <div class="item-price">
+                @if($order->user->role === 'lembaga_sosial')
+                    GRATIS
+                @else
+                    Rp {{ number_format($order->menu->final_price * $order->quantity, 0, ',', '.') }}
+                @endif
             </div>
         </div>
     </div>
+
+    <div class="pickup-box">
+        <div class="pickup-label">Kode Self-Pickup</div>
+        <div class="pickup-code">{{ strtoupper(substr(md5($order->id), 0, 6)) }}</div>
+        <p style="font-size: 0.75rem; color: var(--muted); margin-top: 1rem;">Tunjukkan kode ini kepada seller saat pengambilan makanan.</p>
+    </div>
+
+    <div style="text-align: center;">
+        <button onclick="window.print()" class="btn-print">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2H7a2 2 0 00-2 2v4h14z"/></svg>
+            Cetak Invoice
+        </button>
+    </div>
+
+    <div class="footer">
+        Terima kasih telah membantu menyelamatkan makanan dan menjaga bumi! 🌍
+    </div>
+</div>
 </x-app-layout>
