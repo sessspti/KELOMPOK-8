@@ -191,11 +191,18 @@ body::before {
                 </div>
             </div>
 
-            {{-- Diskon --}}
-            <div class="form-group">
-                <label for="discount">Total Diskon (%) <span class="req">*</span></label>
-                <input type="number" id="discount" name="discount" class="form-control"
-                       value="{{ old('discount', 0) }}" min="0" max="100" required placeholder="Misal: 20">
+            {{-- Diskon & Expired --}}
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="discount">Total Diskon (%) <span class="req">*</span></label>
+                    <input type="number" id="discount" name="discount" class="form-control"
+                           value="{{ old('discount', 0) }}" min="0" max="100" required placeholder="Misal: 20">
+                </div>
+                <div class="form-group">
+                    <label for="expiry_date">Tanggal Expired <span class="req">*</span></label>
+                    <input type="date" id="expiry_date" name="expiry_date" class="form-control"
+                           value="{{ old('expiry_date') }}" required>
+                </div>
             </div>
 
             {{-- Foto --}}

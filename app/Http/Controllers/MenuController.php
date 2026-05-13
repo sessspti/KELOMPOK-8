@@ -19,6 +19,7 @@ class MenuController extends Controller
             'discount' => 'required|integer|min:0|max:100',
             'stock'    => 'required|integer|min:1',
             'image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'expiry_date' => 'nullable|date',
         ]);
 
         $imagePath = null;
@@ -33,6 +34,7 @@ class MenuController extends Controller
             'discount' => $validated['discount'],
             'stock'    => $validated['stock'],
             'image'    => $imagePath,
+            'expiry_date' => $request->expiry_date,
         ]);
 
         return redirect()->route('seller.manage')->with('success', 'Produk berhasil ditambahkan!');
@@ -53,6 +55,7 @@ class MenuController extends Controller
             'discount' => 'required|integer|min:0|max:100',
             'stock'    => 'required|integer|min:0',
             'image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'expiry_date' => 'nullable|date',
         ]);
 
         if ($request->hasFile('image')) {
@@ -66,6 +69,7 @@ class MenuController extends Controller
             'discount' => $validated['discount'],
             'stock'    => $validated['stock'],
             'image'    => $menu->image,
+            'expiry_date' => $request->expiry_date,
         ]);
 
         return redirect()->route('seller.manage')->with('success', 'Menu berhasil diperbarui!');
