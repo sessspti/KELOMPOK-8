@@ -1,7 +1,7 @@
 <header class="hdr">
     <div class="hdr-inner">
         <a href="{{ route('dashboard') }}" class="logo">
-            <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-20 w-auto object-contain">
+            <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-14 w-auto object-contain">
             <span class="ml-2">Food<span class="logo-text-save">Save</span></span>
         </a>
         <div class="hdr-search">

@@ -542,7 +542,7 @@ body::before {
 <header class="hdr">
     <div class="hdr-inner">
         <a href="{{ route('seller.dashboard') }}" class="logo">
-            <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-20 w-auto object-contain">
+            <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-16 w-auto object-contain">
             <span class="ml-1">Food<span class="logo-text-save">Save</span></span>
         </a>
         <div class="hdr-divider"></div>

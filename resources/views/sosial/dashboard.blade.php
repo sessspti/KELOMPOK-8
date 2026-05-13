@@ -73,16 +73,15 @@ body::after {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(247,253,249,0.88);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1.5px solid var(--border);
+    background: var(--white); /* Removed semi-transparent/blur background */
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
 }
 .hdr-inner {
     max-width: 1380px;
     margin: 0 auto;
     padding: 0 2rem;
-    height: 90px;
+    height: 72px; /* Reduced from 90px */
     display: flex;
     align-items: center;
     gap: 1.5rem;
@@ -110,7 +109,7 @@ body::after {
     background: var(--mint-50);
     border: 1.5px solid var(--border);
     border-radius: var(--r-pill);
-    padding: 0.6rem 1.1rem 0.6rem 2.8rem;
+    padding: 0.5rem 1.1rem 0.5rem 2.5rem; /* Reduced from 0.6rem */
     font-family: 'Hanken Grotesk', sans-serif;
     font-size: 0.875rem;
     color: var(--ink);
@@ -680,8 +679,8 @@ body::after {
 <header class="hdr">
     <div class="hdr-inner">
         <a href="{{ route('sosial.dashboard') }}" class="logo">
-            <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-20 w-auto object-contain">
-            <span class="ml-2">Food<span class="logo-text-save">Save</span></span>
+            <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-14 w-auto object-contain">
+            <span class="font-bold text-xl tracking-tight text-gray-900">Food<span class="text-green-600">Save</span></span>
         </a>
         <span style="background:#e0f2fe;color:#0284c7;border:1.5px solid rgba(14,165,233,0.25);font-family:'Space Grotesk',sans-serif;font-size:0.6875rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.3rem 0.85rem;border-radius:999px;white-space:nowrap;">🏛 Lembaga Sosial</span>
         <div class="hdr-search">
@@ -698,13 +697,9 @@ body::after {
                 <button @click="open = !open"
                         class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm"
                         style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#fff;border:1.5px solid rgba(22,163,74,0.2);border-radius:12px;cursor:pointer;">
-                    {{-- Avatar --}}
-                    <div style="width:32px;height:32px;border-radius:8px;background:#e0f2fe;border:1.5px solid rgba(14,165,233,0.3);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-                        @if(Auth::user()->avatar)
-                            <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" style="width:100%;height:100%;object-fit:cover;">
-                        @else
-                            <span style="font-weight:800;font-size:0.75rem;color:#0284c7;">{{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 1)) }}</span>
-                        @endif
+                    {{-- Initials Avatar --}}
+                    <div style="width:28px;height:28px;border-radius:8px;background:#e0f2fe;border:1.5px solid rgba(14,165,233,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.6875rem;color:#0284c7;flex-shrink:0;">
+                        {{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 2)) }}
                     </div>
                     <span style="font-size:0.8125rem;font-weight:700;color:#111;">{{ Auth::user()->name ?? 'Lembaga' }}</span>
                     <svg class="fill-current h-4 w-4" style="color:#9ca3af;transition:transform 0.2s;" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">

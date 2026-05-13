@@ -632,11 +632,11 @@ body.no-scroll { overflow: hidden; }
 {{-- ════════════ SIDEBAR ════════════ --}}
 <aside class="sidebar">
     <div class="sb-brand">
-        <div class="sb-logo">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
-        </div>
-        <span class="sb-name">Food<em>Save</em></span>
-        <span class="sb-admin-tag">Admin</span>
+        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2">
+            <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-12 w-auto object-contain">
+            <span class="sb-name">Food<em>Save</em></span>
+            <span class="sb-admin-tag">Admin</span>
+        </a>
     </div>
 
     <nav class="sb-nav">
