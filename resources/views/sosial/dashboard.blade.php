@@ -649,6 +649,7 @@ body::after {
     box-shadow: 0 4px 12px rgba(34,197,94,0.3);
 }
 
+
 .bento-main    { animation: fadeUp 0.6s ease 0.05s both; }
 .bento-img-card{ animation: fadeUp 0.6s ease 0.1s  both; }
 .bento-tracker { animation: fadeUp 0.6s ease 0.15s both; }
@@ -694,8 +695,8 @@ body::after {
             {{-- Profile Dropdown --}}
             <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false" style="z-index: 110;">
                 <button @click="open = !open"
-                        class="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm"
-                        style="display:flex;align-items:center;gap:8px;padding:4px 10px;background:#fff;border:1.5px solid rgba(22,163,74,0.2);border-radius:12px;cursor:pointer;">
+                        class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm"
+                        style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#fff;border:1.5px solid rgba(22,163,74,0.2);border-radius:12px;cursor:pointer;">
                     {{-- Initials Avatar --}}
                     <div style="width:28px;height:28px;border-radius:8px;background:#e0f2fe;border:1.5px solid rgba(14,165,233,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.6875rem;color:#0284c7;flex-shrink:0;">
                         {{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 2)) }}
@@ -743,6 +744,7 @@ body::after {
         </div>
     </div>
 </header>
+
 
 
 <div class="page">

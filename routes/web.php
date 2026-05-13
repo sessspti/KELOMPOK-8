@@ -82,16 +82,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // 5. Fitur Lembaga Sosial
-    Route::get('/sosial/dashboard', function () {
-        $orders = \App\Models\Order::where('id_user', auth()->id())->with('menu.user')->latest()->get();
-        return view('sosial.dashboard', compact('orders'));
-    })->middleware('role:lembaga_sosial')->name('sosial.dashboard');
+    Route::prefix('sosial')->middleware('role:lembaga_sosial')->group(function () {
+        Route::get('/dashboard', function () {
+            $orders = \App\Models\Order::where('id_user', auth()->id())->with('menu.user')->latest()->get();
+            return view('sosial.dashboard', compact('orders'));
+        })->name('sosial.dashboard');
 
-    // 6. Fitur Checkout & Cart
+        // Profil untuk Lembaga Sosial
+        Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('sosial.profile.edit');
+    });
+
+    // 6. Fitur Checkout & Cart (Hanya Konsumen)
     Route::middleware('role:konsumen')->group(function () {
         Route::get('/checkout-summary', function () {
             return view('transaction.checkout');
         })->name('checkout.summary');
+        
+        Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
+        Route::post('/cart/sync', [CartController::class, 'sync'])->name('cart.sync');
+    });
+
+    // 7. Fitur Admin (Pusat Kendali Platform)
+    Route::prefix('admin')->middleware('role:admin')->group(function () {
+
         
         Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
         Route::post('/cart/sync', [CartController::class, 'sync'])->name('cart.sync');

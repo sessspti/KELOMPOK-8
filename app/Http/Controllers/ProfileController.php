@@ -27,7 +27,7 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $request->user()->fill($request->safe()->except('avatar'));
 
         if ($request->hasFile('avatar')) {
             if ($request->user()->avatar) {
