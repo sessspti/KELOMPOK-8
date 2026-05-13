@@ -648,7 +648,6 @@ body::after {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(34,197,94,0.3);
 }
-</style>
 
 .bento-main    { animation: fadeUp 0.6s ease 0.05s both; }
 .bento-img-card{ animation: fadeUp 0.6s ease 0.1s  both; }
@@ -829,6 +828,7 @@ body::after {
         .loc-pill{display:inline-flex;align-items:center;gap:5px;font-size:.6875rem;color:var(--muted);background:var(--mint-50);border:1px solid var(--border);border-radius:var(--r-pill);padding:.2rem .65rem;margin-top:.5rem;}
         .loc-pill svg{width:11px;height:11px;color:var(--mint-600);}
         </style>
+        
         <div class="pgrid">
             {{-- Card 1 GRATIS --}}
             <div class="pcard">
