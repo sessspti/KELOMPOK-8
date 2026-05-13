@@ -679,13 +679,7 @@ body::after {
 <header class="hdr">
     <div class="hdr-inner">
         <a href="{{ route('sosial.dashboard') }}" class="logo">
-            <div class="flex items-center justify-center bg-green-100 rounded-lg p-1.5">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L4 5V11C4 16.19 7.41 21.05 12 22C16.59 21.05 20 16.19 20 11V5L12 2Z" fill="#16A34A" fill-opacity="0.2"/>
-                    <path d="M9 12L11 14L15 10" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 22C16.59 21.05 20 16.19 20 11V5L12 2L4 5V11C4 16.19 7.41 21.05 12 22Z" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </div>
+            <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-14 w-auto object-contain">
             <span class="font-bold text-xl tracking-tight text-gray-900">Food<span class="text-green-600">Save</span></span>
         </a>
         <span style="background:#e0f2fe;color:#0284c7;border:1.5px solid rgba(14,165,233,0.25);font-family:'Space Grotesk',sans-serif;font-size:0.6875rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:0.3rem 0.85rem;border-radius:999px;white-space:nowrap;">🏛 Lembaga Sosial</span>
