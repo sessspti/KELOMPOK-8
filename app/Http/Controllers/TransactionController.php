@@ -104,6 +104,15 @@ class TransactionController extends Controller
 
                 // Mengurangi stok menu
                 $menu->decrement('stock', $item['qty']);
+
+                // Notifikasi stok menipis ke seller
+                if ($menu->fresh()->stock < 5) {
+                    $menu->user->notify(new \App\Notifications\GeneralNotification(
+                        "Stok Menipis!",
+                        "Produk {$menu->name} tinggal {$menu->stock} porsi. Segera restock!",
+                        "⚠️"
+                    ));
+                }
             }
 
             // Hapus pesanan pending lainnya jika ada agar tidak menumpuk
@@ -111,10 +120,97 @@ class TransactionController extends Controller
 
             DB::commit();
 
+            // Kirim notifikasi ke konsumen
+            Auth::user()->notify(new \App\Notifications\GeneralNotification(
+                "Pembayaran Berhasil",
+                "Pesanan #{$transactionId} telah kami terima dan akan segera diproses.",
+                "💳"
+            ));
+
+            // Kirim notifikasi ke seller
+            // Mengambil semua seller unik yang produknya dibeli dalam transaksi ini
+            $sellerIds = Menu::whereIn('id', collect($cart)->pluck('id'))->pluck('user_id')->unique();
+            foreach ($sellerIds as $sellerId) {
+                $seller = \App\Models\User::find($sellerId);
+                if ($seller) {
+                    $isSosial = Auth::user()->role === 'lembaga_sosial';
+                    
+                    $title = $isSosial ? "Klaim Donasi Baru!" : "Pesanan Baru Masuk!";
+                    $icon = $isSosial ? "🤝" : "🛍️";
+                    $message = $isSosial 
+                        ? "Lembaga " . Auth::user()->name . " baru saja mengklaim produk donasi Anda."
+                        : "Seseorang baru saja membeli produk Anda. Segera proses pesanan #{$transactionId}.";
+
+                    $seller->notify(new \App\Notifications\GeneralNotification($title, $message, $icon));
+                }
+            }
+
             return response()->json([
                 'success' => true, 
                 'transaction_id' => $transactionId,
                 'redirect_url' => route('transaction.invoice', $transactionId)
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Menyimpan klaim donasi dari lembaga sosial.
+     */
+    public function claimDonation(Request $request)
+    {
+        $userId = Auth::id();
+        $items = $request->input('items', []);
+        $transactionId = 'CLM-' . strtoupper(bin2hex(random_bytes(4)));
+
+        if (empty($items)) {
+            return response()->json(['success' => false, 'message' => 'Daftar pengambilan kosong.'], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($items as $item) {
+                $menu = Menu::find($item['id']);
+                
+                if (!$menu) {
+                    throw new \Exception("Menu tidak ditemukan.");
+                }
+
+                $claimQty = 1; 
+
+                Order::create([
+                    'id_user' => $userId,
+                    'menu_id' => $menu->id,
+                    'quantity' => $claimQty,
+                    'status' => 'proses',
+                    'transaction_id' => $transactionId,
+                    'payment_method' => 'Donasi',
+                ]);
+
+                $menu->decrement('stock', $claimQty);
+
+                $menu->user->notify(new \App\Notifications\GeneralNotification(
+                    "Klaim Donasi Baru!",
+                    "Lembaga " . Auth::user()->name . " baru saja mengklaim produk donasi Anda: {$menu->name}.",
+                    "🤝"
+                ));
+            }
+
+            DB::commit();
+
+            Auth::user()->notify(new \App\Notifications\GeneralNotification(
+                "Pengajuan Berhasil",
+                "Klaim donasi #{$transactionId} telah dikirim. Menunggu konfirmasi restoran.",
+                "✅"
+            ));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Klaim berhasil diajukan.'
             ]);
 
         } catch (\Exception $e) {

@@ -50,7 +50,7 @@
                 <template x-for="(item, index) in cart" :key="item.id">
                     <div class="flex gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
                         <div class="h-20 w-20 flex-shrink-0">
-                            <img :src="item.image" class="h-full w-full object-cover rounded-lg border border-gray-200">
+                            <img :src="item.image_url || '{{ asset('images/placeholder.png') }}'" class="h-full w-full object-cover rounded-lg border border-gray-200">
                         </div>
                         <div class="flex-grow">
                             <div class="flex justify-between items-start">
@@ -61,7 +61,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <p class="text-sm font-bold text-green-600 mt-1" x-text="formatRupiah(item.price)"></p>
+                            <p class="text-sm font-bold text-green-600 mt-1" x-text="formatRupiah(item.final_price)"></p>
                             <div class="flex items-center gap-3 mt-3">
                                 <button @click="updateQty(item.id, -1)" class="w-7 h-7 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100">-</button>
                                 <span class="font-bold text-gray-800 text-sm" x-text="item.qty"></span>

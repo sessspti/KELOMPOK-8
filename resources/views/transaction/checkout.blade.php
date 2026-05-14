@@ -38,12 +38,12 @@
                             <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                                 <div class="flex items-center gap-4">
                                     <div class="relative">
-                                        <img :src="item.image" class="h-12 w-12 rounded-xl object-cover shadow-sm">
+                                        <img :src="item.image_url || '{{ asset('images/placeholder.png') }}'" class="h-12 w-12 rounded-xl object-cover shadow-sm">
                                         <span class="absolute -top-2 -right-2 bg-green-600 text-white text-[10px] h-5 w-5 flex items-center justify-center rounded-full border-2 border-white" x-text="item.qty"></span>
                                     </div>
                                     <span class="font-semibold text-gray-700" x-text="item.name"></span>
                                 </div>
-                                <span class="font-bold text-gray-900" x-text="formatRupiah(item.price * item.qty)"></span>
+                                <span class="font-bold text-gray-900" x-text="formatRupiah(item.final_price * item.qty)"></span>
                             </div>
                         </template>
                     </div>
@@ -154,7 +154,7 @@
                 selectedMethod: '',
                 isProcessing: false,
                 invoiceNumber: '',
-                serviceFee: 2000,
+                serviceFee: 0,
                 
                 paymentMethods: [
                     { id: 'bank', name: 'Transfer Bank', description: 'BCA, Mandiri, BNI', icon: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
@@ -163,7 +163,7 @@
                 ],
 
                 get cartTotal() {
-                    return this.cart.reduce((total, item) => total + (item.price * item.qty), 0);
+                    return this.cart.reduce((total, item) => total + (item.final_price * item.qty), 0);
                 },
 
                 get grandTotal() {
@@ -173,6 +173,47 @@
                 processPayment() {
                     if (!this.selectedMethod) return;
                     
+                    if (this.selectedMethod === 'wallet') {
+                        // QR Code simulation using QR Server API
+                        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=FOODSAVE-PAYMENT-${Date.now()}-${this.grandTotal}`;
+                        
+                        Swal.fire({
+                            title: 'Pembayaran QRIS',
+                            html: `
+                                <div class="flex flex-col items-center py-4">
+                                    <div class="bg-white p-4 rounded-3xl shadow-sm border-2 border-gray-50 mb-6">
+                                        <img src="${qrUrl}" alt="QRIS" class="w-56 h-56">
+                                    </div>
+                                    <p class="text-gray-500 text-sm font-medium mb-1">Total Tagihan:</p>
+                                    <p class="text-3xl font-black text-green-600 mb-6">${this.formatRupiah(this.grandTotal)}</p>
+                                    <div class="bg-blue-50 text-blue-700 p-4 rounded-2xl text-xs font-medium text-center leading-relaxed">
+                                        Silakan pindai kode QR di atas menggunakan aplikasi e-wallet Anda (GoPay, OVO, Dana, dll).
+                                    </div>
+                                </div>
+                            `,
+                            showCancelButton: true,
+                            confirmButtonText: 'Saya Sudah Bayar',
+                            cancelButtonText: 'Nanti Saja',
+                            confirmButtonColor: '#16a34a',
+                            cancelButtonColor: '#9ca3af',
+                            background: '#ffffff',
+                            reverseButtons: true,
+                            customClass: {
+                                popup: 'rounded-[2.5rem] p-6',
+                                title: 'font-bold text-gray-900 pt-4'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                this.executeOrder();
+                            }
+                        });
+                    } else {
+                        // For Bank or Card, go straight to order execution (simulation)
+                        this.executeOrder();
+                    }
+                },
+
+                executeOrder() {
                     this.isProcessing = true;
                     
                     fetch('{{ route('transaction.store') }}', {
@@ -191,31 +232,23 @@
                         this.isProcessing = false;
                         
                         if (data.success) {
-                            // SweetAlert 2 Success
                             Swal.fire({
-                                title: "Pembayaran Berhasil!",
-                                text: "Pesananmu dengan nomor " + data.transaction_id + " sedang diproses. Terima kasih telah menyelamatkan makanan!",
+                                title: "Pesanan Berhasil!",
+                                text: "Pembayaran terverifikasi. Nomor transaksi: " + data.transaction_id,
                                 icon: "success",
-                                draggable: true,
-                                confirmButtonText: "Lihat Detail Transaksi",
-                                confirmButtonColor: "#22c55e",
+                                confirmButtonText: "Lihat Invoice",
+                                confirmButtonColor: "#16a34a",
                                 background: "#ffffff",
                                 customClass: {
                                     title: 'font-bold text-gray-900',
                                     popup: 'rounded-[2.5rem] p-8'
                                 }
                             }).then((result) => {
-                                // Clear Cart
                                 localStorage.removeItem('foodsave_cart');
-                                
-                                if (result.isConfirmed) {
-                                    window.location.href = data.redirect_url;
-                                } else {
-                                    window.location.href = '{{ route('dashboard') }}';
-                                }
+                                window.location.href = data.redirect_url;
                             });
                         } else {
-                            Swal.fire("Gagal", data.message || "Terjadi kesalahan saat memproses pesanan.", "error");
+                            Swal.fire("Gagal", data.message || "Gagal memproses pesanan.", "error");
                         }
                     })
                     .catch(error => {

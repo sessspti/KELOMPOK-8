@@ -55,6 +55,19 @@
         transition: all 0.2s;
     }
     .btn-print:hover { background: #000; transform: translateY(-2px); }
+    .btn-back {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: #f1f5f9; color: var(--ink); padding: 0.75rem 1.5rem;
+        border-radius: 99px; font-weight: 600; text-decoration: none;
+        transition: all 0.2s; border: 1.5px solid #e2e8f0; cursor: pointer;
+        font-size: 0.875rem;
+    }
+    .btn-back:hover { background: #e2e8f0; transform: translateY(-2px); }
+    @media print {
+        .btn-print, .btn-back { display: none !important; }
+        .invoice-card { box-shadow: none; border: none; margin: 0; padding: 0; }
+        body { background: white; }
+    }
 </style>
 
 <div class="invoice-card">
@@ -98,8 +111,12 @@
         <p style="font-size: 0.75rem; color: var(--muted); margin-top: 1rem;">Tunjukkan kode ini kepada seller saat pengambilan makanan.</p>
     </div>
 
-    <div style="text-align: center;">
-        <button onclick="window.print()" class="btn-print">
+    <div style="text-align: center; display: flex; justify-content: center; gap: 1rem; margin-top: 2rem;">
+        <a href="{{ Auth::user()->role === 'lembaga_sosial' ? route('sosial.dashboard') : route('transaction.history') }}" class="btn-back">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Kembali
+        </a>
+        <button onclick="window.print()" class="btn-print" style="margin-top: 0;">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2H7a2 2 0 00-2 2v4h14z"/></svg>
             Cetak Invoice
         </button>
