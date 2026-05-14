@@ -522,7 +522,10 @@ body::before {
     background-size: 12px;
 }
 .status-select.selesai { border-color: var(--mint-400); color: var(--mint-600); }
-.status-select.proses { border-color: var(--red-400); color: #dc2626; }
+.status-select.siap_diambil { border-color: var(--yellow-400); color: #854d0e; }
+.status-select.paid { border-color: var(--mint-300); color: var(--mint-600); }
+.status-select.proses { border-color: var(--orange-400); color: var(--orange-500); }
+.status-select.dibatalkan { border-color: #fca5a5; color: #dc2626; }
 .status-select:focus { outline: none; border-color: var(--mint-500); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
 
 /* ─── ANIMATIONS ─── */
@@ -556,7 +559,9 @@ body::before {
             {{-- Notif --}}
             <button class="notif-btn" title="Notifikasi" onclick="switchTab('notif')">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                <span class="ndot"></span>
+                @if(auth()->user()->unreadNotifications->count() > 0)
+                    <span class="ndot"></span>
+                @endif
             </button>
             <span class="pts-pill">✦ 150.000 FP</span>
             <form method="POST" action="{{ route('logout') }}">
@@ -704,7 +709,9 @@ body::before {
             <div class="tabs">
                 <button class="tab-btn on" id="btn-notif" onclick="switchTab('notif')">
                     Notifikasi Pesanan
-                    <span class="tab-count org">3</span>
+                    @if(auth()->user()->unreadNotifications->count() > 0)
+                        <span class="tab-count org">{{ auth()->user()->unreadNotifications->count() }}</span>
+                    @endif
                 </button>
                 <button class="tab-btn" id="btn-riwayat" onclick="switchTab('riwayat')">
                     Riwayat Penjualan
@@ -714,42 +721,38 @@ body::before {
 
             {{-- Pane: Notifikasi --}}
             <div class="tab-pane on" id="pane-notif">
-                <div class="nitem unread">
-                    <div class="nico ord">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                    </div>
-                    <div>
-                        <div class="ntop">
-                            <div class="nname">Reservasi Baru Masuk!</div>
-                            <div class="ndot-new"></div>
+                @forelse(auth()->user()->unreadNotifications as $notification)
+                    <div class="nitem unread relative group">
+                        <div class="nico ord">
+                            <div class="text-xl">{{ $notification->data['icon'] ?? '🔔' }}</div>
                         </div>
-                        <div class="ndesc">Andi Pratama memesan 2 porsi <strong>Nasi Box Surplus</strong></div>
-                        <div class="ntime">5 menit lalu · Menunggu konfirmasi</div>
-                    </div>
-                </div>
-                <div class="nitem unread">
-                    <div class="nico ord">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    </div>
-                    <div>
-                        <div class="ntop">
-                            <div class="nname">Klaim Lembaga Sosial</div>
-                            <div class="ndot-new"></div>
+                        <div class="flex-1">
+                            <div class="ntop">
+                                <div class="nname">{{ $notification->data['title'] }}</div>
+                                <div class="ndot-new"></div>
+                            </div>
+                            <div class="ndesc">{{ $notification->data['message'] }}</div>
+                            <div class="ntime">{{ $notification->created_at->diffForHumans() }}</div>
                         </div>
-                        <div class="ndesc">Rumah Yatim Al-Ikhlas mengklaim 10 porsi <strong>Paket Hemat Sore</strong></div>
-                        <div class="ntime">22 menit lalu · Menunggu konfirmasi</div>
+                        <form action="{{ route('notifications.markAsRead', $notification->id) }}" method="POST" class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            @csrf
+                            <button type="submit" title="Tandai dibaca" class="text-gray-400 hover:text-green-600 transition-colors">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </button>
+                        </form>
                     </div>
-                </div>
-                <div class="nitem">
-                    <div class="nico wrn">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                @empty
+                    <div class="p-12 text-center">
+                        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg width="24" height="24" class="text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-400 font-medium italic">Tidak ada notifikasi baru untuk Anda.</p>
                     </div>
-                    <div>
-                        <div class="ntop"><div class="nname">Stok Hampir Habis</div></div>
-                        <div class="ndesc">Menu <strong>Ayam Geprek Surplus</strong> hanya tersisa 2 porsi</div>
-                        <div class="ntime">1 jam lalu</div>
-                    </div>
-                </div>
+                @endforelse
             </div>
 
             {{-- Pane: Riwayat (Dynamic Table) --}}
@@ -788,9 +791,13 @@ body::before {
                                 <td>
                                     <form action="{{ route('orders.updateStatus', $order) }}" method="POST">
                                         @csrf
-                                        <select name="status" class="status-select {{ strtolower($order->status) === 'selesai' ? 'selesai' : 'proses' }}" onchange="this.form.submit()">
-                                            <option value="Proses" {{ $order->status === 'Proses' ? 'selected' : '' }}>Proses</option>
-                                            <option value="Selesai" {{ $order->status === 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                                        @method('PATCH')
+                                        <select name="status" class="status-select {{ strtolower($order->status) }}" onchange="this.form.submit()">
+                                            <option value="paid" {{ $order->status === 'paid' ? 'selected' : '' }}>Sudah Dibayar</option>
+                                            <option value="proses" {{ $order->status === 'proses' ? 'selected' : '' }}>Diproses</option>
+                                            <option value="siap_diambil" {{ $order->status === 'siap_diambil' ? 'selected' : '' }}>Siap Diambil</option>
+                                            <option value="selesai" {{ $order->status === 'selesai' ? 'selected' : '' }}>Selesai</option>
+                                            <option value="dibatalkan" {{ $order->status === 'dibatalkan' ? 'selected' : '' }}>Batalkan</option>
                                         </select>
                                     </form>
                                 </td>

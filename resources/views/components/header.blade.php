@@ -14,12 +14,17 @@
             <span class="pts-pill">✦ 150.000 FP</span>
 
             {{-- Notifikasi Bell --}}
+            @auth
             <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false">
                 <button @click="open = !open" class="relative p-2 text-gray-500 hover:bg-gray-100 rounded-xl transition-all focus:outline-none">
                     <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                     </svg>
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 border-2 border-white rounded-full"></span>
+                    @if(auth()->user()->unreadNotifications->count() > 0)
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+                            {{ auth()->user()->unreadNotifications->count() }}
+                        </span>
+                    @endif
                 </button>
 
                 <div x-show="open" 
@@ -31,23 +36,54 @@
                     
                     <div class="px-4 py-2 border-b border-gray-50 flex justify-between items-center">
                         <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Notifikasi</span>
-                        <span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">3 Terbaru</span>
+                        @if(auth()->user()->unreadNotifications->count() > 0)
+                            <form action="{{ route('notifications.markAllAsRead') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="text-[10px] text-green-600 hover:text-green-700 font-bold">Tandai semua dibaca</button>
+                            </form>
+                        @endif
                     </div>
 
-                    <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-50">
-                        <p class="text-xs font-bold text-gray-800">✅ Pesanan siap diambil!</p>
-                        <p class="text-[10px] text-gray-500 mt-0.5">Ayam Geprek Berkah sudah dikemas.</p>
+                    <div class="max-h-80 overflow-y-auto">
+                        @forelse(auth()->user()->unreadNotifications as $notification)
+                            <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-50 relative group">
+                                <div class="flex gap-3">
+                                    <div class="text-lg flex-shrink-0">{{ $notification->data['icon'] ?? '🔔' }}</div>
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-800">{{ $notification->data['title'] }}</p>
+                                        <p class="text-[10px] text-gray-500 mt-0.5">{{ $notification->data['message'] }}</p>
+                                        <p class="text-[9px] text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                    </div>
+                                </div>
+                                <form action="{{ route('notifications.markAsRead', $notification->id) }}" method="POST" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    @csrf
+                                    <button type="submit" title="Tandai dibaca" class="text-gray-400 hover:text-green-600">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        @empty
+                            <div class="px-4 py-8 text-center">
+                                <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg width="20" height="20" class="text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-gray-400 font-medium">Tidak ada notifikasi baru</p>
+                            </div>
+                        @endforelse
                     </div>
-                    <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-50">
-                        <p class="text-xs font-bold text-gray-800">🤝 Donasi baru tersedia</p>
-                        <p class="text-[10px] text-gray-500 mt-0.5">Lembaga Kasih butuh 5 paket makanan.</p>
-                    </div>
-                    <div class="px-4 py-3 hover:bg-gray-50">
-                        <p class="text-xs font-bold text-gray-800">✨ Poin FP Bertambah</p>
-                        <p class="text-[10px] text-gray-500 mt-0.5">Kamu baru saja menyelamatkan bumi!</p>
-                    </div>
+
+                    @if(auth()->user()->notifications->count() > 0)
+                        <div class="px-4 py-2 border-t border-gray-50 text-center">
+                            <a href="#" class="text-[10px] text-gray-400 hover:text-gray-600 font-bold uppercase tracking-wider">Lihat Semua</a>
+                        </div>
+                    @endif
                 </div>
             </div>
+            @endauth
 
             {{-- User Account Dropdown --}}
             <div class="relative ml-3" x-data="{ open: false }" @click.outside="open = false" @close.stop="open = false" style="z-index: 110;">

@@ -662,6 +662,7 @@ body::after {
 .edu-card:nth-child(3){ animation: fadeUp 0.5s ease 0.19s both; }
 </style>
 
+<div x-data="foodSaveApp()">
 {{-- ── FAB CART ── --}}
 <button class="fab" id="fabBtn" onclick="openCart()" style="border:none;cursor:pointer;">
     <svg width="19" height="19" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -687,7 +688,7 @@ body::after {
             <svg class="hdr-search-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
-            <input type="text" placeholder="Cari donasi surplus tersedia...">
+            <input type="text" placeholder="Cari donasi surplus tersedia..." x-model="searchQuery">
         </div>
         <div class="hdr-right">
             <span class="pts-pill">✦ 150.000 FP</span>
@@ -831,58 +832,67 @@ body::after {
         .loc-pill svg{width:11px;height:11px;color:var(--mint-600);}
         </style>
         <div class="pgrid">
-            @foreach($menus as $menu)
-            <div class="pcard">
-                <div class="pcard-img">
-                    @if($menu->image_url)
-                        <img src="{{ $menu->image_url }}" alt="{{ $menu->name }}">
-                    @else
-                        <div class="flex items-center justify-center h-full bg-mint-100">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="48" height="48" style="opacity:0.4;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            <template x-for="product in filteredProducts" :key="product.id">
+                <div class="pcard">
+                    <div class="pcard-img">
+                        <template x-if="product.image_url">
+                            <img :src="product.image_url" :alt="product.name">
+                        </template>
+                        <template x-if="!product.image_url">
+                            <div class="flex items-center justify-center h-full bg-mint-100">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="48" height="48" style="opacity:0.4;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                        </template>
+                        <div class="bdg-dist">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                             </svg>
+                            0.5 km
                         </div>
-                    @endif
-                    <div class="bdg-dist">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        </svg>
-                        0.5 km
+                        <template x-if="product.discount > 50">
+                            <div class="bdg-urgent">Sangat Murah!</div>
+                        </template>
+                        <div class="bdg-gratis">Gratis</div>
                     </div>
-                    @if($menu->discount > 50)
-                        <div class="bdg-urgent">Sangat Murah!</div>
-                    @endif
-                    <div class="{{ $menu->final_price == 0 ? 'bdg-gratis' : 'bdg-donasi' }}">
-                        {{ $menu->final_price == 0 ? 'Gratis' : 'Donasi' }}
+                    <div class="pcard-body">
+                        <p class="pcard-store" x-text="product.store"></p>
+                        <h3 class="pcard-name" x-text="product.name"></h3>
+                        <div class="flex items-center gap-1.5 mb-2" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
+                            </svg>
+                            <span x-text="'Exp: ' + product.formatted_expiry_date"></span>
+                        </div>
+                        <p class="pcard-qty" x-text="'Tersedia ' + product.stock + ' porsi'"></p>
+                        <div class="pcard-ft">
+                            <div class="price-stack">
+                                <div class="price-was" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)"></div>
+                                <div class="price-now">Rp 0</div>
+                            </div>
+                            <button class="req-btn" @click="openCart(); addItemToPickup({
+                                id: product.id,
+                                name: product.name,
+                                store: product.store,
+                                qty: 'Tersedia ' + product.stock + ' porsi',
+                                price: 'Rp 0',
+                                image: product.image_url,
+                                urgent: product.discount > 50 ? 'Sangat Murah!' : 'Hari Ini'
+                            })" aria-label="Ajukan pengambilan">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
+                                </svg>
+                                Ajukan
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div class="pcard-body">
-                    <p class="pcard-store">{{ $menu->user->name ?? 'Toko FoodSave' }}</p>
-                    <h3 class="pcard-name">{{ $menu->name }}</h3>
-                    <div class="flex items-center gap-1.5 mb-2" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
-                        </svg>
-                        <span>Exp: {{ $menu->formatted_expiry_date }}</span>
-                    </div>
-                    <p class="pcard-qty">Tersedia {{ $menu->stock }} porsi</p>
-                    <div class="pcard-ft">
-                        <div class="price-tag {{ $menu->final_price == 0 ? 'gratis' : 'donasi' }}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                            </svg>
-                            {{ $menu->final_price == 0 ? 'Gratis' : 'Rp ' . number_format($menu->final_price, 0, ',', '.') }}
-                        </div>
-                        <button class="req-btn" onclick="openCart()" aria-label="Ajukan pengambilan">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
-                            </svg>
-                            Ajukan
-                        </button>
-                    </div>
-                </div>
-            </div>
-            @endforeach
+            </template>
+        </div>
+        
+        <div x-show="filteredProducts.length === 0" class="text-center py-20" style="grid-column: 1 / -1; width: 100%;">
+            <p style="color: var(--muted); font-style: italic;">Maaf, donasi tidak ditemukan...</p>
         </div>
     </section>
 
@@ -1180,7 +1190,7 @@ function updateCount(){
                 <div class="pickup-itm" style="background:var(--off-white);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:1.125rem 1.25rem;margin-bottom:.875rem;position:relative;animation:slide-in-right 0.3s ease-out forwards;">
                     <button onclick="removePickupItem(${index})" style="position:absolute;top:.875rem;right:.875rem;width:26px;height:26px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:#fff;cursor:pointer;color:var(--faint);font-size:14px;display:flex;align-items:center;justify-content:center;">×</button>
                     <div style="display:flex;gap:.75rem;margin-bottom:.875rem;">
-                        <div style="width:52px;height:52px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--mint-100);"><img src="${item.image}" style="width:100%;height:100%;object-fit:cover;"></div>
+                        <div style="width:52px;height:52px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--mint-100);"><img src="${item.image || '{{ asset('images/placeholder.png') }}'}" style="width:100%;height:100%;object-fit:cover;"></div>
                         <div>
                             <div style="font-size:.5625rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--mint-600);margin-bottom:3px;">${item.store}</div>
                             <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.9375rem;letter-spacing:-.03em;color:var(--ink);">${item.name}</div>
@@ -1214,60 +1224,63 @@ function updateCount(){
     window.confirmPickup = function() {
         if (pickupItems.length === 0) return;
 
-        const today = getToday();
+        Swal.fire({
+            title: 'Konfirmasi Pengambilan',
+            text: "Apakah Anda yakin ingin mengajukan pengambilan donasi ini?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#22c55e',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Ya, Ajukan!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading
+                Swal.fire({
+                    title: 'Memproses...',
+                    didOpen: () => { Swal.showLoading(); }
+                });
 
-        // Simpan produk ke appliedProducts dengan tanggal hari ini
-        pickupItems.forEach(item => {
-            const exists = appliedProducts.some(a => {
-                return a.name === item.name && a.store === item.store && a.date === today;
-            });
-            
-            if (!exists) {
-                appliedProducts.push({ 
-                    name: item.name,
-                    store: item.store, 
-                    date: today 
+                fetch('{{ route('sosial.claim') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ items: pickupItems })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Pengajuan Berhasil!',
+                            text: data.message,
+                            confirmButtonColor: '#22c55e'
+                        }).then(() => {
+                            pickupItems = [];
+                            localStorage.removeItem('foodsave_applied_products');
+                            window.location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.message || 'Terjadi kesalahan saat memproses klaim.',
+                        confirmButtonColor: '#22c55e'
+                    });
                 });
             }
         });
-
-        localStorage.setItem('foodsave_applied_products', JSON.stringify(appliedProducts));
-        
-        Swal.fire({
-            icon: 'success',
-            title: 'Pengajuan Berhasil!',
-            text: 'Permintaan Anda telah dikirimkan. Pihak toko akan segera mengonfirmasi pengambilan Anda.',
-            confirmButtonColor: '#22c55e',
-            confirmButtonText: 'Kembali'
-        });
-        
-        pickupItems = [];
-        renderPickupList();
-        closeCart();
     };
 
     // 7. Event Delegation untuk Tombol "Ajukan"
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.req-btn');
-        if (btn) {
-            e.preventDefault();
-            e.stopPropagation();
+    // 7. Klik 'Ajukan' dihilangkan karena ditangani oleh Alpine.js
 
-            const card = btn.closest('.pcard');
-            const imgEl = card.querySelector('img');
-            const urgentEl = card.querySelector('.bdg-urgent');
-            const product = {
-                name: card.querySelector('.pcard-name').textContent,
-                store: card.querySelector('.pcard-store').textContent,
-                qty: card.querySelector('.pcard-qty').textContent,
-                price: card.querySelector('.price-tag').textContent.trim(),
-                image: imgEl ? imgEl.src : '',
-                urgent: urgentEl ? urgentEl.textContent : 'Hari Ini',
-            };
-
-            addItemToPickup(product);
-        }
-    });
 
     // 8. Event Listener untuk Tombol Konfirmasi
     const confirmBtn = document.querySelector('button[style*="var(--mint-500)"]');
@@ -1282,6 +1295,25 @@ function updateCount(){
     });
 
 })();
+
+function foodSaveApp() {
+    return {
+        searchQuery: '',
+        products: @json($menus),
+
+        get filteredProducts() {
+            const q = (this.searchQuery || '').toLowerCase().trim();
+            if (!q) return this.products;
+
+            return this.products.filter(p => {
+                const name = (p.name || '').toLowerCase();
+                const store = (p.store || '').toLowerCase();
+                return name.includes(q) || store.includes(q);
+            });
+        }
+    };
+}
 </script>
 
+</div>
 </x-app-layout>

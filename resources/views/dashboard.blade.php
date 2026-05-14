@@ -853,10 +853,21 @@ body::after {
                                 </svg>
                                 <span>Expired: <span x-text="product.formatted_expiry_date"></span></span>
                             </div>
+
+                            {{-- Stok Produk --}}
+                            <div class="flex items-center gap-1.5 mb-3" :style="product.stock < 5 ? 'color: #dc2626; font-weight: 700;' : 'color: var(--mint-600); font-weight: 600;'" style="font-size: 0.75rem;">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                                <span>Stok: <span x-text="product.stock"></span> porsi</span>
+                            </div>
+
                             <div class="pcard-ft">
                                 <div>
-                                    <div class="price-was" x-text="formatRupiah(product.originalPrice)"></div>
-                                    <div class="price-now" x-text="formatRupiah(product.price)"></div>
+                                    <template x-if="product.discount > 0">
+                                        <div class="price-was" x-text="formatRupiah(product.price)"></div>
+                                    </template>
+                                    <div class="price-now" x-text="formatRupiah(product.final_price)"></div>
                                 </div>
                                 {{-- Tombol Keranjang: hanya untuk Konsumen yang login --}}
                                 <button x-show="isKonsumen" @click="addToCart(product, $event)" class="add-btn" aria-label="Tambah ke keranjang">
@@ -958,19 +969,46 @@ body::after {
             products: @json($menus),
 
             get filteredProducts() {
-                return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || p.store.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                const q = (this.searchQuery || '').toLowerCase().trim();
+                if (!q) return this.products;
+
+                return this.products.filter(p => {
+                    const name = (p.name || '').toLowerCase();
+                    const store = (p.store || '').toLowerCase();
+                    return name.includes(q) || store.includes(q);
+                });
             },
 
             get cartTotal() {
-                return this.cart.reduce((total, item) => total + (item.price * item.qty), 0);
+                return this.cart.reduce((total, item) => total + (item.final_price * item.qty), 0);
             },
 
             addToCart(product, event) {
                 // 1. Logic Update Cart
                 const existing = this.cart.find(item => item.id === product.id);
                 if (existing) {
+                    if (existing.qty >= product.stock) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Stok Terbatas',
+                            text: 'Anda sudah mengambil semua stok yang tersedia.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        return;
+                    }
                     existing.qty++;
                 } else {
+                    if (product.stock <= 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Stok Habis',
+                            text: 'Maaf, produk ini baru saja habis.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        return;
+                    }
                     this.cart.push({ ...product, qty: 1 });
                 }
                 this.saveCart();

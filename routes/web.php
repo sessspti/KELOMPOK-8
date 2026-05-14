@@ -6,6 +6,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,7 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
-        $menus = \App\Models\Menu::with('user')->latest()->get();
+        $menus = \App\Models\Menu::with('user')->notExpired()->latest()->get();
         return view('dashboard', compact('menus'));
     })->middleware('role:konsumen')->name('dashboard');
 
@@ -41,7 +42,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/transaction/store', 'store')->name('transaction.store');
     });
 
-    // 3. Profile Management
+    // 4. Notification Management
+    Route::controller(NotificationController::class)->group(function () {
+        Route::post('/notifications/{id}/mark-as-read', 'markAsRead')->name('notifications.markAsRead');
+        Route::post('/notifications/mark-all-as-read', 'markAllAsRead')->name('notifications.markAllAsRead');
+    });
+
+    // 5. Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -58,7 +65,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Route untuk update status pesanan (Memperbaiki error RouteNotFound)
         Route::patch('/orders/{order}/status', function (\App\Models\Order $order) {
-            $order->update(['status' => request('status')]);
+            $status = request('status');
+            $order->update(['status' => $status]);
+            
+            // Kirim notifikasi ke konsumen
+            $icon = match($status) {
+                'paid' => '✅',
+                'proses' => '👨‍🍳',
+                'siap_diambil' => '🥡',
+                'selesai' => '✨',
+                'dibatalkan' => '❌',
+                default => '🔔'
+            };
+
+            $statusText = match($status) {
+                'paid' => 'telah dibayar',
+                'proses' => 'sedang diproses',
+                'siap_diambil' => 'siap diambil',
+                'selesai' => 'telah selesai',
+                'dibatalkan' => 'telah dibatalkan',
+                default => $status
+            };
+
+            $order->user->notify(new \App\Notifications\GeneralNotification(
+                "Status Pesanan Diperbarui",
+                "Pesanan Anda #{$order->transaction_id} {$statusText}.",
+                $icon
+            ));
+
             return back()->with('success', 'Status pesanan berhasil diperbarui!');
         })->name('orders.updateStatus');
 
@@ -85,10 +119,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('sosial')->middleware('role:lembaga_sosial')->group(function () {
         Route::get('/dashboard', function () {
             $orders = \App\Models\Order::where('id_user', auth()->id())->with('menu.user')->latest()->get();
-            $menus = \App\Models\Menu::with('user')->where('stock', '>', 0)->latest()->get();
+            $menus = \App\Models\Menu::with('user')->where('stock', '>', 0)->notExpired()->latest()->get();
             return view('sosial.dashboard', compact('orders', 'menus'));
         })->name('sosial.dashboard');
 
+        Route::post('/claim', [TransactionController::class, 'claimDonation'])->name('sosial.claim');
+        
         // Profil untuk Lembaga Sosial
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('sosial.profile.edit');
     });
