@@ -11,7 +11,6 @@
             <input type="text" placeholder="Cari makanan yang bisa diselamatkan..." x-model="searchQuery">
         </div>
         <div class="hdr-right">
-            <span class="pts-pill">✦ 150.000 FP</span>
 
             {{-- Notifikasi Bell --}}
             <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false">

@@ -690,7 +690,6 @@ body::after {
             <input type="text" placeholder="Cari donasi surplus tersedia...">
         </div>
         <div class="hdr-right">
-            <span class="pts-pill">✦ 150.000 FP</span>
 
             {{-- Profile Dropdown --}}
             <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false" style="z-index: 110;">
