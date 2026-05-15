@@ -18,10 +18,10 @@ class TransactionController extends Controller
         $userId = Auth::id();
         
         // Group orders by transaction_id untuk ditampilkan sebagai satu entri invoice
-        // Hanya menampilkan order dengan status 'paid'
+        // Hanya menampilkan order yang bukan 'pending' (termasuk paid, proses, selesai, dll)
         $transactions = Order::where('id_user', $userId)
             ->whereNotNull('transaction_id')
-            ->where('status', 'paid')
+            ->where('status', '!=', 'pending')
             ->select(
                 'transaction_id', 
                 'payment_method', 
