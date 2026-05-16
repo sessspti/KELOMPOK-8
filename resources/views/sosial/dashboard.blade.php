@@ -691,7 +691,77 @@ body::after {
             <input type="text" placeholder="Cari donasi surplus tersedia..." x-model="searchQuery">
         </div>
         <div class="hdr-right">
+        <!-- NOTIF -->
+         @auth
+            <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false">
+                <button @click="open = !open" class="relative p-2 text-gray-500 hover:bg-gray-100 rounded-xl transition-all focus:outline-none">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    @if(auth()->user()->unreadNotifications->count() > 0)
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+                            {{ auth()->user()->unreadNotifications->count() }}
+                        </span>
+                    @endif
+                </button>
 
+                <div x-show="open" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="transform opacity-0 scale-95"
+                     x-transition:enter-end="transform opacity-100 scale-100"
+                     class="absolute right-0 mt-2 w-72 bg-white border border-gray-100 rounded-2xl shadow-xl z-[130] py-2 origin-top-right"
+                     style="display: none;">
+                    
+                    <div class="px-4 py-2 border-b border-gray-50 flex justify-between items-center">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Notifikasi</span>
+                        @if(auth()->user()->unreadNotifications->count() > 0)
+                            <form action="{{ route('notifications.markAllAsRead') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="text-[10px] text-green-600 hover:text-green-700 font-bold">Tandai semua dibaca</button>
+                            </form>
+                        @endif
+                    </div>
+
+                    <div class="max-h-80 overflow-y-auto">
+                        @forelse(auth()->user()->unreadNotifications as $notification)
+                            <div class="px-4 py-3 hover:bg-gray-50 border-b border-gray-50 relative group">
+                                <div class="flex gap-3">
+                                    <div class="text-lg flex-shrink-0">{{ $notification->data['icon'] ?? '🔔' }}</div>
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-800">{{ $notification->data['title'] }}</p>
+                                        <p class="text-[10px] text-gray-500 mt-0.5">{{ $notification->data['message'] }}</p>
+                                        <p class="text-[9px] text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                    </div>
+                                </div>
+                                <form action="{{ route('notifications.markAsRead', $notification->id) }}" method="POST" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    @csrf
+                                    <button type="submit" title="Tandai dibaca" class="text-gray-400 hover:text-green-600">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        @empty
+                            <div class="px-4 py-8 text-center">
+                                <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg width="20" height="20" class="text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-gray-400 font-medium">Tidak ada notifikasi baru</p>
+                            </div>
+                        @endforelse
+                    </div>
+
+                    @if(auth()->user()->notifications->count() > 0)
+                        <div class="px-4 py-2 border-t border-gray-50 text-center">
+                            <a href="#" class="text-[10px] text-gray-400 hover:text-gray-600 font-bold uppercase tracking-wider">Lihat Semua</a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            @endauth
             {{-- Profile Dropdown --}}
             <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false" style="z-index: 110;">
                 <button @click="open = !open"
@@ -706,6 +776,8 @@ body::after {
                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                     </svg>
                 </button>
+
+                
 
                 <div x-show="open"
                      x-transition:enter="transition ease-out duration-200"
