@@ -35,6 +35,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard', compact('menus'));
     })->middleware('role:konsumen')->name('dashboard');
 
+    // UNTUK LIHAT PROFILE SELLER
+    Route::get('/store/{id}', [\App\Http\Controllers\MenuController::class, 'showStore'])->middleware('role:konsumen')->name('store.show');
+
     // 2. Fitur Transaksi (History, Invoice, & Store)
     Route::controller(TransactionController::class)->group(function () {
         Route::get('/transaction/history', 'history')->name('transaction.history');

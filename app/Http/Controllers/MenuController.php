@@ -84,4 +84,21 @@ class MenuController extends Controller
 
         return redirect()->route('seller.manage')->with('success', 'Menu berhasil dihapus!');
     }
+
+    public function showStore($id)
+{
+    // 1. Ambil data profil penjual berdasarkan ID yang diklik
+    // Kita pastikan role pengguna tersebut memang adalah 'seller'
+    $seller = \App\Models\User::where('role', 'seller')->findOrFail($id);
+
+    // 2. Ambil SEMUA makanan dari tabel menus yang kolom 'user_id'-nya COCOK dengan ID penjual ini
+    // Kita juga gunakan 'notExpired()' agar makanan yang sudah kedaluwarsa tidak ikut tampil
+    $menus = \App\Models\Menu::where('user_id', $id)
+                            ->notExpired()
+                            ->latest()
+                            ->get();
+
+    // 3. Kirim data penjual ($seller) dan daftar makanannya ($menus) ke file tampilan baru
+    return view('store.show', compact('seller', 'menus'));
+}
 }

@@ -845,8 +845,7 @@ body::after {
                             <div class="bdg-urgent" x-text="product.urgent"></div>
                         </div>
                         <div class="pcard-body">
-                            <p class="pcard-store" x-text="product.store"></p>
-                            <h3 class="pcard-name" x-text="product.name"></h3>
+                            <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 block transition-colors" x-text="product.store"></a>                            <h3 class="pcard-name" x-text="product.name"></h3>
                             <div class="flex items-center gap-1.5 mb-3" style="font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
