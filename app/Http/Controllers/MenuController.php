@@ -19,6 +19,7 @@ class MenuController extends Controller
             'discount' => 'required|integer|min:0|max:100',
             'stock'    => 'required|integer|min:1',
             'image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'expiry_date' => 'nullable|date',
         ]);
 
         $imagePath = null;
@@ -33,6 +34,7 @@ class MenuController extends Controller
             'discount' => $validated['discount'],
             'stock'    => $validated['stock'],
             'image'    => $imagePath,
+            'expiry_date' => $request->expiry_date,
         ]);
 
         return redirect()->route('seller.manage')->with('success', 'Produk berhasil ditambahkan!');
@@ -53,6 +55,7 @@ class MenuController extends Controller
             'discount' => 'required|integer|min:0|max:100',
             'stock'    => 'required|integer|min:0',
             'image'    => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'expiry_date' => 'nullable|date',
         ]);
 
         if ($request->hasFile('image')) {
@@ -66,6 +69,7 @@ class MenuController extends Controller
             'discount' => $validated['discount'],
             'stock'    => $validated['stock'],
             'image'    => $menu->image,
+            'expiry_date' => $request->expiry_date,
         ]);
 
         return redirect()->route('seller.manage')->with('success', 'Menu berhasil diperbarui!');
@@ -80,4 +84,36 @@ class MenuController extends Controller
 
         return redirect()->route('seller.manage')->with('success', 'Menu berhasil dihapus!');
     }
+
+    public function showStore($id)
+{
+    // 1. Ambil data profil penjual berdasarkan ID yang diklik
+    // Kita pastikan role pengguna tersebut memang adalah 'seller'
+    $seller = \App\Models\User::where('role', 'seller')->findOrFail($id);
+
+    // 2. Ambil SEMUA makanan dari tabel menus yang kolom 'user_id'-nya COCOK dengan ID penjual ini
+    // Kita juga gunakan 'notExpired()' agar makanan yang sudah kedaluwarsa tidak ikut tampil
+    $menus = \App\Models\Menu::where('user_id', $id)
+                            ->notExpired()
+                            ->latest()
+                            ->get();
+
+    // 3. Kirim data penjual ($seller) dan daftar makanannya ($menus) ke file tampilan baru
+    return view('store.show', compact('seller', 'menus'));
+}
+
+public function toggleStatus()
+{
+    // 1. Ambil data seller yang sedang login
+    $user = auth()->user();
+
+    // 2. Balikkan statusnya: jika 1 (buka) jadi 0 (tutup), jika 0 jadi 1
+    $user->is_open = !$user->is_open;
+    
+    // 3. Simpan perubahan ke database
+    $user->save();
+
+    // 4. Kembalikan ke halaman dashboard dengan pesan sukses
+    return back()->with('success', 'Status toko berhasil diperbarui!');
+}
 }

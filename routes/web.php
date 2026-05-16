@@ -5,11 +5,9 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\TransactionController;
-<<<<<<< HEAD
 use App\Http\Controllers\CartController;
-=======
 use App\Http\Controllers\OrderController;
->>>>>>> origin/bantuin
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -38,32 +36,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
-<<<<<<< HEAD
-        $menus = \App\Models\Menu::with('user')->latest()->get();
-        return view('dashboard', compact('menus'));
-=======
-        $menus = \App\Models\Menu::with('user')->get()->map(function($menu) {
-            return [
-                'id' => $menu->id,
-                'name' => $menu->name,
-                'price' => $menu->price,
-                'originalPrice' => $menu->price + 5000,
-                'image' => $menu->image,
-                'store' => $menu->user->name ?? 'Restoran',
-                'distance' => '1.2 km',
-                'urgent' => 'Sisa ' . $menu->stock,
-                'expired_at' => '20:00',
-            ];
+        // Ambil data menu beserta data penjualnya yang belum expired
+        $menus = \App\Models\Menu::with('user')->notExpired()->latest()->get();
+        
+        // Mapping data is_open milik user ke dalam setiap item menu
+        $menus->map(function ($menu) {
+            $menu->store_is_open = $menu->user ? $menu->user->is_open : 0;
+            return $menu;
         });
 
+        // Tetap ambil data orders jika dashboard membutuhkannya
         $orders = \App\Models\Order::where('id_user', auth()->id())
             ->with('menu.user')
             ->latest()
             ->get();
 
         return view('dashboard', compact('menus', 'orders'));
->>>>>>> origin/bantuin
     })->middleware('role:konsumen')->name('dashboard');
+
+    // UNTUK LIHAT PROFILE SELLER
+    Route::get('/store/{id}', [\App\Http\Controllers\MenuController::class, 'showStore'])->middleware('role:konsumen')->name('store.show');
 
     // 2. Fitur Transaksi (History, Invoice, & Store)
     Route::controller(TransactionController::class)->group(function () {
@@ -72,7 +64,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/transaction/store', 'store')->name('transaction.store');
     });
 
-    // 3. Profile Management
+    // 4. Notification Management
+    Route::controller(NotificationController::class)->group(function () {
+        Route::post('/notifications/{id}/mark-as-read', 'markAsRead')->name('notifications.markAsRead');
+        Route::post('/notifications/mark-all-as-read', 'markAllAsRead')->name('notifications.markAllAsRead');
+    });
+
+    // 5. Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -87,9 +85,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return view('seller.dashboardSeller', compact('menus', 'orders'));
         })->name('seller.dashboard');
 
-        // Route untuk update status pesanan (Memperbaiki error RouteNotFound)
+        // Route untuk update status pesanan
         Route::patch('/orders/{order}/status', function (\App\Models\Order $order) {
-            $order->update(['status' => request('status')]);
+            $status = request('status');
+            $order->update(['status' => $status]);
+            
+            // Kirim notifikasi ke konsumen
+            $icon = match($status) {
+                'paid' => '✅',
+                'proses' => '👨‍🍳',
+                'siap_diambil' => '🥡',
+                'selesai' => '✨',
+                'dibatalkan' => '❌',
+                default => '🔔'
+            };
+
+            $statusText = match($status) {
+                'paid' => 'telah dibayar',
+                'proses' => 'sedang diproses',
+                'siap_diambil' => 'siap diambil',
+                'selesai' => 'telah selesai',
+                'dibatalkan' => 'telah dibatalkan',
+                default => $status
+            };
+
+            if ($order->user) {
+                $order->user->notify(new \App\Notifications\GeneralNotification(
+                    "Status Pesanan Diperbarui",
+                    "Pesanan Anda #{$order->transaction_id} {$statusText}.",
+                    $icon
+                ));
+            }
+
             return back()->with('success', 'Status pesanan berhasil diperbarui!');
         })->name('orders.updateStatus');
 
@@ -110,21 +137,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/tambah-menu', function () {
             return view('seller.tambah-menu');
         })->name('seller.tambah-menu');
+
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('seller.profile.edit');
         
         // Order Management for Seller
-        Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+        Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus.alt');
         Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
-
+        
+        Route::post('/toggle-status', [MenuController::class, 'toggleStatus'])->name('seller.toggle-status');
     });
 
     // 5. Fitur Lembaga Sosial
     Route::prefix('sosial')->middleware('role:lembaga_sosial')->group(function () {
         Route::get('/dashboard', function () {
             $orders = \App\Models\Order::where('id_user', auth()->id())->with('menu.user')->latest()->get();
-            return view('sosial.dashboard', compact('orders'));
+            $menus = \App\Models\Menu::with('user')->where('stock', '>', 0)->notExpired()->latest()->get();
+            return view('sosial.dashboard', compact('orders', 'menus'));
         })->name('sosial.dashboard');
 
+        Route::post('/claim', [TransactionController::class, 'claimDonation'])->name('sosial.claim');
+        
         // Profil untuk Lembaga Sosial
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('sosial.profile.edit');
     });
@@ -134,16 +166,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/checkout-summary', function () {
             return view('transaction.checkout');
         })->name('checkout.summary');
-        
-        Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
-        Route::post('/cart/sync', [CartController::class, 'sync'])->name('cart.sync');
-    });
-
-    Route::post('/transaction/store', [TransactionController::class, 'store'])->middleware('role:konsumen')->name('transaction.store');
-
-    // 7. Fitur Admin (Pusat Kendali Platform)
-    Route::prefix('admin')->middleware('role:admin')->group(function () {
-
         
         Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
         Route::post('/cart/sync', [CartController::class, 'sync'])->name('cart.sync');

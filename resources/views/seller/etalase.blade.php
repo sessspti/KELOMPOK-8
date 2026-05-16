@@ -314,8 +314,8 @@ body::before {
         @foreach($menus as $menu)
         <div class="menu-card">
             {{-- Foto --}}
-            @if($menu->image)
-                <img src="{{ asset('storage/' . $menu->image) }}" alt="{{ $menu->name }}" class="card-img">
+            @if($menu->image_url)
+                <img src="{{ $menu->image_url }}" alt="{{ $menu->name }}" class="card-img">
             @else
                 <div class="card-img-placeholder">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -341,6 +341,10 @@ body::before {
                     @else
                         <span class="stock-badge stock-out">Habis</span>
                     @endif
+                </div>
+                <div style="font-size: 0.75rem; color: var(--muted); margin-top: 8px; display: flex; align-items: center; gap: 4px;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/></svg>
+                    Exp: {{ $menu->expiry_date ? \Carbon\Carbon::parse($menu->expiry_date)->format('d M Y') : '-' }}
                 </div>
             </div>
 
