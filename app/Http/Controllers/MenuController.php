@@ -101,4 +101,19 @@ class MenuController extends Controller
     // 3. Kirim data penjual ($seller) dan daftar makanannya ($menus) ke file tampilan baru
     return view('store.show', compact('seller', 'menus'));
 }
+
+public function toggleStatus()
+{
+    // 1. Ambil data seller yang sedang login
+    $user = auth()->user();
+
+    // 2. Balikkan statusnya: jika 1 (buka) jadi 0 (tutup), jika 0 jadi 1
+    $user->is_open = !$user->is_open;
+    
+    // 3. Simpan perubahan ke database
+    $user->save();
+
+    // 4. Kembalikan ke halaman dashboard dengan pesan sukses
+    return back()->with('success', 'Status toko berhasil diperbarui!');
+}
 }

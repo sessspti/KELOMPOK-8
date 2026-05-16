@@ -843,6 +843,24 @@ body::after {
                                 <span x-text="product.distance"></span>
                             </div>
                             <div class="bdg-urgent" x-text="product.urgent"></div>
+
+
+                            <div class="bdg-urgent" x-text="product.urgent"></div>
+
+                        {{-- OVERLAY TOKO TUTUP --}}
+                            <template x-if="product.store_is_open == 0">
+                                <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.4); backdrop-filter: blur(1px);">
+                                    <div style="background: #ef4444; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                                        Toko Tutup
+                                    </div>
+                                </div>
+                            </template>
+
+
+
+
+
+
                         </div>
                         <div class="pcard-body">
                             <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 block transition-colors" x-text="product.store"></a>                            <h3 class="pcard-name" x-text="product.name"></h3>
@@ -869,11 +887,39 @@ body::after {
                                     <div class="price-now" x-text="formatRupiah(product.final_price)"></div>
                                 </div>
                                 {{-- Tombol Keranjang: hanya untuk Konsumen yang login --}}
-                                <button x-show="isKonsumen" @click="addToCart(product, $event)" class="add-btn" aria-label="Tambah ke keranjang">
+
+
+                                {{-- Tombol Keranjang (Cek Status Toko & Login Konsumen) --}}
+                                    <template x-if="product.store_is_open == 1">
+                                        <button x-show="isKonsumen" @click="addToCart(product, $event)" class="add-btn" aria-label="Tambah ke keranjang">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                            </svg>
+                                        </button>
+                                    </template>
+
+                                    {{-- Tampilan Tombol Jika Toko Tutup --}}
+                                    <template x-if="product.store_is_open == 0">
+                                        <button x-show="isKonsumen" disabled class="add-btn" aria-label="Toko Tutup" style="background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none;">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                            </svg>
+                                        </button>
+                                    </template>
+
+
+
+
+
+                                <!-- <button x-show="isKonsumen" @click="addToCart(product, $event)" class="add-btn" aria-label="Tambah ke keranjang">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                     </svg>
-                                </button>
+                                </button> -->
+
+
+
+
                                 {{-- CTA Masuk: untuk guest / role bukan konsumen --}}
                                 <a x-show="!isKonsumen" href="{{ route('login') }}"
                                    class="add-btn" aria-label="Masuk untuk membeli"

@@ -551,11 +551,32 @@ body::before {
         <div class="hdr-divider"></div>
         <span class="hdr-role">✦ Seller Dashboard</span>
         <div class="hdr-right">
-            {{-- Status Toko --}}
+
+
+
+        {{-- Status Toko (Sudah terhubung ke database) --}}
+            <form action="{{ route('seller.toggle-status') }}" method="POST" style="display: inline-block;">
+                @csrf
+                <button type="submit" class="store-btn" id="storeBtn" 
+                        style="cursor: pointer; background-color: {{ auth()->user()->is_open ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}; color: {{ auth()->user()->is_open ? '#22c55e' : '#ef4444' }}; border: 1px solid {{ auth()->user()->is_open ? '#bbf7d4' : '#fca5a5' }};">
+                    
+                    <span class="sdot" id="sdot" style="background-color: {{ auth()->user()->is_open ? '#22c55e' : '#ef4444' }};"></span>
+                    
+                    <span id="storeLabel">{{ auth()->user()->is_open ? 'Toko Buka' : 'Toko Tutup' }}</span>
+                </button>
+            </form>
+
+
+
+
+
+
+
+            <!-- {{-- Status Toko --}}
             <button class="store-btn" id="storeBtn" onclick="toggleStore()">
                 <span class="sdot" id="sdot"></span>
                 <span id="storeLabel">Toko Buka</span>
-            </button>
+            </button> -->
             {{-- Notif --}}
             <button class="notif-btn" title="Notifikasi" onclick="switchTab('notif')">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>

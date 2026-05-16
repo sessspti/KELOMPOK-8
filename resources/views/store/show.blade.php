@@ -861,19 +861,41 @@ body::before {
     {{-- ══ STORE BENTO HEADER ══ --}}
     <div class="store-bento">
 
-        {{-- Identity — big card kiri --}}
+       {{-- Identity — big card kiri --}}
         <div class="sb-identity">
             <div>
                 <div class="sb-status">
-                    <span class="sb-status-dot"></span>
-                    Toko Buka
-                </div>
-                <div class="sb-avatar-wrap">
-                    <div class="sb-avatar">{{ substr($seller->name, 0, 2) }}</div>
-                    <div class="sb-verified">✅</div>
-                </div>
-                <div class="sb-name">{{ $seller->name }}</div>
-                <div class="sb-desc">Selamat datang! Kami menyediakan berbagai pilihan kuliner lezat yang siap diselamatkan hari ini. Dijamin bersih, lezat, dan dikemas dengan higienis.</div>
+                    <div class="sb-status" style="background-color: {{ $seller->is_open ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}; color: {{ $seller->is_open ? '#22c55e' : '#ef4444' }}; border: 1px solid {{ $seller->is_open ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)' }};">
+                        <span class="sb-status-dot" style="background-color: {{ $seller->is_open ? '#22c55e' : '#ef4444' }};"></span>
+                        {{ $seller->is_open ? 'Toko Buka' : 'Toko Tutup' }}
+                    </div>
+
+                    </div>
+                        <div class="sb-avatar-wrap">
+                            <div class="sb-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                @if($seller->avatar)
+                                    <img src="{{ asset('storage/' . $seller->avatar) }}" alt="{{ $seller->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                @elseif($seller->profile_photo)
+                                    <img src="{{ asset('storage/' . $seller->profile_photo) }}" alt="{{ $seller->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                @else
+                                    {{ strtoupper(substr($seller->name, 0, 2)) }}
+                                @endif
+                            </div>
+                            <div class="sb-verified">✅</div>
+                        </div>
+                    <div class="sb-name">{{ $seller->name }}</div>
+
+                    <div class="sb-desc" style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                        <span style="background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                            ✨ Bersih & Higienis
+                        </span>
+                        <span style="background: #f1f5f9; color: #475569; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                            💰 Hemat di Kantong
+                        </span>
+                        <span style="background: var(--mint-50, #f0fdf6); color: var(--mint-700, #15803d); padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--mint-200, #bbf7d4); display: flex; align-items: center; gap: 4px;">
+                            🌍 Food Rescue
+                        </span>
+                    </div>
             </div>
             <div class="sb-actions" style="margin-top:1.5rem;">
                 <button class="sb-btn-follow"
@@ -882,7 +904,7 @@ body::before {
                         x-text="isFollowed ? '✓ Mengikuti' : '＋ Ikuti'">
                 </button>
                 <button class="sb-btn-chat" @click="alert('Fitur chat dalam pengembangan!')">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                     </svg>
                     Chat
@@ -912,11 +934,11 @@ body::before {
             </div>
             <div class="sb-divider"></div>
             <div class="sb-location">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px; flex-shrink: 0;">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                     <circle cx="12" cy="11" r="3"/>
                 </svg>
-                Kota Bandung
+                <span>{{ $seller->address ?? $seller->alamat ?? 'Lokasi belum diatur' }}</span>
             </div>
         </div>
 
@@ -988,22 +1010,40 @@ body::before {
 
                     <div class="pcard-footer">
                         <div class="pcard-price" x-text="formatRupiah(product.final_price)"></div>
-                        <button class="pcard-btn"
-                                @click="addToCart(product)"
-                                :disabled="product.stock === 0"
-                                :class="{ 'added': justAdded === product.id }">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                      :d="product.stock === 0
-                                          ? 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636'
-                                          : justAdded === product.id
-                                          ? 'M5 13l4 4L19 7'
-                                          : 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'">
-                                </path>
-                            </svg>
-                            <span x-text="product.stock === 0 ? 'Stok Habis' : justAdded === product.id ? 'Ditambahkan!' : 'Masukkan Keranjang'"></span>
-                        </button>
+                        
+                        {{-- CEK APAKAH TOKO BUKA ATAU TUTUP --}}
+                        @if($seller->is_open)
+                            
+                            <button class="pcard-btn"
+                                    @click="addToCart(product)"
+                                    :disabled="product.stock === 0"
+                                    :class="{ 'added': justAdded === product.id }">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                        :d="product.stock === 0
+                                            ? 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636'
+                                            : justAdded === product.id
+                                            ? 'M5 13l4 4L19 7'
+                                            : 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'">
+                                    </path>
+                                </svg>
+                                <span x-text="product.stock === 0 ? 'Stok Habis' : justAdded === product.id ? 'Ditambahkan!' : 'Masukkan Keranjang'"></span>
+                            </button>
+
+                        @else
+
+                            <button class="pcard-btn" disabled style="background-color: #e2e8f0; color: #94a3b8; cursor: not-allowed; border: none; opacity: 0.8;">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                </svg>
+                                <span>Toko Tutup</span>
+                            </button>
+
+                        @endif
                     </div>
+
+
+
                 </div>
             </div>
         </template>

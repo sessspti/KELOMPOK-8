@@ -30,8 +30,18 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // 1. Dashboard Konsumen
+   // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
+        // Ambil data menu beserta data penjualnya
         $menus = \App\Models\Menu::with('user')->notExpired()->latest()->get();
+        
+        // Mapping (titipkan) data is_open milik user ke dalam setiap item menu
+        $menus->map(function ($menu) {
+            // Jika user/penjualnya ada, ambil status is_open, jika tidak anggap tutup (0)
+            $menu->store_is_open = $menu->user ? $menu->user->is_open : 0;
+            return $menu;
+        });
+
         return view('dashboard', compact('menus'));
     })->middleware('role:konsumen')->name('dashboard');
 
@@ -116,6 +126,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/tambah-menu', function () {
             return view('seller.tambah-menu');
         })->name('seller.tambah-menu');
+
+        Route::post('/seller/toggle-status', [MenuController::class, 'toggleStatus'])->name('seller.toggle-status');
+
+
+
     });
 
     // 5. Fitur Lembaga Sosial
