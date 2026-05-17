@@ -18,6 +18,9 @@
 
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         body {
@@ -234,6 +237,25 @@
                 }
             }
         });
+
+        // SweetAlert2 Status Handling
+        @if (session('status'))
+            Swal.fire({
+                title: "Berhasil!",
+                text: "{{ session('status') }}",
+                icon: "success",
+                confirmButtonColor: "#16a34a",
+            });
+        @endif
+
+        @if ($errors->any())
+            Swal.fire({
+                title: "Eror!",
+                text: "Terjadi kesalahan. Silakan periksa kembali email atau kata sandi Anda.",
+                icon: "error",
+                confirmButtonColor: "#16a34a",
+            });
+        @endif
     </script>
 </body>
 

@@ -107,5 +107,45 @@
                 {{ $slot }}
             </main>
         </div>
+
+        <!-- SweetAlert2 -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                @if(session('success'))
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: "{{ session('success') }}",
+                        showConfirmButton: false,
+                        timer: 2500,
+                        timerProgressBar: true,
+                        background: '#ffffff',
+                        iconColor: '#22c55e',
+                        customClass: {
+                            popup: 'rounded-2xl shadow-xl border border-gray-100',
+                            title: 'text-xl font-bold text-gray-800',
+                            htmlContainer: 'text-sm text-gray-600'
+                        }
+                    });
+                @endif
+
+                @if(session('status') === 'profile-updated')
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Profil Diperbarui',
+                        text: 'Informasi profil Anda telah berhasil disimpan.',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        background: '#ffffff',
+                        iconColor: '#22c55e',
+                        customClass: {
+                            popup: 'rounded-2xl shadow-xl border border-gray-100',
+                        }
+                    });
+                @endif
+            });
+        </script>
     </body>
 </html>

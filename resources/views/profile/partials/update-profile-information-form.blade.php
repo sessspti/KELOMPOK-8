@@ -33,66 +33,80 @@
                 </div>
             </div>
             <div>
-                <input type="file" name="avatar" id="avatar" class="hidden" accept="image/jpeg,image/png,image/jpg" onchange="previewImage(event)">
-                <button type="button" onclick="document.getElementById('avatar').click()" class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1">
-                    Ubah Foto Profil
-                </button>
-                <p class="mt-2 text-xs text-gray-500">Format JPG, JPEG, atau PNG. Maksimal 2MB.</p>
-                <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('avatar')" />
-            </div>
+            <input type="file" name="avatar" id="avatar" class="hidden" accept="image/jpeg,image/png,image/jpg" onchange="previewImage(event)" {{ !Auth::user()->avatar ? 'required' : '' }}>
+            <button type="button" onclick="document.getElementById('avatar').click()" class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1">
+                Ubah Foto Profil
+            </button>
+            <p class="mt-2 text-xs text-gray-500">Format JPG, JPEG, atau PNG. Maksimal 2MB.</p>
+            <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('avatar')" />
         </div>
+    </div>
 
-        <script>
-            function previewImage(event) {
-                const reader = new FileReader();
-                reader.onload = function(){
-                    const output = document.getElementById('avatar-preview');
-                    const initials = document.getElementById('avatar-initials');
-                    if (output) {
-                        output.src = reader.result;
-                        output.style.display = 'block';
-                    }
-                    if (initials) {
-                        initials.style.display = 'none';
-                    }
-                };
-                if(event.target.files[0]) {
-                    reader.readAsDataURL(event.target.files[0]);
+    <script>
+        function previewImage(event) {
+            const reader = new FileReader();
+            reader.onload = function(){
+                const output = document.getElementById('avatar-preview');
+                const initials = document.getElementById('avatar-initials');
+                if (output) {
+                    output.src = reader.result;
+                    output.style.display = 'block';
                 }
+                if (initials) {
+                    initials.style.display = 'none';
+                }
+            };
+            if(event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
             }
-        </script>
+        }
+    </script>
 
-        <div>
-            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-            <input id="name" name="name" type="text" value="{{ old('name', $user->name) }}" required autofocus autocomplete="name" 
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm" />
-            <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('name')" />
-        </div>
+    <div>
+        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+        <input id="name" name="name" type="text" value="{{ old('name', $user->name) }}" required autofocus autocomplete="name" 
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm" />
+        <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('name')" />
+    </div>
 
-        <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Alamat Email</label>
-            <input id="email" name="email" type="email" value="{{ old('email', $user->email) }}" required autocomplete="username" 
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm" />
-            <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('email')" />
+    <div>
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Alamat Email</label>
+        <input id="email" name="email" type="email" value="{{ old('email', $user->email) }}" required autocomplete="username" 
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm" />
+        <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('email')" />
 
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <div class="mt-3 bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                    <p class="text-sm text-yellow-800">
-                        {{ __('Alamat email Anda belum terverifikasi.') }}
+        @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
+            <div class="mt-3 bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                <p class="text-sm text-yellow-800">
+                    {{ __('Alamat email Anda belum terverifikasi.') }}
 
-                        <button form="send-verification" class="underline text-sm text-yellow-600 hover:text-yellow-900 font-medium">
-                            {{ __('Klik di sini untuk mengirim ulang email verifikasi.') }}
-                        </button>
+                    <button form="send-verification" class="underline text-sm text-yellow-600 hover:text-yellow-900 font-medium">
+                        {{ __('Klik di sini untuk mengirim ulang email verifikasi.') }}
+                    </button>
+                </p>
+
+                @if (session('status') === 'verification-link-sent')
+                    <p class="mt-2 font-medium text-sm text-green-600">
+                        {{ __('Tautan verifikasi baru telah dikirim ke alamat email Anda.') }}
                     </p>
+                @endif
+            </div>
+        @endif
+    </div>
 
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
-                            {{ __('Tautan verifikasi baru telah dikirim ke alamat email Anda.') }}
-                        </p>
-                    @endif
-                </div>
-            @endif
-        </div>
+    <div>
+        <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
+        <input id="phone_number" name="phone_number" type="text" value="{{ old('phone_number', $user->phone_number) }}" autocomplete="tel" required
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm" />
+        <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('phone_number')" />
+    </div>
+
+    <div>
+        <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+        <textarea id="address" name="address" rows="3" required
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm">{{ old('address', $user->address) }}</textarea>
+        <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('address')" />
+    </div>
 
         <div class="flex items-center gap-4 pt-4">
             <button type="submit" class="inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-xl shadow-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 transform hover:-translate-y-0.5">

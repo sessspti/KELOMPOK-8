@@ -650,6 +650,66 @@ body::after {
     border: 3px solid #fff;
 }
 
+/* ─── TRANSACTION TABLE ─── */
+.tx-table-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    margin-top: 2rem;
+}
+.tx-table { width: 100%; border-collapse: collapse; }
+.tx-table th {
+    background: var(--mint-50);
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--mint-600);
+    border-bottom: 1.5px solid var(--border);
+}
+.tx-table td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+}
+.tx-table tr:last-child td { border-bottom: none; }
+.tx-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--r-pill);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.tx-status.selesai { background: var(--mint-100); color: var(--mint-700); }
+.tx-status.proses { background: #fee2e2; color: #dc2626; }
+.tx-status::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+.btn-action {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--faint);
+    color: #fff;
+    border: none;
+    cursor: not-allowed;
+    transition: all 0.2s;
+}
+.btn-action.active {
+    background: var(--mint-500);
+    cursor: pointer;
+}
+.btn-action.active:hover {
+    background: var(--mint-600);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+}
+
 </style>
 
 <div x-data="foodSaveApp()" class="min-h-screen">
@@ -766,7 +826,16 @@ body::after {
                 <template x-for="product in filteredProducts" :key="product.id">
                     <div class="pcard">
                         <div class="pcard-img">
-                            <img :src="product.image" :alt="product.name">
+                            <template x-if="product.image_url">
+                                <img :src="product.image_url" :alt="product.name">
+                            </template>
+                            <template x-if="!product.image_url">
+                                <div class="flex items-center justify-center h-full bg-mint-100">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="48" height="48" style="opacity:0.4;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                            </template>
                             <div class="bdg-dist">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -774,27 +843,83 @@ body::after {
                                 <span x-text="product.distance"></span>
                             </div>
                             <div class="bdg-urgent" x-text="product.urgent"></div>
+
+
+                            <div class="bdg-urgent" x-text="product.urgent"></div>
+
+                        {{-- OVERLAY TOKO TUTUP --}}
+                            <template x-if="product.store_is_open == 0">
+                                <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.4); backdrop-filter: blur(1px);">
+                                    <div style="background: #ef4444; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                                        Toko Tutup
+                                    </div>
+                                </div>
+                            </template>
+
+
+
+
+
+
                         </div>
                         <div class="pcard-body">
-                            <p class="pcard-store" x-text="product.store"></p>
-                            <h3 class="pcard-name" x-text="product.name"></h3>
+                            <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 block transition-colors" x-text="product.store"></a>                            <h3 class="pcard-name" x-text="product.name"></h3>
                             <div class="flex items-center gap-1.5 mb-3" style="font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
                                 </svg>
-                                <span>Expired: <span x-text="product.expired_at"></span></span>
+                                <span>Expired: <span x-text="product.formatted_expiry_date"></span></span>
                             </div>
+
+                            {{-- Stok Produk --}}
+                            <div class="flex items-center gap-1.5 mb-3" :style="product.stock < 5 ? 'color: #dc2626; font-weight: 700;' : 'color: var(--mint-600); font-weight: 600;'" style="font-size: 0.75rem;">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                </svg>
+                                <span>Stok: <span x-text="product.stock"></span> porsi</span>
+                            </div>
+
                             <div class="pcard-ft">
                                 <div>
-                                    <div class="price-was" x-text="formatRupiah(product.originalPrice)"></div>
-                                    <div class="price-now" x-text="formatRupiah(product.price)"></div>
+                                    <template x-if="product.discount > 0">
+                                        <div class="price-was" x-text="formatRupiah(product.price)"></div>
+                                    </template>
+                                    <div class="price-now" x-text="formatRupiah(product.final_price)"></div>
                                 </div>
                                 {{-- Tombol Keranjang: hanya untuk Konsumen yang login --}}
-                                <button x-show="isKonsumen" @click="addToCart(product, $event)" class="add-btn" aria-label="Tambah ke keranjang">
+
+
+                                {{-- Tombol Keranjang (Cek Status Toko & Login Konsumen) --}}
+                                    <template x-if="product.store_is_open == 1">
+                                        <button x-show="isKonsumen" @click="addToCart(product, $event)" class="add-btn" aria-label="Tambah ke keranjang">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                            </svg>
+                                        </button>
+                                    </template>
+
+                                    {{-- Tampilan Tombol Jika Toko Tutup --}}
+                                    <template x-if="product.store_is_open == 0">
+                                        <button x-show="isKonsumen" disabled class="add-btn" aria-label="Toko Tutup" style="background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none;">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                            </svg>
+                                        </button>
+                                    </template>
+
+
+
+
+
+                                <!-- <button x-show="isKonsumen" @click="addToCart(product, $event)" class="add-btn" aria-label="Tambah ke keranjang">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                     </svg>
-                                </button>
+                                </button> -->
+
+
+
+
                                 {{-- CTA Masuk: untuk guest / role bukan konsumen --}}
                                 <a x-show="!isKonsumen" href="{{ route('login') }}"
                                    class="add-btn" aria-label="Masuk untuk membeli"
@@ -889,19 +1014,46 @@ body::after {
             products: @json($menus),
 
             get filteredProducts() {
-                return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || p.store.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                const q = (this.searchQuery || '').toLowerCase().trim();
+                if (!q) return this.products;
+
+                return this.products.filter(p => {
+                    const name = (p.name || '').toLowerCase();
+                    const store = (p.store || '').toLowerCase();
+                    return name.includes(q) || store.includes(q);
+                });
             },
 
             get cartTotal() {
-                return this.cart.reduce((total, item) => total + (item.price * item.qty), 0);
+                return this.cart.reduce((total, item) => total + (item.final_price * item.qty), 0);
             },
 
             addToCart(product, event) {
                 // 1. Logic Update Cart
                 const existing = this.cart.find(item => item.id === product.id);
                 if (existing) {
+                    if (existing.qty >= product.stock) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Stok Terbatas',
+                            text: 'Anda sudah mengambil semua stok yang tersedia.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        return;
+                    }
                     existing.qty++;
                 } else {
+                    if (product.stock <= 0) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Stok Habis',
+                            text: 'Maaf, produk ini baru saja habis.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        return;
+                    }
                     this.cart.push({ ...product, qty: 1 });
                 }
                 this.saveCart();
@@ -914,7 +1066,7 @@ body::after {
                     const cartRect = cartBtn.getBoundingClientRect();
 
                     const flyEl = document.createElement('img');
-                    flyEl.src = product.image;
+                    flyEl.src = product.image_url || '{{ asset('images/placeholder.png') }}';
                     flyEl.className = 'fly-item';
                     flyEl.style.left = `${rect.left}px`;
                     flyEl.style.top = `${rect.top}px`;

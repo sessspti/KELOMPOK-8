@@ -232,6 +232,10 @@ body::before {
 /* ═══════════════ PAGE BODY ═══════════════ */
 .content { padding: 2rem; display: flex; flex-direction: column; gap: 2rem; }
 
+/* ─── TWO COLUMN LAYOUT ─── */
+.two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+@media(max-width:1200px){.two-col{grid-template-columns:1fr}}
+
 /* ═══════════════ STAT CARDS ═══════════════ */
 .stat-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
@@ -610,16 +614,35 @@ textarea.nf-input { resize: none; height: 72px; font-family: inherit; }
 
 /* page scroll */
 body.no-scroll { overflow: hidden; }
+
+/* ─── MONITORING ─── */
+.mon-store-group { margin-bottom: 2rem; }
+.mon-store-hdr {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.75rem 1.75rem; background: var(--blue-50);
+    border-bottom: 1.5px solid var(--border);
+}
+.mon-store-name { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 0.9375rem; color: var(--blue-700); }
+.mon-table { width: 100%; border-collapse: collapse; }
+.mon-table th {
+    padding: 0.75rem 1.75rem; text-align: left;
+    font-size: 0.625rem; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--faint);
+    background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.mon-table td { padding: 1rem 1.75rem; border-bottom: 1px solid var(--border); font-size: 0.8125rem; }
 </style>
 
 {{-- ════════════ SIDEBAR ════════════ --}}
 <aside class="sidebar">
     <div class="sb-brand">
-        <div class="sb-logo">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
-        </div>
-        <span class="sb-name">Food<em>Save</em></span>
-        <span class="sb-admin-tag">Admin</span>
+        <a href="{{ route('admin.dashboard') }}" style="display:flex; align-items:center; gap:0.75rem; text-decoration:none; width:100%;">
+            <div class="sb-logo">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <span class="sb-name">FoodSave</span>
+            <span class="sb-admin-tag">Admin</span>
+        </a>
     </div>
 
     <nav class="sb-nav">
@@ -888,106 +911,113 @@ body.no-scroll { overflow: hidden; }
             </div>
         </div>
 
-        {{-- ══ 3. MONITORING & LOG ══ --}}
-        <div id="sec-monitor" class="two-col">
-            {{-- Log Transaksi --}}
-            <div class="sec">
-                <div class="sec-hdr">
-                    <div class="sec-hdr-left">
-                        <div class="sec-kicker">Monitoring</div>
-                        <div class="sec-title">Log Transaksi</div>
-                    </div>
-                    <div class="sec-hdr-right">
-                        <button class="btn btn-outline btn-xs">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            Ekspor
-                        </button>
-                    </div>
+        {{-- ══ 3. MONITORING TRANSAKSI & KELUHAN ══ --}}
+        <div class="two-col">
+            <div id="sec-monitor" class="sec" style="overflow: hidden;">
+            <div class="sec-hdr">
+                <div class="sec-hdr-left">
+                    <div class="sec-kicker">MONITORING</div>
+                    <div class="sec-title">Log Transaksi</div>
                 </div>
-                <div class="tbl-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Dari → Ke</th>
-                                <th>Item</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><span class="log-id">#TRX-0081</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Katering Berkah</strong><br><span style="color:var(--muted);">→ Andi Pratama</span></td>
-                                <td style="font-size:0.8125rem;">Nasi Box × 3</td>
-                                <td><span class="pill selesai">Selesai</span></td>
-                            </tr>
-                            <tr>
-                                <td><span class="log-id">#DON-0042</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Bakery Sari Rasa</strong><br><span style="color:var(--muted);">→ Rumah Yatim</span></td>
-                                <td style="font-size:0.8125rem;">Roti Sisa × 25</td>
-                                <td><span class="pill proses">Proses</span></td>
-                            </tr>
-                            <tr>
-                                <td><span class="log-id">#TRX-0080</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Warung Bu Yanti</strong><br><span style="color:var(--muted);">→ Siti Rahma</span></td>
-                                <td style="font-size:0.8125rem;">Sayur Segar × 2kg</td>
-                                <td><span class="pill selesai">Selesai</span></td>
-                            </tr>
-                            <tr>
-                                <td><span class="log-id">#DON-0041</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Katering Berkah</strong><br><span style="color:var(--muted);">→ Bank Makanan</span></td>
-                                <td style="font-size:0.8125rem;">Paket Hemat × 10</td>
-                                <td><span class="pill proses">Proses</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="sec-hdr-right">
+                    <button class="btn btn-outline btn-xs" style="border-radius:var(--r-pill); padding:0.4rem 1rem; font-size:0.75rem; color:var(--muted);">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px; vertical-align:middle; display:inline-block;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Ekspor
+                    </button>
                 </div>
             </div>
+            
+            <div class="tbl-wrap" style="overflow-x: auto; height: 500px; overflow-y: auto;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1.5px solid var(--border); color:var(--faint); text-transform:uppercase; font-size:0.6rem; font-weight:800; letter-spacing:0.12em; background:var(--surface);">
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">ID</th>
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">DARI &rarr; KE</th>
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">ITEM</th>
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($ordersGrouped as $storeName => $orders)
+                            @foreach($orders as $order)
+                            <tr class="toko-row" style="border-bottom:1px solid var(--border);">
+                                <td style="padding:1rem 1.5rem; color:var(--blue-500); font-family:'JetBrains Mono', monospace; font-size:0.75rem; font-weight:600;">
+                                    #{{ $order->user->role === 'lembaga_sosial' ? 'DON' : 'TRX' }}-{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}
+                                </td>
+                                <td style="padding:1rem 1.5rem;">
+                                    <div style="font-weight:700; color:var(--ink); font-size:0.875rem;">{{ $storeName }}</div>
+                                    <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">
+                                        &rarr; {{ $order->user->name }}
+                                    </div>
+                                </td>
+                                <td style="padding:1rem 1.5rem; color:var(--ink); font-size:0.8125rem;">
+                                    {{ $order->menu->name }} &times; {{ $order->quantity }}
+                                </td>
+                                <td style="padding:1rem 1.5rem;">
+                                    <span class="pill {{ strtolower($order->status) === 'selesai' ? 'selesai' : 'proses' }}" style="padding:4px 8px; font-size:0.6rem;">
+                                        {{ strtoupper($order->status) }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="4" style="padding: 4rem; text-align: center; color: var(--faint);">
+                                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0.2; margin-bottom: 1rem; margin-left:auto; margin-right:auto; display:block;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    <p>Belum ada data transaksi yang tercatat di sistem.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-            {{-- Laporan Keluhan --}}
-            <div class="sec">
-                <div class="sec-hdr">
-                    <div class="sec-hdr-left">
-                        <div class="sec-kicker">Laporan</div>
-                        <div class="sec-title">Keluhan Pengguna</div>
-                    </div>
-                    <div class="sec-hdr-right">
-                        <span class="pill keluhan">2 Baru</span>
-                    </div>
+        {{-- KANAN: LAPORAN KELUHAN PENGGUNA --}}
+        <div class="sec">
+            <div class="sec-hdr">
+                <div class="sec-hdr-left">
+                    <div class="sec-kicker">LAPORAN</div>
+                    <div class="sec-title">Keluhan Pengguna</div>
                 </div>
-                <div class="keluhan-card">
-                    <div class="keluhan-top">
-                        <div class="keluhan-title">Makanan Tidak Layak Konsumsi</div>
-                        <span class="pill keluhan">Baru</span>
-                    </div>
-                    <div class="keluhan-meta">Andi Pratama · Katering Berkah · 30 menit lalu</div>
-                    <div class="keluhan-desc">Nasi box yang diterima sudah basi dan berbau. Perlu tindakan segera dari pihak Admin untuk menangguhkan listing ini.</div>
-                    <div style="margin-top:0.75rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs">Tangani</button>
-                        <button class="btn btn-outline btn-xs">Detail</button>
-                    </div>
-                </div>
-                <div class="keluhan-card">
-                    <div class="keluhan-top">
-                        <div class="keluhan-title">Stok Tidak Sesuai</div>
-                        <span class="pill keluhan">Baru</span>
-                    </div>
-                    <div class="keluhan-meta">Rumah Yatim Al-Ikhlas · Warung Bu Yanti · 3 jam lalu</div>
-                    <div class="keluhan-desc">Kami memesan 20 porsi namun saat pengambilan hanya tersedia 8 porsi. Mohon seller dikonfirmasi ulang sebelum publish listing.</div>
-                    <div style="margin-top:0.75rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs">Tangani</button>
-                        <button class="btn btn-outline btn-xs">Detail</button>
-                    </div>
-                </div>
-                <div class="keluhan-card">
-                    <div class="keluhan-top">
-                        <div class="keluhan-title">Waktu Pickup Tidak Akurat</div>
-                        <span class="pill ditangani">Ditangani</span>
-                    </div>
-                    <div class="keluhan-meta">Bank Makanan Komunitas · Bakery Sari Rasa · Kemarin</div>
-                    <div class="keluhan-desc">Jadwal pickup tertulis pukul 18.00 namun restoran sudah tutup sejak 17.00. Telah dikonfirmasi dan seller sudah update jam operasional.</div>
+                <div class="sec-hdr-right">
+                    <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; border-radius:var(--r-pill); font-size:0.6rem; padding:2px 8px;">2 BARU</span>
                 </div>
             </div>
+            <div style="height: 500px; overflow-y: auto; overflow-x: hidden;">
+                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
+                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Makanan Tidak Layak Konsumsi</div>
+                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
+                    </div>
+                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Andi Pratama · Katering Berkah · 30 menit lalu</div>
+                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Nasi box yang diterima sudah basi dan berbau. Perlu tindakan segera dari pihak Admin untuk menangguhkan listing ini.</div>
+                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
+                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
+                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
+                    </div>
+                </div>
+                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
+                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Stok Tidak Sesuai</div>
+                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
+                    </div>
+                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Rumah Yatim Al-Ikhlas · Warung Bu Yanti · 3 jam lalu</div>
+                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Kami memesan 20 porsi namun saat pengambilan hanya tersedia 8 porsi. Mohon seller dikonfirmasi ulang sebelum publish listing.</div>
+                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
+                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
+                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
+                    </div>
+                </div>
+                <div class="keluhan-card" style="padding:1.25rem 1.75rem;">
+                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Waktu Pickup Tidak Akurat</div>
+                        <span class="pill ditangani" style="background:var(--mint-100); color:var(--mint-600); font-size:0.55rem; padding:2px 6px;">DITANGANI</span>
+                    </div>
+                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Bank Makanan Komunitas · Bakery Sari Rasa · Kemarin</div>
+                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Jadwal pickup tertulis pukul 18.00 namun restoran sudah tutup sejak 17.00. Telah dikonfirmasi dan seller sudah update jam operasional.</div>
+                </div>
+            </div>
+        </div>
         </div>
 
         {{-- ══ MANAJEMEN KONTEN ARTIKEL ══ --}}
