@@ -1,8 +1,4 @@
 <x-app-layout>
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 @php
     // Unify data from different controllers
     if (isset($order)) {
@@ -25,10 +21,6 @@
     }
 @endphp
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
@@ -86,6 +78,16 @@
         transition: all 0.2s; border: none; cursor: pointer;
     }
     .btn-print:hover { background: #000; transform: translateY(-2px); }
+    .btn-back {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: var(--white); color: var(--ink); padding: 0.75rem 1.5rem;
+        border-radius: 99px; font-weight: 600; text-decoration: none; margin-top: 2rem;
+        transition: all 0.2s; border: 1px solid #e2e8f0; cursor: pointer;
+    }
+    .btn-back:hover { background: #f8fafc; transform: translateY(-2px); border-color: var(--mint-600); }
+    @media print {
+        .hide-on-print { display: none !important; }
+    }
 </style>
 
 <div class="invoice-card">
@@ -142,8 +144,12 @@
         <p style="font-size: 0.75rem; color: var(--muted); margin-top: 1rem;">Tunjukkan kode ini kepada seller saat pengambilan makanan.</p>
     </div>
 
-    <div style="text-align: center;">
-        <button onclick="window.print()" class="btn-print">
+    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        <a href="{{ route('dashboard') }}" class="btn-back hide-on-print">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Kembali ke Dashboard
+        </a>
+        <button onclick="window.print()" class="btn-print hide-on-print">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2H7a2 2 0 00-2 2v4h14z"/></svg>
             Cetak Invoice
         </button>
@@ -153,8 +159,4 @@
         Terima kasih telah membantu menyelamatkan makanan dan menjaga bumi! 🌍
     </div>
 </div>
-<<<<<<< Updated upstream
 </x-app-layout>
-=======
-</x-app-layout>
->>>>>>> Stashed changes
