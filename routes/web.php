@@ -82,7 +82,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // 4. Fitur Seller
-    Route::prefix('seller')->middleware(['role:seller', 'approved'])->group(function () {
+    Route::prefix('seller')->middleware('role:seller')->group(function () {
         Route::get('/dashboard', function () {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
             $orders = \App\Models\Order::whereHas('menu', function ($query) {
@@ -154,7 +154,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // 5. Fitur Lembaga Sosial
-    Route::prefix('sosial')->middleware(['role:lembaga_sosial', 'approved'])->group(function () {
+    Route::prefix('sosial')->middleware('role:lembaga_sosial')->group(function () {
         Route::get('/dashboard', function () {
             $orders = \App\Models\Order::where('id_user', auth()->id())->with('menu.user')->latest()->get();
             $menus = \App\Models\Menu::with('user')->where('stock', '>', 0)->notExpired()->latest()->get();
@@ -224,4 +224,13 @@ Route::get('/donasi', [DonationController::class, 'index'])->name('donations.ind
 Route::get('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'showRoleForm'])->name('google.role.form');
 Route::post('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'storeRolePassword'])->name('google.role.store');
 
-require __DIR__ . '/auth.php';
+require __DIR__ . '/auth.php'; 
+
+// Cart Synchronization
+Route::post('/cart/sync', [App\Http\Controllers\CartController::class, 'sync'])->name('cart.sync')->middleware('auth');
+
+// Route Eksplorasi Donasi
+Route::get('/donasi', [DonationController::class, 'index'])->name('donations.index');
+
+
+
