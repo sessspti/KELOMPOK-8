@@ -8,6 +8,8 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -33,6 +35,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 0. Shared Routes (Konsumen & Lembaga Sosial)
     Route::get('/transaction/history', [TransactionController::class, 'history'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.history');
     Route::get('/transaction/invoice/{id}', [TransactionController::class, 'invoice'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.invoice');
+
+    // Verification Routes
+    Route::get('/verification/notice', [VerificationController::class, 'notice'])->name('verification.notice');
+    Route::post('/verification/upload', [VerificationController::class, 'upload'])->name('verification.upload');
 
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
@@ -76,7 +82,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // 4. Fitur Seller
-    Route::prefix('seller')->middleware('role:seller')->group(function () {
+    Route::prefix('seller')->middleware(['role:seller', 'approved'])->group(function () {
         Route::get('/dashboard', function () {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
             $orders = \App\Models\Order::whereHas('menu', function ($query) {
@@ -148,7 +154,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // 5. Fitur Lembaga Sosial
-    Route::prefix('sosial')->middleware('role:lembaga_sosial')->group(function () {
+    Route::prefix('sosial')->middleware(['role:lembaga_sosial', 'approved'])->group(function () {
         Route::get('/dashboard', function () {
             $orders = \App\Models\Order::where('id_user', auth()->id())->with('menu.user')->latest()->get();
             $menus = \App\Models\Menu::with('user')->where('stock', '>', 0)->notExpired()->latest()->get();
@@ -173,11 +179,39 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 7. Fitur Admin
     Route::prefix('admin')->middleware('role:admin')->group(function () {
-        Route::get('/dashboard', function () {
+        Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
             $orders = \App\Models\Order::with(['menu.user', 'user'])->latest()->get();
             $ordersGrouped = $orders->groupBy(fn($order) => $order->menu->user->name ?? 'Unknown Store');
-            return view('admin.dashboard', compact('ordersGrouped'));
+            
+            $pendingVerifications = \App\Models\UserVerification::with('user')->where('status', 'pending')->latest()->get();
+
+            // Manajemen Pengguna Query
+            $usersQuery = \App\Models\User::where('role', '!=', 'admin');
+            
+            if ($request->filled('search')) {
+                $usersQuery->where(function($q) use ($request) {
+                    $q->where('name', 'like', '%' . $request->search . '%')
+                      ->orWhere('email', 'like', '%' . $request->search . '%');
+                });
+            }
+            
+            if ($request->filled('role_filter') && $request->role_filter !== 'semua') {
+                $usersQuery->where('role', $request->role_filter);
+            }
+            
+            $usersList = $usersQuery->latest()->paginate(10)->withQueryString();
+
+            // Realtime Statistics
+            $totalUsers = \App\Models\User::count();
+            $activeSellers = \App\Models\User::where('role', 'seller')
+                                ->where('account_status', 'approved')
+                                ->count();
+
+            return view('admin.dashboard', compact('ordersGrouped', 'pendingVerifications', 'usersList', 'totalUsers', 'activeSellers'));
         })->name('admin.dashboard');
+
+        Route::post('/verifications/{user}/approve', [AdminVerificationController::class, 'approve'])->name('admin.verifications.approve');
+        Route::post('/verifications/{user}/reject', [AdminVerificationController::class, 'reject'])->name('admin.verifications.reject');
 
         Route::get('/users', fn() => view('admin.users.index'))->name('admin.users.index');
         Route::get('/verifikasi', fn() => view('admin.verifikasi'))->name('admin.verifikasi');
