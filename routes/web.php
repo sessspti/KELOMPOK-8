@@ -13,32 +13,29 @@ use App\Http\Controllers\Admin\VerificationController as AdminVerificationContro
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-// --- Halaman Utama & Redirect Role ---
+// ─── ROOT: Redirect berdasarkan role ───
 Route::get('/', function () {
-    if (!auth()->check()) {
-        return redirect('/login');
+    if (Auth::check()) {
+        $role = Auth::user()->role;
+        return match ($role) {
+            'admin'           => redirect()->route('admin.dashboard'),
+            'seller'          => redirect()->route('seller.dashboard'),
+            'lembaga_sosial'  => redirect()->route('sosial.dashboard'),
+            default           => redirect()->route('dashboard'), // Role konsumen
+        };
     }
-
-    $role = auth()->user()->role;
-
-    return match ($role) {
-        'admin'           => redirect()->route('admin.dashboard'),
-        'seller'          => redirect()->route('seller.dashboard'),
-        'lembaga_sosial'  => redirect()->route('sosial.dashboard'),
-        default           => redirect()->route('dashboard'),
-    };
+    // Guest yang belum login → halaman publik
+    return redirect()->route('guest.dashboard');
 });
 
-// --- Group Route Auth ---
+// ─── ROUTE PUBLIK: Dashboard Guest/Konsumen ───
+// Alias /home → sama dengan /dashboard (friendly URL)
+Route::get('/home', function () {
+    return view('dashboard');
+})->name('guest.dashboard');
+
+// --- Group Route untuk User yang Sudah Login ---
 Route::middleware(['auth', 'verified'])->group(function () {
-
-    // 0. Shared Routes (Konsumen & Lembaga Sosial)
-    Route::get('/transaction/history', [TransactionController::class, 'history'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.history');
-    Route::get('/transaction/invoice/{id}', [TransactionController::class, 'invoice'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.invoice');
-
-    // Verification Routes
-    Route::get('/verification/notice', [VerificationController::class, 'notice'])->name('verification.notice');
-    Route::post('/verification/upload', [VerificationController::class, 'upload'])->name('verification.upload');
 
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
@@ -60,10 +57,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard', compact('menus', 'orders'));
     })->middleware('role:konsumen')->name('dashboard');
 
-    // UNTUK LIHAT PROFILE SELLER
-    Route::get('/store/{id}', [MenuController::class, 'showStore'])->middleware('role:konsumen')->name('store.show');
+    // 2. Verification System (KTP, NIB, dll)
+    Route::controller(VerificationController::class)->group(function () {
+        Route::get('/verify/notice', 'notice')->name('verification.notice');
+        Route::post('/verify/store', 'upload')->name('verification.upload');
+    });
 
-    // 2. Fitur Transaksi (History, Invoice, & Store)
+    // 3. Transaction Management
     Route::controller(TransactionController::class)->group(function () {
         Route::get('/transaction/history', 'history')->name('transaction.history');
         Route::get('/transaction/invoice/{id}', 'invoice')->name('transaction.invoice');
@@ -75,14 +75,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/notifications/{id}/mark-as-read', 'markAsRead')->name('notifications.markAsRead');
         Route::post('/notifications/mark-all-as-read', 'markAllAsRead')->name('notifications.markAllAsRead');
     });
-
-    // 5. Profile Management
+    
+    // 5. Profile Management Umum (bisa diakses semua role yang login)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // 4. Fitur Seller
-    Route::prefix('seller')->middleware('role:seller')->group(function () {
+    // 6. Fitur Seller (Dibagi menjadi Home & Manajemen)
+    Route::prefix('seller')->middleware(['role:seller', 'approved'])->group(function () {
         Route::get('/dashboard', function () {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
             $orders = \App\Models\Order::whereHas('menu', function ($query) {
@@ -144,6 +144,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return view('seller.tambah-menu');
         })->name('seller.tambah-menu');
 
+        // D. Rute Alias untuk Profil Seller (Agar tidak error di Dashboard Bento)
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('seller.profile.edit');
         
         // Order Management for Seller
@@ -153,8 +154,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/toggle-status', [MenuController::class, 'toggleStatus'])->name('seller.toggle-status');
     });
 
-    // 5. Fitur Lembaga Sosial
-    Route::prefix('sosial')->middleware('role:lembaga_sosial')->group(function () {
+    // 7. Fitur Lembaga Sosial
+    Route::prefix('sosial')->middleware(['role:lembaga_sosial', 'approved'])->group(function () {
         Route::get('/dashboard', function () {
             $orders = \App\Models\Order::where('id_user', auth()->id())->with('menu.user')->latest()->get();
             $menus = \App\Models\Menu::with('user')->where('stock', '>', 0)->notExpired()->latest()->get();
@@ -167,18 +168,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('sosial.profile.edit');
     });
 
-    // 6. Fitur Checkout & Cart (Hanya Konsumen)
-    Route::middleware('role:konsumen')->group(function () {
-        Route::get('/checkout-summary', function () {
-            return view('transaction.checkout');
-        })->name('checkout.summary');
-        
-        Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
-        Route::post('/cart/sync', [CartController::class, 'sync'])->name('cart.sync');
-    });
+    // 8. Fitur Checkout/Pembayaran (Hanya Konsumen)
+    Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->middleware('role:konsumen')->name('checkout.pay');
 
-    // 7. Fitur Admin
+    // 9. Eksplorasi & Transaksi (FoodSave Features) - Hanya Konsumen
+    Route::get('/checkout-summary', function () {
+        return view('transaction.checkout');
+    })->middleware('role:konsumen')->name('checkout.summary');
+
+    // 10. Fitur Admin (Pusat Kendali Platform)
     Route::prefix('admin')->middleware('role:admin')->group(function () {
+        // Dashboard Utama Admin
         Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
             $orders = \App\Models\Order::with(['menu.user', 'user'])->latest()->get();
             $ordersGrouped = $orders->groupBy(fn($order) => $order->menu->user->name ?? 'Unknown Store');
@@ -212,6 +212,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('/verifications/{user}/approve', [AdminVerificationController::class, 'approve'])->name('admin.verifications.approve');
         Route::post('/verifications/{user}/reject', [AdminVerificationController::class, 'reject'])->name('admin.verifications.reject');
+        Route::post('/users/{user}/toggle-status', [AdminVerificationController::class, 'toggleStatus'])->name('admin.users.toggle-status');
+        Route::delete('/users/{user}', [AdminVerificationController::class, 'destroy'])->name('admin.users.destroy');
 
         Route::get('/users', fn() => view('admin.users.index'))->name('admin.users.index');
         Route::get('/verifikasi', fn() => view('admin.verifikasi'))->name('admin.verifikasi');
@@ -231,6 +233,3 @@ Route::post('/cart/sync', [App\Http\Controllers\CartController::class, 'sync'])-
 
 // Route Eksplorasi Donasi
 Route::get('/donasi', [DonationController::class, 'index'])->name('donations.index');
-
-
-

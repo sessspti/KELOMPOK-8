@@ -763,26 +763,36 @@ body::after {
             @endauth
             {{-- Profile Dropdown --}}
             <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false" style="z-index: 110;">
-                <button @click="open = !open"
-                        class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm"
-                        style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#fff;border:1.5px solid rgba(22,163,74,0.2);border-radius:12px;cursor:pointer;">
-                    {{-- Initials Avatar --}}
-                    <div style="width:28px;height:28px;border-radius:8px;background:#e0f2fe;border:1.5px solid rgba(14,165,233,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.6875rem;color:#0284c7;flex-shrink:0;">
-                        {{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 2)) }}
+
+                {{-- Tombol Avatar --}}
+                <button @click="open = !open" class="flex items-center gap-2.5 px-2.5 py-1.5 bg-white border border-gray-100 rounded-2xl hover:bg-blue-50 hover:border-blue-200 transition-all focus:outline-none shadow-sm hover:shadow-md group">
+                    {{-- Foto Profil --}}
+                    <div class="relative flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-cyan-200 border-2 border-blue-300 flex items-center justify-center text-blue-700 font-extrabold text-sm overflow-hidden shadow-sm transition-all duration-300 group-hover:border-blue-400 group-hover:scale-105 group-hover:shadow-[0_0_0_3px_rgba(14,165,233,0.25)]">
+                            @if(Auth::user()->avatar)
+                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                            @else
+                                {{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 1)) }}
+                            @endif
+                        </div>
+                        {{-- Online dot --}}
+                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-blue-400 border-2 border-white rounded-full"></span>
                     </div>
-                    <span style="font-size:0.8125rem;font-weight:700;color:#111;">{{ Auth::user()->name ?? 'Lembaga' }}</span>
-                    <svg class="fill-current h-4 w-4" style="color:#9ca3af;transition:transform 0.2s;" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    {{-- Nama User --}}
+                    <div class="text-sm font-bold text-gray-700 max-w-[100px] truncate">{{ Auth::user()->name ?? 'Lembaga' }}</div>
+                    <svg class="fill-current h-3.5 w-3.5 text-gray-400 transition-transform duration-200 flex-shrink-0" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                     </svg>
                 </button>
 
                 
 
+                {{-- Dropdown Menu --}}
                 <div x-show="open"
                      x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="transform opacity-0 scale-95"
-                     x-transition:enter-end="transform opacity-100 scale-100"
-                     class="absolute right-0 z-[120] mt-2 w-52 rounded-2xl shadow-xl bg-white border border-gray-100 py-2 origin-top-right"
+                     x-transition:enter-start="transform opacity-0 scale-95 translate-y-1"
+                     x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
+                     class="absolute right-0 z-[120] mt-2 w-64 rounded-2xl shadow-xl bg-white border border-gray-100 overflow-hidden origin-top-right"
                      style="display: none;">
                     <div style="padding:8px 16px 6px;font-size:0.5625rem;color:#9ca3af;text-transform:uppercase;font-weight:900;letter-spacing:0.15em;border-bottom:1px solid #f9fafb;margin-bottom:4px;">
                         Pengaturan Akun
@@ -795,15 +805,6 @@ body::after {
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
                         Edit Profil
-                    </a>
-                    <a href="{{ route('transaction.history') }}"
-                       style="display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:0.875rem;color:#374151;text-decoration:none;font-weight:500;transition:background 0.15s;"
-                       onmouseover="this.style.background='#f0fdf4';this.style.color='#15803d';"
-                       onmouseout="this.style.background='';this.style.color='#374151';">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
-                        Riwayat Klaim
                     </a>
                     <div style="border-top:1px solid #f9fafb;margin:4px 0;"></div>
                     <form method="POST" action="{{ route('logout') }}">

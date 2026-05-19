@@ -735,10 +735,6 @@ body.no-scroll { overflow: hidden; }
                 </div>
                 <div class="stat-label">Total Pengguna</div>
                 <div class="stat-num">{{ number_format($totalUsers, 0, ',', '.') }}</div>
-                <div class="stat-delta up">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                    +128 bulan ini
-                </div>
             </div>
             <div class="stat-card sky">
                 <div class="stat-icon sky">
@@ -746,10 +742,6 @@ body.no-scroll { overflow: hidden; }
                 </div>
                 <div class="stat-label">Pedagang Aktif</div>
                 <div class="stat-num">{{ number_format($activeSellers, 0, ',', '.') }}</div>
-                <div class="stat-delta up">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                    +24 pedagang baru
-                </div>
             </div>
             <div class="stat-card mint">
                 <div class="stat-icon mint">
@@ -831,16 +823,34 @@ body.no-scroll { overflow: hidden; }
                             <td>
                                 @if($user->account_status === 'approved') <span class="pill aktif">Aktif</span>
                                 @elseif($user->account_status === 'pending') <span class="pill pending">Pending</span>
-                                @elseif($user->account_status === 'rejected') <span class="pill suspend">Ditolak</span>
+                                @elseif($user->account_status === 'rejected') <span class="pill suspend">Ditangguhkan</span>
                                 @endif
                             </td>
                             <td>
                                 <div class="actions">
-                                    <button class="btn btn-outline btn-xs btn-icon" title="Lihat Profil"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
                                     @if($user->account_status === 'approved')
-                                    <button class="btn btn-amber btn-xs btn-icon" title="Suspend"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg></button>
+                                    <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" style="margin:0;" id="toggleForm_{{ $user->id }}">
+                                        @csrf
+                                        <button type="button" class="btn btn-amber btn-xs btn-icon" title="Tangguhkan Akun" onclick="confirmToggleStatus('{{ $user->id }}', '{{ $user->name }}', 'tangguhkan')">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                        </button>
+                                    </form>
+                                    @elseif($user->account_status === 'rejected')
+                                    <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" style="margin:0;" id="toggleForm_{{ $user->id }}">
+                                        @csrf
+                                        <button type="button" class="btn btn-amber btn-xs btn-icon" style="background-color: #f59e0b; color: #fff;" title="Aktifkan Akun" onclick="confirmToggleStatus('{{ $user->id }}', '{{ $user->name }}', 'aktifkan')">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                        </button>
+                                    </form>
                                     @endif
-                                    <button class="btn btn-danger btn-xs btn-icon" title="Hapus"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+
+                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="margin:0;" id="deleteUserForm_{{ $user->id }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-danger btn-xs btn-icon" title="Hapus" onclick="confirmDeleteUser('{{ $user->id }}', '{{ $user->name }}')">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -1343,6 +1353,47 @@ function confirmApprove(userId, userName) {
     }).then((result) => {
         if (result.isConfirmed) {
             document.getElementById('approveForm_' + userId).submit();
+        }
+    });
+}
+
+function confirmToggleStatus(userId, userName, action) {
+    const titleText = action === 'tangguhkan' ? 'Tangguhkan Akun?' : 'Aktifkan Kembali Akun?';
+    const bodyText = action === 'tangguhkan' 
+        ? "Apakah Anda yakin menangguhkan akun " + userName + "?"
+        : "Apakah Anda yakin mengaktifkan kembali akun " + userName + "?";
+    const confirmColor = action === 'tangguhkan' ? '#f59e0b' : '#22c55e';
+    const btnText = action === 'tangguhkan' ? 'Ya, Tangguhkan' : 'Ya, Aktifkan';
+
+    Swal.fire({
+        title: titleText,
+        text: bodyText,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: confirmColor,
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: btnText,
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('toggleForm_' + userId).submit();
+        }
+    });
+}
+
+function confirmDeleteUser(userId, userName) {
+    Swal.fire({
+        title: 'Hapus Akun?',
+        text: "Apakah Anda yakin menghapus akun " + userName + " secara permanen?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('deleteUserForm_' + userId).submit();
         }
     });
 }
