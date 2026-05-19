@@ -1,6 +1,4 @@
 <x-app-layout>
-<<<<<<< HEAD
-=======
 @php
     // Unify data from different controllers
     if (isset($order)) {
@@ -23,7 +21,6 @@
     }
 @endphp
 
->>>>>>> origin/bantuin
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
@@ -149,4 +146,3 @@
     </div>
 </div>
 </x-app-layout>
-ut>

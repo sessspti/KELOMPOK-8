@@ -49,12 +49,15 @@ class RegisteredUserController extends Controller
             'role.in' => 'Peran akun yang dipilih tidak valid.',
         ]);
 
+        $accountStatus = in_array($request->role, ['seller', 'lembaga_sosial']) ? 'pending' : 'approved';
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             // MENYIMPAN ROLE: Memasukkan role pilihan user ke database
             'role' => $request->role,
+            'account_status' => $accountStatus,
         ]);
 
         event(new Registered($user));
