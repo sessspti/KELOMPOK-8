@@ -40,4 +40,37 @@ class VerificationController extends Controller
 
         return back()->with('success', "Pendaftaran akun {$user->name} ditolak.");
     }
+
+    public function toggleStatus(User $user)
+    {
+        if ($user->account_status === 'approved') {
+            $user->update(['account_status' => 'rejected']);
+            
+            if ($user->verification) {
+                $user->verification->update(['status' => 'rejected']);
+            }
+            
+            return back()->with('success', "Akun {$user->name} telah ditangguhkan.");
+        } else {
+            $user->update(['account_status' => 'approved']);
+            
+            if ($user->verification) {
+                $user->verification->update(['status' => 'approved']);
+            }
+            
+            return back()->with('success', "Akun {$user->name} telah diaktifkan kembali.");
+        }
+    }
+
+    public function destroy(User $user)
+    {
+        if ($user->verification) {
+            $user->verification->delete();
+        }
+        
+        $userName = $user->name;
+        $user->delete();
+
+        return back()->with('success', "Akun {$userName} berhasil dihapus.");
+    }
 }
