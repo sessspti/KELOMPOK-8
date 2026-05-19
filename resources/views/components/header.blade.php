@@ -89,16 +89,22 @@
                 <div>
                     @auth
                         {{-- Logged in: show user name --}}
-                        <button @click="open = ! open" class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm">
-                            <div class="w-7 h-7 rounded-lg bg-green-100 border border-green-200 flex items-center justify-center text-green-700 font-extrabold text-xs flex-shrink-0 overflow-hidden">
-                                @if(Auth::user()->avatar)
-                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
-                                @else
-                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                                @endif
+                        <button @click="open = ! open" class="flex items-center gap-2.5 px-2.5 py-1.5 bg-white border border-gray-100 rounded-2xl hover:bg-green-50 hover:border-green-200 transition-all focus:outline-none shadow-sm hover:shadow-md group">
+                            {{-- Avatar Foto Profil --}}
+                            <div class="relative flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-100 to-green-200 border-2 border-green-300 flex items-center justify-center text-green-700 font-extrabold text-sm overflow-hidden shadow-sm transition-all duration-300 group-hover:border-green-400 group-hover:scale-105 group-hover:shadow-[0_0_0_3px_rgba(74,222,128,0.25)]">
+                                    @if(Auth::user()->avatar)
+                                        <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                                    @else
+                                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                    @endif
+                                </div>
+                                {{-- Online dot --}}
+                                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 border-2 border-white rounded-full"></span>
                             </div>
-                            <div class="text-sm font-bold text-gray-700">{{ Auth::user()->name }}</div>
-                            <svg class="fill-current h-4 w-4 text-gray-400 transition-transform duration-200" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            {{-- Nama User --}}
+                            <div class="text-sm font-bold text-gray-700 max-w-[100px] truncate">{{ Auth::user()->name }}</div>
+                            <svg class="fill-current h-3.5 w-3.5 text-gray-400 transition-transform duration-200 flex-shrink-0" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                             </svg>
                         </button>
@@ -119,11 +125,35 @@
 
                 @auth
                 <div x-show="open"
-                     class="absolute right-0 z-[120] mt-2 w-52 rounded-2xl shadow-xl bg-white border border-gray-100 py-2 origin-top-right"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="transform opacity-0 scale-95 translate-y-1"
+                     x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
+                     class="absolute right-0 z-[120] mt-2 w-64 rounded-2xl shadow-xl bg-white border border-gray-100 overflow-hidden origin-top-right"
                      style="display: none;">
-                    <div class="px-4 py-2 text-[10px] text-gray-400 uppercase font-black tracking-widest border-b border-gray-50 mb-1">
-                        Pengaturan Akun
+
+                    {{-- Profile Card Header --}}
+                    <div class="px-4 py-4 bg-gradient-to-br from-green-50 to-emerald-50 border-b border-green-100">
+                        <div class="flex items-center gap-3">
+                            {{-- Foto Profil Besar --}}
+                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-green-200 to-emerald-300 border-3 border-white shadow-md flex items-center justify-center text-green-700 font-black text-lg overflow-hidden flex-shrink-0" style="border-width: 3px;">
+                                @if(Auth::user()->avatar)
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                                @else
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                @endif
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-black text-gray-800 truncate">{{ Auth::user()->name }}</p>
+                                <p class="text-[11px] text-gray-500 truncate">{{ Auth::user()->email }}</p>
+                                <span class="inline-flex items-center gap-1 mt-0.5 text-[9px] font-bold text-green-700 uppercase tracking-wider">
+                                    <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                                    {{ ucfirst(Auth::user()->role) }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="py-1">
 
                     {{-- Role-aware profile link --}}
                     @php
@@ -152,7 +182,7 @@
                         </div>
                     </a>
                     @endif
-                    <div class="border-t border-gray-50 my-1"></div>
+                    <div class="border-t border-gray-100 my-1"></div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
@@ -164,7 +194,8 @@
                             </div>
                         </a>
                     </form>
-                </div>
+                    </div>{{-- end py-1 --}}
+                </div>{{-- end dropdown --}}
                 @endauth
             </div>
         </div>
