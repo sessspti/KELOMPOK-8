@@ -372,6 +372,21 @@
                                     }
                                 })
                             }
+
+                            @if($user->account_status === 'rejected')
+                            document.addEventListener('DOMContentLoaded', function() {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Akun Ditangguhkan',
+                                    text: '{{ $verification->rejection_reason ?? "Mohon unggah kembali dokumen verifikasi Anda dengan data yang benar." }}',
+                                    confirmButtonColor: '#ef4444',
+                                    confirmButtonText: 'Mengerti',
+                                    customClass: {
+                                        popup: 'rounded-3xl border border-gray-100 shadow-xl'
+                                    }
+                                });
+                            });
+                            @endif
                         </script>
                     @endif
 

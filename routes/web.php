@@ -60,7 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 2. Verification System (KTP, NIB, dll)
     Route::controller(VerificationController::class)->group(function () {
         Route::get('/verify/notice', 'notice')->name('verification.notice');
-        Route::post('/verify/store', 'store')->name('verification.store');
+        Route::post('/verify/store', 'upload')->name('verification.upload');
     });
 
     // 3. Transaction Management
