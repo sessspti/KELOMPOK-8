@@ -4,9 +4,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DonationController;
-use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,20 +26,35 @@ Route::get('/', function () {
 // --- Group Route Auth ---
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    // 0. Shared Routes (Konsumen & Lembaga Sosial)
+    Route::get('/transaction/history', [TransactionController::class, 'history'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.history');
+    Route::get('/transaction/invoice/{id}', [TransactionController::class, 'invoice'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.invoice');
+
     // 1. Dashboard Konsumen
    // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
-        // Ambil data menu beserta data penjualnya
-        $menus = \App\Models\Menu::with('user')->notExpired()->latest()->get();
-        
-        // Mapping (titipkan) data is_open milik user ke dalam setiap item menu
-        $menus->map(function ($menu) {
-            // Jika user/penjualnya ada, ambil status is_open, jika tidak anggap tutup (0)
-            $menu->store_is_open = $menu->user ? $menu->user->is_open : 0;
-            return $menu;
+<<<<<<<<< Temporary merge branch 1
+        $orders = \App\Models\Order::where('id_user', auth()->id())
+            ->with('menu.user')
+            ->latest()
+            ->get();
+        return view('dashboard', compact('orders'));
+=========
+        $menus = \App\Models\Menu::with('user')->get()->map(function($menu) {
+            return [
+                'id' => $menu->id,
+                'name' => $menu->name,
+                'store' => $menu->user->name ?? 'Resto FoodSave',
+                'price' => $menu->price,
+                'originalPrice' => $menu->price + ($menu->discount ?? 0),
+                'distance' => (rand(1, 20) / 10) . ' km',
+                'urgent' => $menu->stock <= 3 ? 'Sisa ' . $menu->stock . '!' : '',
+                'expired_at' => \Carbon\Carbon::now()->addDays(rand(1, 3))->format('d M Y'),
+                'image' => $menu->image ? asset('storage/' . $menu->image) : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=500'
+            ];
         });
-
         return view('dashboard', compact('menus'));
+>>>>>>>>> Temporary merge branch 2
     })->middleware('role:konsumen')->name('dashboard');
 
     // UNTUK LIHAT PROFILE SELLER
@@ -127,10 +139,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return view('seller.tambah-menu');
         })->name('seller.tambah-menu');
 
-        Route::post('/seller/toggle-status', [MenuController::class, 'toggleStatus'])->name('seller.toggle-status');
-
-
-
+        Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('seller.profile.edit');
     });
 
     // 5. Fitur Lembaga Sosial
@@ -147,15 +156,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('sosial.profile.edit');
     });
 
-    // 6. Fitur Checkout & Cart (Hanya Konsumen)
-    Route::middleware('role:konsumen')->group(function () {
-        Route::get('/checkout-summary', function () {
-            return view('transaction.checkout');
-        })->name('checkout.summary');
-        
-        Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->name('checkout.pay');
-        Route::post('/cart/sync', [CartController::class, 'sync'])->name('cart.sync');
-    });
+    // 6. Eksplorasi & Transaksi - Hanya Konsumen
+    Route::get('/checkout-summary', function () {
+        return view('transaction.checkout');
+    })->middleware('role:konsumen')->name('checkout.summary');
 
     // 7. Fitur Admin (Pusat Kendali Platform)
     Route::prefix('admin')->middleware('role:admin')->group(function () {
@@ -177,11 +181,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/verifikasi', fn() => view('admin.verifikasi'))->name('admin.verifikasi');
         Route::get('/edukasi', fn() => view('admin.edukasi.index'))->name('admin.edukasi');
     });
+<<<<<<<<< Temporary merge branch 1
+
+    // 8. Order Management & Invoice
+    Route::post('/orders/{order}/update-status', [App\Http\Controllers\OrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::get('/orders/{order}/invoice', [App\Http\Controllers\OrderController::class, 'invoice'])->name('orders.invoice');
+=========
+    // 8. Riwayat Transaksi & Invoice
+    Route::middleware('role:konsumen')->group(function () {
+        Route::get('/history', [\App\Http\Controllers\TransactionController::class, 'history'])->name('transaction.history');
+        Route::get('/invoice/{transaction_id}', [\App\Http\Controllers\TransactionController::class, 'invoice'])->name('transaction.invoice');
+        Route::post('/transaction/store', [\App\Http\Controllers\TransactionController::class, 'store'])->name('transaction.store');
+    });
+>>>>>>>>> Temporary merge branch 2
 });
 
-// --- Auth & Donasi ---
-Route::get('/donasi', [DonationController::class, 'index'])->name('donations.index');
+// Route untuk Pemilihan Role dan Password Google Auth
 Route::get('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'showRoleForm'])->name('google.role.form');
 Route::post('/auth/google/role-password', [\App\Http\Controllers\Auth\SocialAuthController::class, 'storeRolePassword'])->name('google.role.store');
 
-require __DIR__ . '/auth.php';
+require __DIR__ . '/auth.php'; 
+
+// Cart Synchronization
+Route::post('/cart/sync', [App\Http\Controllers\CartController::class, 'sync'])->name('cart.sync')->middleware('auth');
+
+// Route Eksplorasi Donasi
+Route::get('/donasi', [DonationController::class, 'index'])->name('donations.index');
+
+
+
