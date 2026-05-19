@@ -57,6 +57,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('dashboard', compact('menus', 'orders'));
     })->middleware('role:konsumen')->name('dashboard');
 
+    // Store / Seller Profile
+    Route::get('/store/{id}', [MenuController::class, 'showStore'])->name('store.show');
+
     // 2. Verification System (KTP, NIB, dll)
     Route::controller(VerificationController::class)->group(function () {
         Route::get('/verify/notice', 'notice')->name('verification.notice');

@@ -61,7 +61,7 @@
                                     </svg>
                                 </button>
                             </div>
-                            <p class="text-sm font-bold text-green-600 mt-1" x-text="formatRupiah(item.final_price)"></p>
+                            <p class="text-sm font-bold text-green-600 mt-1" x-text="formatRupiah(item.final_price !== undefined ? item.final_price : item.price)"></p>
                             <div class="flex items-center gap-3 mt-3">
                                 <button @click="updateQty(item.id, -1)" class="w-7 h-7 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100">-</button>
                                 <span class="font-bold text-gray-800 text-sm" x-text="item.qty"></span>
