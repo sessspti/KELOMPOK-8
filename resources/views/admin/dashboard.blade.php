@@ -232,6 +232,10 @@ body::before {
 /* ═══════════════ PAGE BODY ═══════════════ */
 .content { padding: 2rem; display: flex; flex-direction: column; gap: 2rem; }
 
+/* ─── TWO COLUMN LAYOUT ─── */
+.two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+@media(max-width:1200px){.two-col{grid-template-columns:1fr}}
+
 /* ═══════════════ STAT CARDS ═══════════════ */
 .stat-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
@@ -610,16 +614,35 @@ textarea.nf-input { resize: none; height: 72px; font-family: inherit; }
 
 /* page scroll */
 body.no-scroll { overflow: hidden; }
+
+/* ─── MONITORING ─── */
+.mon-store-group { margin-bottom: 2rem; }
+.mon-store-hdr {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.75rem 1.75rem; background: var(--blue-50);
+    border-bottom: 1.5px solid var(--border);
+}
+.mon-store-name { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 0.9375rem; color: var(--blue-700); }
+.mon-table { width: 100%; border-collapse: collapse; }
+.mon-table th {
+    padding: 0.75rem 1.75rem; text-align: left;
+    font-size: 0.625rem; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--faint);
+    background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.mon-table td { padding: 1rem 1.75rem; border-bottom: 1px solid var(--border); font-size: 0.8125rem; }
 </style>
 
 {{-- ════════════ SIDEBAR ════════════ --}}
 <aside class="sidebar">
     <div class="sb-brand">
-        <div class="sb-logo">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
-        </div>
-        <span class="sb-name">Food<em>Save</em></span>
-        <span class="sb-admin-tag">Admin</span>
+        <a href="{{ route('admin.dashboard') }}" style="display:flex; align-items:center; gap:0.75rem; text-decoration:none; width:100%;">
+            <div class="sb-logo">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <span class="sb-name">FoodSave</span>
+            <span class="sb-admin-tag">Admin</span>
+        </a>
     </div>
 
     <nav class="sb-nav">
@@ -633,7 +656,13 @@ body.no-scroll { overflow: hidden; }
         <a href="#sec-user" class="sb-item">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             Manajemen Pengguna
-            <span class="sb-badge">3</span>
+        </a>
+        <a href="#sec-pending" class="sb-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Validasi Akun Pending
+            @if($pendingVerifications->count() > 0)
+                <span class="sb-badge">{{ $pendingVerifications->count() }}</span>
+            @endif
         </a>
         <a href="#sec-monitor" class="sb-item">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
@@ -683,6 +712,13 @@ body.no-scroll { overflow: hidden; }
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                 <span class="tb-notif-dot"></span>
             </button>
+            <form id="logoutForm" method="POST" action="{{ route('logout') }}" style="display:inline;">
+                @csrf
+                <button type="button" onclick="confirmAdminLogout()" class="pts-pill" style="cursor:pointer; background: #fee2e2; color: #dc2626; border: 1.5px solid #fecaca; display: flex; align-items: center; gap: 0.375rem; transition: background 0.2s; padding: 0.35rem 1rem; border-radius: 9999px;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    <span style="font-weight: 700;">Keluar</span>
+                </button>
+            </form>
             <button class="tb-icon-btn" title="Ekspor Data">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             </button>
@@ -698,7 +734,7 @@ body.no-scroll { overflow: hidden; }
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 </div>
                 <div class="stat-label">Total Pengguna</div>
-                <div class="stat-num">4.821</div>
+                <div class="stat-num">{{ number_format($totalUsers, 0, ',', '.') }}</div>
                 <div class="stat-delta up">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
                     +128 bulan ini
@@ -708,11 +744,11 @@ body.no-scroll { overflow: hidden; }
                 <div class="stat-icon sky">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 </div>
-                <div class="stat-label">Merchant Aktif</div>
-                <div class="stat-num">312</div>
+                <div class="stat-label">Pedagang Aktif</div>
+                <div class="stat-num">{{ number_format($activeSellers, 0, ',', '.') }}</div>
                 <div class="stat-delta up">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                    +24 merchant baru
+                    +24 pedagang baru
                 </div>
             </div>
             <div class="stat-card mint">
@@ -746,21 +782,20 @@ body.no-scroll { overflow: hidden; }
                     <div class="sec-kicker">Manajemen Pengguna</div>
                     <div class="sec-title">Daftar Semua Akun</div>
                 </div>
-                <div class="sec-hdr-right">
-                    <div class="tbl-search">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input type="text" placeholder="Cari pengguna...">
-                    </div>
-                    <div class="filter-tabs">
-                        <button class="ftab on" onclick="setTab(this,'all')">Semua</button>
-                        <button class="ftab" onclick="setTab(this,'konsumen')">Konsumen</button>
-                        <button class="ftab" onclick="setTab(this,'lembaga')">Lembaga</button>
-                        <button class="ftab" onclick="setTab(this,'fnb')">F&B</button>
-                    </div>
-                    <button class="btn btn-primary" onclick="openModal('addUser')">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                        Tambah Akun
-                    </button>
+                <div class="sec-hdr-right" style="display:flex; gap:1rem; align-items:center;">
+                    <form method="GET" action="{{ route('admin.dashboard') }}" id="searchUserForm" style="display:flex; gap:1rem; align-items:center; margin:0;">
+                        <input type="hidden" name="role_filter" id="role_filter_input" value="{{ request('role_filter', 'semua') }}">
+                        <div class="tbl-search">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pengguna..." onkeypress="if(event.keyCode==13) document.getElementById('searchUserForm').submit();">
+                        </div>
+                        <div class="filter-tabs">
+                            <button type="button" class="ftab {{ request('role_filter', 'semua') == 'semua' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='semua'; document.getElementById('searchUserForm').submit();">Semua</button>
+                            <button type="button" class="ftab {{ request('role_filter') == 'konsumen' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='konsumen'; document.getElementById('searchUserForm').submit();">Konsumen</button>
+                            <button type="button" class="ftab {{ request('role_filter') == 'lembaga_sosial' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='lembaga_sosial'; document.getElementById('searchUserForm').submit();">Lembaga</button>
+                            <button type="button" class="ftab {{ request('role_filter') == 'seller' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='seller'; document.getElementById('searchUserForm').submit();">Seller</button>
+                        </div>
+                    </form>
                 </div>
             </div>
             <div class="tbl-wrap">
@@ -770,218 +805,245 @@ body.no-scroll { overflow: hidden; }
                             <th>Pengguna</th>
                             <th>Role</th>
                             <th>Bergabung</th>
-                            <th>Transaksi</th>
-                            <th>Status</th>
+                            <th>Status Akun</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @forelse($usersList as $user)
                         <tr>
-                            <td><div class="td-user"><div class="td-avatar blue">AP</div><div><div class="td-name">Andi Pratama</div><div class="td-email">andi@email.com</div></div></div></td>
-                            <td><span class="pill konsumen">Konsumen</span></td>
-                            <td class="td-mono">12 Mar 2025</td>
-                            <td class="td-mono">24</td>
-                            <td><span class="pill aktif">Aktif</span></td>
-                            <td><div class="actions">
-                                <button class="btn btn-outline btn-xs btn-icon" title="Edit"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                                <button class="btn btn-amber btn-xs btn-icon" title="Suspend"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg></button>
-                                <button class="btn btn-danger btn-xs btn-icon" title="Hapus"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                            </div></td>
+                            <td>
+                                <div class="td-user">
+                                    <div class="td-avatar {{ ['blue','violet','mint','amber'][rand(0,3)] }}">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
+                                    <div>
+                                        <div class="td-name">{{ $user->name }}</div>
+                                        <div class="td-email">{{ $user->email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if($user->role === 'konsumen') <span class="pill konsumen">Konsumen</span>
+                                @elseif($user->role === 'seller') <span class="pill fnb">F&B Seller</span>
+                                @elseif($user->role === 'lembaga_sosial') <span class="pill lembaga">Lembaga Sosial</span>
+                                @endif
+                            </td>
+                            <td class="td-mono">{{ $user->created_at->format('d M Y') }}</td>
+                            <td>
+                                @if($user->account_status === 'approved') <span class="pill aktif">Aktif</span>
+                                @elseif($user->account_status === 'pending') <span class="pill pending">Pending</span>
+                                @elseif($user->account_status === 'rejected') <span class="pill suspend">Ditolak</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="actions">
+                                    <button class="btn btn-outline btn-xs btn-icon" title="Lihat Profil"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+                                    @if($user->account_status === 'approved')
+                                    <button class="btn btn-amber btn-xs btn-icon" title="Suspend"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg></button>
+                                    @endif
+                                    <button class="btn btn-danger btn-xs btn-icon" title="Hapus"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                                </div>
+                            </td>
                         </tr>
+                        @empty
                         <tr>
-                            <td><div class="td-user"><div class="td-avatar violet">RY</div><div><div class="td-name">Rumah Yatim Al-Ikhlas</div><div class="td-email">admin@rumahyatim.org</div></div></div></td>
-                            <td><span class="pill lembaga">Lembaga</span></td>
-                            <td class="td-mono">05 Jan 2025</td>
-                            <td class="td-mono">67</td>
-                            <td><span class="pill aktif">Aktif</span></td>
-                            <td><div class="actions">
-                                <button class="btn btn-outline btn-xs btn-icon" title="Edit"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                                <button class="btn btn-amber btn-xs btn-icon" title="Suspend"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg></button>
-                                <button class="btn btn-danger btn-xs btn-icon" title="Hapus"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                            </div></td>
+                            <td colspan="5" style="text-align:center; padding:2rem; color:var(--muted);">Tidak ada pengguna yang ditemukan.</td>
                         </tr>
-                        <tr>
-                            <td><div class="td-user"><div class="td-avatar mint">KB</div><div><div class="td-name">Katering Berkah</div><div class="td-email">owner@katering.id</div></div></div></td>
-                            <td><span class="pill fnb">F&B Seller</span></td>
-                            <td class="td-mono">20 Feb 2025</td>
-                            <td class="td-mono">128</td>
-                            <td><span class="pill aktif">Aktif</span></td>
-                            <td><div class="actions">
-                                <button class="btn btn-outline btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                                <button class="btn btn-amber btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg></button>
-                                <button class="btn btn-danger btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                            </div></td>
-                        </tr>
-                        <tr>
-                            <td><div class="td-user"><div class="td-avatar amber">SR</div><div><div class="td-name">Siti Rahma</div><div class="td-email">siti.r@gmail.com</div></div></div></td>
-                            <td><span class="pill konsumen">Konsumen</span></td>
-                            <td class="td-mono">01 Apr 2025</td>
-                            <td class="td-mono">8</td>
-                            <td><span class="pill suspend">Suspend</span></td>
-                            <td><div class="actions">
-                                <button class="btn btn-outline btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                                <button class="btn btn-success btn-xs btn-icon" title="Aktifkan kembali"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
-                                <button class="btn btn-danger btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                            </div></td>
-                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
+            
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0.75rem; border-top: 1px solid var(--border);">
+                <div style="font-size: 0.875rem; color: var(--muted);">
+                    Menampilkan {{ $usersList->firstItem() ?? 0 }} hingga {{ $usersList->lastItem() ?? 0 }} dari {{ $usersList->total() }} pengguna
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    @if ($usersList->onFirstPage())
+                        <button class="btn btn-primary" style="opacity: 0.5; cursor: not-allowed; background-color: var(--mint-500); border-color: var(--mint-500); box-shadow: none;" disabled>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            Prev
+                        </button>
+                    @else
+                        <a href="{{ $usersList->previousPageUrl() }}" class="btn btn-primary" style="background-color: var(--mint-500); border-color: var(--mint-500);">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            Prev
+                        </a>
+                    @endif
+
+                    @if ($usersList->hasMorePages())
+                        <a href="{{ $usersList->nextPageUrl() }}" class="btn btn-primary" style="background-color: var(--mint-500); border-color: var(--mint-500);">
+                            Next
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    @else
+                        <button class="btn btn-primary" style="opacity: 0.5; cursor: not-allowed; background-color: var(--mint-500); border-color: var(--mint-500); box-shadow: none;" disabled>
+                            Next
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    @endif
+                </div>
+            </div>
 
             {{-- VALIDASI PENDING --}}
-            <div style="padding:1.375rem 1.75rem 0.875rem; border-top:1.5px solid var(--border); margin-top:0;">
+            <div id="sec-pending" style="padding:1.375rem 1.75rem 0.875rem; border-top:1.5px solid var(--border); margin-top:0;">
                 <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:0.9375rem;letter-spacing:-0.04em;color:var(--ink);margin-bottom:0.125rem;">
                     Validasi Akun Pending
                 </div>
                 <div style="font-size:0.8125rem;color:var(--muted);">Lembaga & Seller baru yang menunggu persetujuan Admin.</div>
             </div>
+            @forelse($pendingVerifications as $verification)
             <div class="pending-card">
-                <div class="pending-av">YS</div>
+                <div class="pending-av">{{ strtoupper(substr($verification->user->name, 0, 2)) }}</div>
                 <div class="pending-info">
-                    <div class="pending-name">Yayasan Sayap Ibu</div>
-                    <div class="pending-meta">Lembaga Sosial · Daftar 2 hari lalu · Jakarta Selatan</div>
+                    <div class="pending-name">{{ $verification->user->name }}</div>
+                    <div class="pending-meta">
+                        {{ $verification->user->role === 'seller' ? 'F&B Seller' : 'Lembaga Sosial' }} · 
+                        Daftar {{ $verification->user->created_at->diffForHumans() }} · 
+                        {{ $verification->user->address ?? 'Alamat belum diatur' }}
+                    </div>
                 </div>
                 <span class="pill pending" style="flex-shrink:0;">Pending</span>
-                <div class="pending-actions">
-                    <button class="btn btn-success btn-xs">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                        Approve
+                <div class="pending-actions" style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                    @if($verification->ktp_path)
+                    <a href="{{ asset('storage/' . $verification->ktp_path) }}" target="_blank" class="btn btn-outline btn-xs">KTP</a>
+                    @endif
+                    @if($verification->nib_path)
+                    <a href="{{ asset('storage/' . $verification->nib_path) }}" target="_blank" class="btn btn-outline btn-xs">NIB</a>
+                    @endif
+                    @if($verification->surat_izin_path)
+                    <a href="{{ asset('storage/' . $verification->surat_izin_path) }}" target="_blank" class="btn btn-outline btn-xs">Surat Izin</a>
+                    @endif
+                    @if($verification->profil_seller_path)
+                    <a href="{{ asset('storage/' . $verification->profil_seller_path) }}" target="_blank" class="btn btn-outline btn-xs">Profil</a>
+                    @endif
+                    
+                    <form action="{{ route('admin.verifications.approve', $verification->user->id) }}" method="POST" style="margin:0;" id="approveForm_{{ $verification->user->id }}">
+                        @csrf
+                        <button type="button" class="btn btn-success btn-xs" onclick="confirmApprove('{{ $verification->user->id }}', '{{ $verification->user->name }}')">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            Approve
+                        </button>
+                    </form>
+
+                    <button class="btn btn-danger btn-xs" onclick="confirmReject('{{ $verification->user->id }}', '{{ $verification->user->name }}')">
+                        Tolak
                     </button>
-                    <button class="btn btn-danger btn-xs">Tolak</button>
                 </div>
             </div>
-            <div class="pending-card">
-                <div class="pending-av" style="background:linear-gradient(135deg,#34d399,#059669);">RS</div>
-                <div class="pending-info">
-                    <div class="pending-name">Resto Sate Madura Pak Eko</div>
-                    <div class="pending-meta">F&B Seller · Daftar 5 jam lalu · Depok</div>
+            @empty
+            <div style="padding: 1rem 1.75rem; color: var(--muted); font-size: 0.875rem;">
+                Tidak ada pendaftaran yang menunggu persetujuan.
+            </div>
+            @endforelse
+        </div>
+
+        {{-- ══ 3. MONITORING TRANSAKSI & KELUHAN ══ --}}
+        <div class="two-col">
+            <div id="sec-monitor" class="sec" style="overflow: hidden;">
+            <div class="sec-hdr">
+                <div class="sec-hdr-left">
+                    <div class="sec-kicker">MONITORING</div>
+                    <div class="sec-title">Log Transaksi</div>
                 </div>
-                <span class="pill pending" style="flex-shrink:0;">Pending</span>
-                <div class="pending-actions">
-                    <button class="btn btn-success btn-xs">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                        Approve
+                <div class="sec-hdr-right">
+                    <button class="btn btn-outline btn-xs" style="border-radius:var(--r-pill); padding:0.4rem 1rem; font-size:0.75rem; color:var(--muted);">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px; vertical-align:middle; display:inline-block;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Ekspor
                     </button>
-                    <button class="btn btn-danger btn-xs">Tolak</button>
                 </div>
             </div>
-            <div class="pending-card">
-                <div class="pending-av" style="background:linear-gradient(135deg,#a78bfa,#7c3aed);">BK</div>
-                <div class="pending-info">
-                    <div class="pending-name">Bank Makanan Komunitas</div>
-                    <div class="pending-meta">Lembaga Sosial · Daftar 1 hari lalu · Bandung</div>
-                </div>
-                <span class="pill pending" style="flex-shrink:0;">Pending</span>
-                <div class="pending-actions">
-                    <button class="btn btn-success btn-xs">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                        Approve
-                    </button>
-                    <button class="btn btn-danger btn-xs">Tolak</button>
-                </div>
+            
+            <div class="tbl-wrap" style="overflow-x: auto; height: 500px; overflow-y: auto;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1.5px solid var(--border); color:var(--faint); text-transform:uppercase; font-size:0.6rem; font-weight:800; letter-spacing:0.12em; background:var(--surface);">
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">ID</th>
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">DARI &rarr; KE</th>
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">ITEM</th>
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($ordersGrouped as $storeName => $orders)
+                            @foreach($orders as $order)
+                            <tr class="toko-row" style="border-bottom:1px solid var(--border);">
+                                <td style="padding:1rem 1.5rem; color:var(--blue-500); font-family:'JetBrains Mono', monospace; font-size:0.75rem; font-weight:600;">
+                                    #{{ $order->user->role === 'lembaga_sosial' ? 'DON' : 'TRX' }}-{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}
+                                </td>
+                                <td style="padding:1rem 1.5rem;">
+                                    <div style="font-weight:700; color:var(--ink); font-size:0.875rem;">{{ $storeName }}</div>
+                                    <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">
+                                        &rarr; {{ $order->user->name }}
+                                    </div>
+                                </td>
+                                <td style="padding:1rem 1.5rem; color:var(--ink); font-size:0.8125rem;">
+                                    {{ $order->menu->name }} &times; {{ $order->quantity }}
+                                </td>
+                                <td style="padding:1rem 1.5rem;">
+                                    <span class="pill {{ strtolower($order->status) === 'selesai' ? 'selesai' : 'proses' }}" style="padding:4px 8px; font-size:0.6rem;">
+                                        {{ strtoupper($order->status) }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="4" style="padding: 4rem; text-align: center; color: var(--faint);">
+                                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0.2; margin-bottom: 1rem; margin-left:auto; margin-right:auto; display:block;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    <p>Belum ada data transaksi yang tercatat di sistem.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        {{-- ══ 3. MONITORING & LOG ══ --}}
-        <div id="sec-monitor" class="two-col">
-            {{-- Log Transaksi --}}
-            <div class="sec">
-                <div class="sec-hdr">
-                    <div class="sec-hdr-left">
-                        <div class="sec-kicker">Monitoring</div>
-                        <div class="sec-title">Log Transaksi</div>
-                    </div>
-                    <div class="sec-hdr-right">
-                        <button class="btn btn-outline btn-xs">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            Ekspor
-                        </button>
-                    </div>
+        {{-- KANAN: LAPORAN KELUHAN PENGGUNA --}}
+        <div class="sec">
+            <div class="sec-hdr">
+                <div class="sec-hdr-left">
+                    <div class="sec-kicker">LAPORAN</div>
+                    <div class="sec-title">Keluhan Pengguna</div>
                 </div>
-                <div class="tbl-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Dari → Ke</th>
-                                <th>Item</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><span class="log-id">#TRX-0081</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Katering Berkah</strong><br><span style="color:var(--muted);">→ Andi Pratama</span></td>
-                                <td style="font-size:0.8125rem;">Nasi Box × 3</td>
-                                <td><span class="pill selesai">Selesai</span></td>
-                            </tr>
-                            <tr>
-                                <td><span class="log-id">#DON-0042</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Bakery Sari Rasa</strong><br><span style="color:var(--muted);">→ Rumah Yatim</span></td>
-                                <td style="font-size:0.8125rem;">Roti Sisa × 25</td>
-                                <td><span class="pill proses">Proses</span></td>
-                            </tr>
-                            <tr>
-                                <td><span class="log-id">#TRX-0080</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Warung Bu Yanti</strong><br><span style="color:var(--muted);">→ Siti Rahma</span></td>
-                                <td style="font-size:0.8125rem;">Sayur Segar × 2kg</td>
-                                <td><span class="pill selesai">Selesai</span></td>
-                            </tr>
-                            <tr>
-                                <td><span class="log-id">#DON-0041</span></td>
-                                <td style="font-size:0.8125rem;"><strong>Katering Berkah</strong><br><span style="color:var(--muted);">→ Bank Makanan</span></td>
-                                <td style="font-size:0.8125rem;">Paket Hemat × 10</td>
-                                <td><span class="pill proses">Proses</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="sec-hdr-right">
+                    <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; border-radius:var(--r-pill); font-size:0.6rem; padding:2px 8px;">2 BARU</span>
                 </div>
             </div>
-
-            {{-- Laporan Keluhan --}}
-            <div class="sec">
-                <div class="sec-hdr">
-                    <div class="sec-hdr-left">
-                        <div class="sec-kicker">Laporan</div>
-                        <div class="sec-title">Keluhan Pengguna</div>
+            <div style="height: 500px; overflow-y: auto; overflow-x: hidden;">
+                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
+                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Makanan Tidak Layak Konsumsi</div>
+                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
                     </div>
-                    <div class="sec-hdr-right">
-                        <span class="pill keluhan">2 Baru</span>
-                    </div>
-                </div>
-                <div class="keluhan-card">
-                    <div class="keluhan-top">
-                        <div class="keluhan-title">Makanan Tidak Layak Konsumsi</div>
-                        <span class="pill keluhan">Baru</span>
-                    </div>
-                    <div class="keluhan-meta">Andi Pratama · Katering Berkah · 30 menit lalu</div>
-                    <div class="keluhan-desc">Nasi box yang diterima sudah basi dan berbau. Perlu tindakan segera dari pihak Admin untuk menangguhkan listing ini.</div>
-                    <div style="margin-top:0.75rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs">Tangani</button>
-                        <button class="btn btn-outline btn-xs">Detail</button>
+                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Andi Pratama · Katering Berkah · 30 menit lalu</div>
+                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Nasi box yang diterima sudah basi dan berbau. Perlu tindakan segera dari pihak Admin untuk menangguhkan listing ini.</div>
+                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
+                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
+                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
                     </div>
                 </div>
-                <div class="keluhan-card">
-                    <div class="keluhan-top">
-                        <div class="keluhan-title">Stok Tidak Sesuai</div>
-                        <span class="pill keluhan">Baru</span>
+                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
+                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Stok Tidak Sesuai</div>
+                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
                     </div>
-                    <div class="keluhan-meta">Rumah Yatim Al-Ikhlas · Warung Bu Yanti · 3 jam lalu</div>
-                    <div class="keluhan-desc">Kami memesan 20 porsi namun saat pengambilan hanya tersedia 8 porsi. Mohon seller dikonfirmasi ulang sebelum publish listing.</div>
-                    <div style="margin-top:0.75rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs">Tangani</button>
-                        <button class="btn btn-outline btn-xs">Detail</button>
+                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Rumah Yatim Al-Ikhlas · Warung Bu Yanti · 3 jam lalu</div>
+                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Kami memesan 20 porsi namun saat pengambilan hanya tersedia 8 porsi. Mohon seller dikonfirmasi ulang sebelum publish listing.</div>
+                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
+                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
+                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
                     </div>
                 </div>
-                <div class="keluhan-card">
-                    <div class="keluhan-top">
-                        <div class="keluhan-title">Waktu Pickup Tidak Akurat</div>
-                        <span class="pill ditangani">Ditangani</span>
+                <div class="keluhan-card" style="padding:1.25rem 1.75rem;">
+                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Waktu Pickup Tidak Akurat</div>
+                        <span class="pill ditangani" style="background:var(--mint-100); color:var(--mint-600); font-size:0.55rem; padding:2px 6px;">DITANGANI</span>
                     </div>
-                    <div class="keluhan-meta">Bank Makanan Komunitas · Bakery Sari Rasa · Kemarin</div>
-                    <div class="keluhan-desc">Jadwal pickup tertulis pukul 18.00 namun restoran sudah tutup sejak 17.00. Telah dikonfirmasi dan seller sudah update jam operasional.</div>
+                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Bank Makanan Komunitas · Bakery Sari Rasa · Kemarin</div>
+                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Jadwal pickup tertulis pukul 18.00 namun restoran sudah tutup sejak 17.00. Telah dikonfirmasi dan seller sudah update jam operasional.</div>
                 </div>
             </div>
+        </div>
         </div>
 
         {{-- ══ MANAJEMEN KONTEN ARTIKEL ══ --}}
@@ -1173,6 +1235,33 @@ body.no-scroll { overflow: hidden; }
     </div>
 </div>
 
+{{-- MODAL REJECT VERIFIKASI --}}
+<div class="modal-overlay" id="modal-rejectVerify">
+    <div class="modal">
+        <div class="modal-hdr">
+            <div class="modal-title">Tolak Verifikasi Pendaftaran</div>
+            <button class="modal-close" onclick="closeModal('rejectVerify')">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="rejectVerifyForm" method="POST" action="">
+            @csrf
+            <div class="modal-body">
+                <p style="font-size: 0.875rem; color: var(--muted);">Berikan alasan penolakan untuk <strong id="rejectUserName" style="color: var(--ink);"></strong>. Alasan ini akan ditampilkan kepada pengguna terkait.</p>
+                <div class="field">
+                    <label>Alasan Penolakan</label>
+                    <textarea name="rejection_reason" id="rejection_reason" placeholder="Contoh: Dokumen tidak jelas, KTP buram..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('rejectVerify')">Batal</button>
+                <button type="submit" class="btn btn-danger">Kirim Penolakan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function openModal(id){
     document.getElementById('modal-'+id).classList.add('open');
@@ -1199,4 +1288,79 @@ document.querySelectorAll('.sb-item[href^="#"]').forEach(link=>{
         link.classList.add('active');
     });
 });
+
+function confirmReject(userId, userName) {
+    Swal.fire({
+        title: 'Tolak Verifikasi?',
+        text: "Masukkan alasan penolakan untuk " + userName,
+        input: 'textarea',
+        inputPlaceholder: 'Contoh: Dokumen tidak jelas, KTP buram...',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Tolak',
+        cancelButtonText: 'Batal',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Alasan penolakan harus diisi!'
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/verifications/' + userId + '/reject';
+            
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
+
+            const reason = document.createElement('input');
+            reason.type = 'hidden';
+            reason.name = 'rejection_reason';
+            reason.value = result.value;
+            form.appendChild(reason);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
+
+function confirmApprove(userId, userName) {
+    Swal.fire({
+        title: 'Setujui Verifikasi?',
+        text: "Apakah Anda yakin menyetujui akun " + userName + "?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#22c55e',
+        cancelButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Approve',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('approveForm_' + userId).submit();
+        }
+    });
+}
+
+function confirmAdminLogout() {
+    Swal.fire({
+        title: 'Keluar dari Akun?',
+        text: 'Anda akan keluar dari sesi Admin saat ini.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Keluar',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('logoutForm').submit();
+        }
+    });
+}
 </script>

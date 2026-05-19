@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 // TAMBAHKAN 'role', 'provider', dan 'provider_id' di sini
-#[Fillable(['name', 'email', 'password', 'role', 'provider', 'provider_id'])]
+#[Fillable(['name', 'email', 'password', 'role', 'provider', 'provider_id', 'avatar', 'phone_number', 'address', 'account_status', 'is_open'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -29,5 +29,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function verification()
+    {
+        return $this->hasOne(UserVerification::class);
     }
 }

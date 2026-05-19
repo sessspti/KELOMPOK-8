@@ -97,8 +97,64 @@ body::before {
 /* ─── CARD CONTAINER ─── */
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.25rem;
+}
+@media(max-width: 900px) {
+    .menu-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media(max-width: 600px) {
+    .menu-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── SEARCH BAR ─── */
+.search-form {
+    display: flex; gap: 0.5rem; margin-bottom: 1.5rem;
+    animation: fadeUp 0.45s ease 0.08s both;
+}
+.search-input {
+    flex: 1; padding: 0.75rem 1rem;
+    border: 1.5px solid var(--border-md);
+    border-radius: var(--r-sm);
+    font-family: 'Sora', sans-serif;
+    outline: none; transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--mint-500); }
+.btn-search {
+    background: var(--mint-600); color: #fff;
+    border: none; border-radius: var(--r-sm);
+    padding: 0 1.5rem; font-weight: 700;
+    cursor: pointer; transition: background 0.2s;
+}
+.btn-search:hover { background: var(--green-800); }
+
+/* ─── PAGINATION ─── */
+.custom-pagination {
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+    margin-top: 2.5rem; flex-wrap: wrap;
+    animation: fadeUp 0.45s ease 0.15s both;
+}
+.btn-paginate {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #fff; color: var(--mint-600);
+    border: 1.5px solid var(--mint-600); border-radius: var(--r-pill);
+    padding: 0.5rem 1rem; min-width: 40px;
+    font-family: 'Sora', sans-serif; font-weight: 700;
+    font-size: 0.875rem; cursor: pointer; text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-paginate:hover:not(.disabled):not(.active) {
+    background: var(--mint-600); color: #fff; transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(22,163,74,0.28);
+}
+.btn-paginate.active {
+    background: var(--mint-600); color: #fff;
+    box-shadow: 0 4px 14px rgba(22,163,74,0.28);
+    border-color: var(--mint-600); cursor: default;
+}
+.btn-paginate.disabled {
+    border-color: var(--border-md); color: var(--muted);
+    background: var(--off); cursor: not-allowed; opacity: 0.6;
 }
 
 /* ─── MENU CARD ─── */
@@ -238,13 +294,13 @@ body::before {
         </a>
     </div>
 
-    {{-- ── FLASH ── --}}
-    @if(session('success'))
-    <div class="flash">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        {{ session('success') }}
-    </div>
-    @endif
+
+
+    {{-- ── SEARCH BAR ── --}}
+    <form action="{{ route('seller.manage') }}" method="GET" class="search-form">
+        <input type="text" name="search" placeholder="Cari nama menu..." value="{{ request('search') }}" class="search-input">
+        <button type="submit" class="btn-search">Cari</button>
+    </form>
 
     {{-- ── MENU GRID ── --}}
     @if($menus->isEmpty())
@@ -258,8 +314,8 @@ body::before {
         @foreach($menus as $menu)
         <div class="menu-card">
             {{-- Foto --}}
-            @if($menu->image)
-                <img src="{{ asset('storage/' . $menu->image) }}" alt="{{ $menu->name }}" class="card-img">
+            @if($menu->image_url)
+                <img src="{{ $menu->image_url }}" alt="{{ $menu->name }}" class="card-img">
             @else
                 <div class="card-img-placeholder">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -286,6 +342,10 @@ body::before {
                         <span class="stock-badge stock-out">Habis</span>
                     @endif
                 </div>
+                <div style="font-size: 0.75rem; color: var(--muted); margin-top: 8px; display: flex; align-items: center; gap: 4px;">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/></svg>
+                    Exp: {{ $menu->expiry_date ? \Carbon\Carbon::parse($menu->expiry_date)->format('d M Y') : '-' }}
+                </div>
             </div>
 
             {{-- ACTIONS --}}
@@ -296,11 +356,11 @@ body::before {
                     Edit
                 </a>
                 {{-- Hapus — icon only --}}
-                <form action="{{ route('seller.menus.destroy', $menu->id) }}" method="POST"
-                      onsubmit="return confirm('Hapus menu \'{{ addslashes($menu->name) }}\'? Tindakan ini tidak dapat dibatalkan.')">
+                <form id="delete-form-{{ $menu->id }}" action="{{ route('seller.menus.destroy', $menu->id) }}" method="POST" class="m-0">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn-delete" id="btnHapus{{ $menu->id }}" title="Hapus menu">
+                    <button type="button" class="btn-delete" id="btnHapus{{ $menu->id }}" title="Hapus menu"
+                        onclick="confirmDelete('{{ $menu->id }}', '{{ addslashes($menu->name) }}')">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
                 </form>
@@ -308,7 +368,40 @@ body::before {
         </div>
         @endforeach
     </div>
+    
+    {{-- ── PAGINATION ── --}}
+    @if($menus->hasPages())
+        {{ $menus->links('seller.pagination') }}
+    @endif
     @endif
 
 </div>
+
+<script>
+function confirmDelete(id, name) {
+    Swal.fire({
+        title: 'Hapus Menu?',
+        text: "Anda yakin ingin menghapus '" + name + "'? Tindakan ini tidak dapat dibatalkan.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        background: '#ffffff',
+        customClass: {
+            popup: 'rounded-2xl shadow-xl border border-gray-100',
+            title: 'text-xl font-bold text-gray-800',
+            htmlContainer: 'text-sm text-gray-600',
+            confirmButton: 'rounded-xl px-4 py-2 font-bold',
+            cancelButton: 'rounded-xl px-4 py-2 font-bold'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('delete-form-' + id).submit();
+        }
+    })
+}
+</script>
 </x-app-layout>

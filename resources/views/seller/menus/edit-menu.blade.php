@@ -201,8 +201,8 @@ body::before {
 
     {{-- ── CURRENT PHOTO PREVIEW ── --}}
     <div class="current-photo">
-        @if($menu->image)
-            <img src="{{ asset('storage/' . $menu->image) }}" alt="{{ $menu->name }}">
+        @if($menu->image_url)
+            <img src="{{ $menu->image_url }}" alt="{{ $menu->name }}">
         @else
             <div class="photo-placeholder">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -241,11 +241,18 @@ body::before {
                 </div>
             </div>
 
-            {{-- Diskon --}}
-            <div class="form-group">
-                <label for="discount">Total Diskon (%) <span class="req">*</span></label>
-                <input type="number" id="discount" name="discount" class="form-control"
-                       value="{{ old('discount', $menu->discount) }}" min="0" max="100" required>
+            {{-- Diskon & Expired --}}
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="discount">Total Diskon (%) <span class="req">*</span></label>
+                    <input type="number" id="discount" name="discount" class="form-control"
+                           value="{{ old('discount', $menu->discount) }}" min="0" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label for="expiry_date">Tanggal Expired <span class="req">*</span></label>
+                    <input type="date" id="expiry_date" name="expiry_date" class="form-control"
+                           value="{{ old('expiry_date', $menu->expiry_date) }}" required>
+                </div>
             </div>
 
             {{-- Ganti Foto --}}

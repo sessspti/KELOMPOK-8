@@ -64,13 +64,7 @@
                 text-decoration: none;
                 display: flex;
                 align-items: center;
-                gap: 8px;
-            }
-            .logo-icon {
-                width: 32px; height: 32px;
-                background: var(--mint-400);
-                border-radius: 10px;
-                display: flex; align-items: center; justify-content: center;
+                gap: 12px;
             }
             .logo-text-save { color: var(--mint-600); }
 
@@ -113,5 +107,45 @@
                 {{ $slot }}
             </main>
         </div>
+
+        <!-- SweetAlert2 -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                @if(session('success'))
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: "{{ session('success') }}",
+                        showConfirmButton: false,
+                        timer: 2500,
+                        timerProgressBar: true,
+                        background: '#ffffff',
+                        iconColor: '#22c55e',
+                        customClass: {
+                            popup: 'rounded-2xl shadow-xl border border-gray-100',
+                            title: 'text-xl font-bold text-gray-800',
+                            htmlContainer: 'text-sm text-gray-600'
+                        }
+                    });
+                @endif
+
+                @if(session('status') === 'profile-updated')
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Profil Diperbarui',
+                        text: 'Informasi profil Anda telah berhasil disimpan.',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                        background: '#ffffff',
+                        iconColor: '#22c55e',
+                        customClass: {
+                            popup: 'rounded-2xl shadow-xl border border-gray-100',
+                        }
+                    });
+                @endif
+            });
+        </script>
     </body>
 </html>

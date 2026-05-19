@@ -38,12 +38,12 @@
                             <div class="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                                 <div class="flex items-center gap-4">
                                     <div class="relative">
-                                        <img :src="item.image" class="h-12 w-12 rounded-xl object-cover shadow-sm">
+                                        <img :src="item.image_url || '{{ asset('images/placeholder.png') }}'" class="h-12 w-12 rounded-xl object-cover shadow-sm">
                                         <span class="absolute -top-2 -right-2 bg-green-600 text-white text-[10px] h-5 w-5 flex items-center justify-center rounded-full border-2 border-white" x-text="item.qty"></span>
                                     </div>
                                     <span class="font-semibold text-gray-700" x-text="item.name"></span>
                                 </div>
-                                <span class="font-bold text-gray-900" x-text="formatRupiah(item.price * item.qty)"></span>
+                                <span class="font-bold text-gray-900" x-text="formatRupiah(item.final_price * item.qty)"></span>
                             </div>
                         </template>
                     </div>
@@ -102,13 +102,9 @@
                             <span>Subtotal Pesanan</span>
                             <span class="text-white" x-text="formatRupiah(cartTotal)"></span>
                         </div>
-                        <div class="flex justify-between text-gray-400 font-medium">
-                            <span>Pajak (11%)</span>
-                            <span class="text-white" x-text="formatRupiah(taxAmount)"></span>
-                        </div>
                         <div class="flex justify-between text-gray-400 font-medium border-b border-white/10 pb-4">
-                            <span>Biaya Layanan & Ongkir</span>
-                            <span class="text-white" x-text="formatRupiah(shippingFee)"></span>
+                            <span>Biaya Layanan</span>
+                            <span class="text-white" x-text="formatRupiah(serviceFee)"></span>
                         </div>
                         <div class="flex justify-between items-center pt-4 mb-8">
                             <span class="text-lg font-bold">Total Pembayaran</span>
@@ -150,60 +146,15 @@
             </div>
         </div>
 
-        <!-- Success Modal (Invoice Simulation) -->
-        <div 
-            x-show="showSuccess" 
-            class="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-hidden"
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-        >
-            <div class="absolute inset-0 bg-gray-900/90 backdrop-blur-md"></div>
-            
-            <div class="bg-white w-full max-w-lg rounded-[3rem] shadow-2xl relative z-10 overflow-hidden text-center p-12">
-                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                
-                <h2 class="text-3xl font-black text-gray-900 mb-2">Pembayaran Berhasil!</h2>
-                <p class="text-gray-500 mb-8">Horee! Pesananmu sedang disiapkan. Cek detail invoice di bawah ini.</p>
-                
-                <div class="bg-gray-50 rounded-3xl p-6 mb-8 text-left space-y-3">
-                    <div class="flex justify-between">
-                        <span class="text-gray-400 text-sm">No. Invoice</span>
-                        <span class="font-bold text-gray-900" x-text="invoiceNumber"></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-400 text-sm">Status</span>
-                        <span class="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black rounded-full uppercase tracking-widest">Dibayar</span>
-                    </div>
-                    <div class="flex justify-between border-t border-gray-200 pt-3 mt-3">
-                        <span class="text-gray-900 font-bold">Total</span>
-                        <span class="text-green-600 font-black text-xl" x-text="formatRupiah(grandTotal)"></span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <button @click="showSuccess = false; window.location.href='/dashboard'" class="py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all">Tutup</button>
-                    <button @click="printInvoice" class="py-4 bg-green-600 text-white font-bold rounded-2xl shadow-lg shadow-green-600/30 hover:bg-green-700 transition-all">Download Invoice</button>
-                </div>
-                
-                <p class="mt-8 text-xs text-gray-400 italic">Mock notification: Penjual telah menerima notifikasi pesanan baru!</p>
-            </div>
-        </div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function foodSaveCheckout() {
             return {
                 cart: JSON.parse(localStorage.getItem('foodsave_cart')) || [],
                 selectedMethod: '',
                 isProcessing: false,
-                showSuccess: false,
                 invoiceNumber: '',
-                shippingFee: 15000,
+                serviceFee: 0,
                 
                 paymentMethods: [
                     { id: 'bank', name: 'Transfer Bank', description: 'BCA, Mandiri, BNI', icon: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' },
@@ -212,38 +163,99 @@
                 ],
 
                 get cartTotal() {
-                    return this.cart.reduce((total, item) => total + (item.price * item.qty), 0);
-                },
-
-                get taxAmount() {
-                    return this.cartTotal * 0.11;
+                    return this.cart.reduce((total, item) => total + (item.final_price * item.qty), 0);
                 },
 
                 get grandTotal() {
-                    return this.cartTotal + this.taxAmount + this.shippingFee;
+                    return this.cartTotal + this.serviceFee;
                 },
 
                 processPayment() {
                     if (!this.selectedMethod) return;
                     
-                    this.isProcessing = true;
-                    
-                    // Simulated Delay (Network Mock)
-                    setTimeout(() => {
-                        this.isProcessing = false;
-                        this.showSuccess = true;
-                        this.invoiceNumber = 'INV-' + Math.floor(Math.random() * 1000000);
+                    if (this.selectedMethod === 'wallet') {
+                        // QR Code simulation using QR Server API
+                        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=FOODSAVE-PAYMENT-${Date.now()}-${this.grandTotal}`;
                         
-                        // Clear Cart
-                        localStorage.removeItem('foodsave_cart');
-                        
-                        // Mock Real-time notification trigger
-                        console.log("TRIGGER: Notification sent to Buyer & Seller");
-                    }, 2500);
+                        Swal.fire({
+                            title: 'Pembayaran QRIS',
+                            html: `
+                                <div class="flex flex-col items-center py-4">
+                                    <div class="bg-white p-4 rounded-3xl shadow-sm border-2 border-gray-50 mb-6">
+                                        <img src="${qrUrl}" alt="QRIS" class="w-56 h-56">
+                                    </div>
+                                    <p class="text-gray-500 text-sm font-medium mb-1">Total Tagihan:</p>
+                                    <p class="text-3xl font-black text-green-600 mb-6">${this.formatRupiah(this.grandTotal)}</p>
+                                    <div class="bg-blue-50 text-blue-700 p-4 rounded-2xl text-xs font-medium text-center leading-relaxed">
+                                        Silakan pindai kode QR di atas menggunakan aplikasi e-wallet Anda (GoPay, OVO, Dana, dll).
+                                    </div>
+                                </div>
+                            `,
+                            showCancelButton: true,
+                            confirmButtonText: 'Saya Sudah Bayar',
+                            cancelButtonText: 'Nanti Saja',
+                            confirmButtonColor: '#16a34a',
+                            cancelButtonColor: '#9ca3af',
+                            background: '#ffffff',
+                            reverseButtons: true,
+                            customClass: {
+                                popup: 'rounded-[2.5rem] p-6',
+                                title: 'font-bold text-gray-900 pt-4'
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                this.executeOrder();
+                            }
+                        });
+                    } else {
+                        // For Bank or Card, go straight to order execution (simulation)
+                        this.executeOrder();
+                    }
                 },
 
-                printInvoice() {
-                    alert('Download Invoice: ' + this.invoiceNumber + ' berhasil disiapkan!');
+                executeOrder() {
+                    this.isProcessing = true;
+                    
+                    fetch('{{ route('transaction.store') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            cart: this.cart,
+                            payment_method: this.paymentMethods.find(m => m.id === this.selectedMethod).name
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.isProcessing = false;
+                        
+                        if (data.success) {
+                            Swal.fire({
+                                title: "Pesanan Berhasil!",
+                                text: "Pembayaran terverifikasi. Nomor transaksi: " + data.transaction_id,
+                                icon: "success",
+                                confirmButtonText: "Lihat Invoice",
+                                confirmButtonColor: "#16a34a",
+                                background: "#ffffff",
+                                customClass: {
+                                    title: 'font-bold text-gray-900',
+                                    popup: 'rounded-[2.5rem] p-8'
+                                }
+                            }).then((result) => {
+                                localStorage.removeItem('foodsave_cart');
+                                window.location.href = data.redirect_url;
+                            });
+                        } else {
+                            Swal.fire("Gagal", data.message || "Gagal memproses pesanan.", "error");
+                        }
+                    })
+                    .catch(error => {
+                        this.isProcessing = false;
+                        console.error('Error:', error);
+                        Swal.fire("Error", "Gagal menghubungi server.", "error");
+                    });
                 },
 
                 formatRupiah(number) {

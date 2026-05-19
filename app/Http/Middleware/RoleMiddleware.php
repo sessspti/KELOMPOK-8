@@ -13,21 +13,32 @@ class RoleMiddleware
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, ...$roles): Response
     {
-        if (!$request->user() || $request->user()->role !== $role) {
-            
-            if ($request->user()) {
-                $userRole = $request->user()->role;
-                if ($userRole === 'seller') {
-                    return redirect()->route('seller.dashboard');
-                } elseif ($userRole === 'lembaga_sosial') {
-                    return redirect()->route('sosial.dashboard');
-                } elseif ($userRole === 'konsumen') {
-                    return redirect()->route('dashboard');
-                }
-            }
+        $user = $request->user();
+        if (!$user) {
+            return redirect('/login');
+        }
 
+        $userRole = $user->role;
+        
+        // Normalize roles
+        $allowedRoles = [];
+        foreach ($roles as $role) {
+            $parts = explode(',', $role);
+            foreach ($parts as $part) {
+                $allowedRoles[] = trim($part);
+            }
+        }
+
+        if (!in_array($userRole, $allowedRoles)) {
+            if ($userRole === 'seller') {
+                return redirect()->route('seller.dashboard');
+            } elseif ($userRole === 'lembaga_sosial') {
+                return redirect()->route('sosial.dashboard');
+            } elseif ($userRole === 'konsumen') {
+                return redirect()->route('dashboard');
+            }
             return redirect('/');
         }
 
