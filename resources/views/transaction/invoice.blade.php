@@ -1,16 +1,7 @@
 <x-app-layout>
-
 @php
     // Unify data from different controllers
-    if (isset($transaction)) {
-        $orders_list = $orders;
-        $display_id = $transaction->id;
-        $date = $transaction->date;
-        $customer_name = $transaction->customer_name;
-        $customer_email = $transaction->customer_email;
-        $payment_method = $transaction->payment_method;
-        $status = $transaction->status;
-    } else {
+    if (isset($order)) {
         $orders_list = collect([$order]);
         $transaction_id = $order->transaction_id ?? 'INV-' . str_pad($order->id, 6, '0', STR_PAD_LEFT);
         $date = $order->created_at;
@@ -19,6 +10,14 @@
         $payment_method = $order->payment_method ?? 'Transfer';
         $status = $order->status;
         $display_id = $transaction_id;
+    } else {
+        $orders_list = $orders;
+        $display_id = $transaction->id;
+        $date = $transaction->date;
+        $customer_name = $transaction->customer_name;
+        $customer_email = $transaction->customer_email;
+        $payment_method = $transaction->payment_method;
+        $status = $transaction->status;
     }
 @endphp
 
@@ -79,6 +78,16 @@
         transition: all 0.2s; border: none; cursor: pointer;
     }
     .btn-print:hover { background: #000; transform: translateY(-2px); }
+    .btn-back {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: var(--white); color: var(--ink); padding: 0.75rem 1.5rem;
+        border-radius: 99px; font-weight: 600; text-decoration: none; margin-top: 2rem;
+        transition: all 0.2s; border: 1px solid #e2e8f0; cursor: pointer;
+    }
+    .btn-back:hover { background: #f8fafc; transform: translateY(-2px); border-color: var(--mint-600); }
+    @media print {
+        .hide-on-print { display: none !important; }
+    }
 </style>
 
 <div class="invoice-card">
@@ -135,8 +144,12 @@
         <p style="font-size: 0.75rem; color: var(--muted); margin-top: 1rem;">Tunjukkan kode ini kepada seller saat pengambilan makanan.</p>
     </div>
 
-    <div style="text-align: center;">
-        <button onclick="window.print()" class="btn-print">
+    <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        <a href="{{ route('dashboard') }}" class="btn-back hide-on-print">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Kembali ke Dashboard
+        </a>
+        <button onclick="window.print()" class="btn-print hide-on-print">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2H7a2 2 0 00-2 2v4h14z"/></svg>
             Cetak Invoice
         </button>

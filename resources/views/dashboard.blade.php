@@ -1025,7 +1025,7 @@ body::after {
             },
 
             get cartTotal() {
-                return this.cart.reduce((total, item) => total + (item.final_price * item.qty), 0);
+                return this.cart.reduce((total, item) => total + ((item.final_price !== undefined ? item.final_price : item.price) * item.qty), 0);
             },
 
             addToCart(product, event) {

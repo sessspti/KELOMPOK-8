@@ -819,11 +819,11 @@ body::before {
         <template x-for="item in cart" :key="item.id">
             <div class="cart-item">
                 <div class="cart-thumb">
-                    <img :src="item.image" :alt="item.name">
+                    <img :src="item.image_url || item.image" :alt="item.name">
                 </div>
                 <div class="cart-info">
                     <div class="cart-name" x-text="item.name"></div>
-                    <div class="cart-price" x-text="formatRupiah(item.price)"></div>
+                    <div class="cart-price" x-text="formatRupiah(item.final_price !== undefined ? item.final_price : item.price)"></div>
                     <div class="cart-qty" x-text="'× ' + item.qty + ' porsi'"></div>
                 </div>
                 <button class="cart-remove" @click="removeFromCart(item.id)" title="Hapus">×</button>
@@ -1090,14 +1090,7 @@ function storePage() {
                     return;
                 }
             } else {
-                this.cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: product.final_price,
-                    image: product.image_url,
-                    store: product.store,
-                    qty: 1
-                });
+                this.cart.push({ ...product, qty: 1 });
             }
             this.saveCart();
 
@@ -1128,9 +1121,8 @@ function storePage() {
             return this.cart.reduce((sum, item) => sum + item.qty, 0);
         },
 
-        // ── Hitung total harga ──
         getCartTotal() {
-            return this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            return this.cart.reduce((sum, item) => sum + ((item.final_price !== undefined ? item.final_price : item.price) * item.qty), 0);
         },
 
         // ── Hitung jumlah toko berbeda di keranjang ──
