@@ -113,7 +113,7 @@
         @php $total = 0; @endphp
         @foreach($orders_list as $item)
             @php 
-                $price = ($item->user->role === 'lembaga_sosial') ? 0 : ($item->menu->price * ($item->menu->discount / 100));
+                $price = ($item->user->role === 'lembaga_sosial') ? 0 : $item->menu->final_price;
                 $subtotal = $price * $item->quantity;
                 $total += $subtotal;
             @endphp

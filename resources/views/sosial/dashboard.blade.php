@@ -794,32 +794,58 @@ body::after {
                      x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
                      class="absolute right-0 z-[120] mt-2 w-64 rounded-2xl shadow-xl bg-white border border-gray-100 overflow-hidden origin-top-right"
                      style="display: none;">
-                    <div style="padding:8px 16px 6px;font-size:0.5625rem;color:#9ca3af;text-transform:uppercase;font-weight:900;letter-spacing:0.15em;border-bottom:1px solid #f9fafb;margin-bottom:4px;">
-                        Pengaturan Akun
+
+                    {{-- Profile Card Header --}}
+                    <div class="px-4 py-4 border-b border-blue-100" style="background: linear-gradient(135deg, #eff6ff 0%, #ecfeff 100%);">
+                        <div class="flex items-center gap-3">
+                            {{-- Foto Profil Besar --}}
+                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-200 to-cyan-300 flex items-center justify-center text-blue-700 font-black text-lg overflow-hidden flex-shrink-0 shadow-md" style="border: 3px solid #fff;">
+                                @if(Auth::user()->avatar)
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                                @else
+                                    {{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 1)) }}
+                                @endif
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-black text-gray-800 truncate">{{ Auth::user()->name ?? 'Lembaga' }}</p>
+                                <p class="text-[11px] text-gray-500 truncate">{{ Auth::user()->email ?? '' }}</p>
+                                <span class="inline-flex items-center gap-1 mt-0.5 text-[9px] font-bold text-blue-700 uppercase tracking-wider">
+                                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                                    🏛 Lembaga Sosial
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <a href="{{ route('profile.edit') }}"
-                       style="display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:0.875rem;color:#374151;text-decoration:none;font-weight:500;transition:background 0.15s;"
-                       onmouseover="this.style.background='#f0fdf4';this.style.color='#15803d';"
-                       onmouseout="this.style.background='';this.style.color='#374151';">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
-                        Edit Profil
-                    </a>
-                    <div style="border-top:1px solid #f9fafb;margin:4px 0;"></div>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <a href="{{ route('logout') }}"
-                           onclick="event.preventDefault(); this.closest('form').submit();"
-                           style="display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:0.875rem;color:#dc2626;text-decoration:none;font-weight:500;transition:background 0.15s;"
-                           onmouseover="this.style.background='#fef2f2';"
-                           onmouseout="this.style.background='';">
+
+                    {{-- Menu Items --}}
+                    <div class="py-1">
+                        <a href="{{ route('profile.edit') }}"
+                           class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors font-medium">
                             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
-                            Keluar
+                            Edit Profil
                         </a>
-                    </form>
+                        <a href="{{ route('transaction.history') }}"
+                           class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors font-medium">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Riwayat Transaksi
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <a href="{{ route('logout') }}"
+                               onclick="event.preventDefault(); this.closest('form').submit();"
+                               class="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                Keluar
+                            </a>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
