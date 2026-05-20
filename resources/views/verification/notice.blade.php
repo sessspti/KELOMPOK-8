@@ -87,18 +87,33 @@
                             </div>
                         </div>
                     @elseif($user->account_status === 'rejected')
-                        <div class="mb-8 p-6 bg-red-50/70 border border-red-200 rounded-2xl flex items-start gap-4 shadow-sm">
-                            <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0 animate-bounce-short">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        @if(!is_null($user->suspension_reason))
+                            <div class="mb-8 p-6 bg-red-50/70 border border-red-200 rounded-2xl flex items-start gap-4 shadow-sm">
+                                <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0 animate-bounce-short">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-base font-bold text-red-800 custom-font-space">Akun Ditangguhkan</h4>
+                                    <p class="text-sm text-red-700 mt-1">
+                                        <span class="font-bold">Alasan Penangguhan:</span> {{ $user->suspension_reason }}
+                                    </p>
+                                    <p class="text-sm text-red-650 mt-2 font-medium">Akun Anda telah ditangguhkan oleh administrator. Silakan hubungi kami untuk informasi lebih lanjut.</p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 class="text-base font-bold text-red-800 custom-font-space">Pendaftaran Ditolak</h4>
-                                <p class="text-sm text-red-700 mt-1">
-                                    <span class="font-bold">Alasan Penolakan:</span> {{ $verification->rejection_reason ?? 'Dokumen yang diunggah tidak valid atau tidak terbaca.' }}
-                                </p>
-                                <p class="text-sm text-red-600 mt-2 font-medium">Silakan perbaiki data dan unggah kembali dokumen pendukung yang sesuai di bawah ini.</p>
+                        @else
+                            <div class="mb-8 p-6 bg-red-50/70 border border-red-200 rounded-2xl flex items-start gap-4 shadow-sm">
+                                <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0 animate-bounce-short">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-base font-bold text-red-800 custom-font-space">Pendaftaran Ditolak</h4>
+                                    <p class="text-sm text-red-700 mt-1">
+                                        <span class="font-bold">Alasan Penolakan:</span> {{ $verification->rejection_reason ?? 'Dokumen yang diunggah tidak valid atau tidak terbaca.' }}
+                                    </p>
+                                    <p class="text-sm text-red-600 mt-2 font-medium">Silakan perbaiki data dan unggah kembali dokumen pendukung yang sesuai di bawah ini.</p>
+                                </div>
                             </div>
-                        </div>
+                        @endif
                     @else
                         <div class="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-2xl flex items-start gap-4 shadow-sm">
                             <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
@@ -111,7 +126,7 @@
                         </div>
                     @endif
 
-                    @if(!$verification || $user->account_status === 'rejected')
+                    @if((!$verification || $user->account_status === 'rejected') && is_null($user->suspension_reason))
                         <form id="verificationForm" action="{{ route('verification.upload') }}" method="POST" enctype="multipart/form-data" class="mt-4">
                             @csrf
                             
@@ -377,8 +392,8 @@
                             document.addEventListener('DOMContentLoaded', function() {
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Akun Ditangguhkan',
-                                    text: '{{ $verification->rejection_reason ?? "Mohon unggah kembali dokumen verifikasi Anda dengan data yang benar." }}',
+                                    title: '{{ !is_null($user->suspension_reason) ? "Akun Ditangguhkan" : "Pendaftaran Ditolak" }}',
+                                    text: '{{ !is_null($user->suspension_reason) ? $user->suspension_reason : ($verification->rejection_reason ?? "Mohon unggah kembali dokumen verifikasi Anda dengan data yang benar.") }}',
                                     confirmButtonColor: '#ef4444',
                                     confirmButtonText: 'Mengerti',
                                     customClass: {

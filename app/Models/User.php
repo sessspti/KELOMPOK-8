@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 // TAMBAHKAN 'role', 'provider', dan 'provider_id' di sini
-#[Fillable(['name', 'email', 'password', 'role', 'provider', 'provider_id', 'avatar', 'phone_number', 'address', 'account_status', 'is_open'])]
+#[Fillable(['name', 'email', 'password', 'role', 'provider', 'provider_id', 'avatar', 'phone_number', 'address', 'account_status', 'is_open', 'suspension_reason'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {

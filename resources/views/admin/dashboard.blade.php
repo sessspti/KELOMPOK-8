@@ -1359,26 +1359,53 @@ function confirmApprove(userId, userName) {
 
 function confirmToggleStatus(userId, userName, action) {
     const titleText = action === 'tangguhkan' ? 'Tangguhkan Akun?' : 'Aktifkan Kembali Akun?';
-    const bodyText = action === 'tangguhkan' 
-        ? "Apakah Anda yakin menangguhkan akun " + userName + "?"
-        : "Apakah Anda yakin mengaktifkan kembali akun " + userName + "?";
     const confirmColor = action === 'tangguhkan' ? '#f59e0b' : '#22c55e';
     const btnText = action === 'tangguhkan' ? 'Ya, Tangguhkan' : 'Ya, Aktifkan';
 
-    Swal.fire({
-        title: titleText,
-        text: bodyText,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: confirmColor,
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: btnText,
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            document.getElementById('toggleForm_' + userId).submit();
-        }
-    });
+    if (action === 'tangguhkan') {
+        Swal.fire({
+            title: titleText,
+            text: "Masukkan alasan penangguhan untuk akun " + userName,
+            input: 'textarea',
+            inputPlaceholder: 'Contoh: Melanggar ketentuan layanan, terindikasi penipuan...',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: confirmColor,
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: btnText,
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Alasan penangguhan harus diisi!'
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('toggleForm_' + userId);
+                const reasonInput = document.createElement('input');
+                reasonInput.type = 'hidden';
+                reasonInput.name = 'suspension_reason';
+                reasonInput.value = result.value;
+                form.appendChild(reasonInput);
+                form.submit();
+            }
+        });
+    } else {
+        Swal.fire({
+            title: titleText,
+            text: "Apakah Anda yakin mengaktifkan kembali akun " + userName + "?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: confirmColor,
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: btnText,
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('toggleForm_' + userId).submit();
+            }
+        });
+    }
 }
 
 function confirmDeleteUser(userId, userName) {
