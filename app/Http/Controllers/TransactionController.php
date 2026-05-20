@@ -33,6 +33,13 @@ class TransactionController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
+        if (Auth::user()->role === 'lembaga_sosial') {
+            $transactions->transform(function ($trx) {
+                $trx->total_price = 0;
+                return $trx;
+            });
+        }
+
         return view('transaction.history', compact('transactions'));
     }
 
@@ -42,27 +49,43 @@ class TransactionController extends Controller
     public function invoice($transactionId)
     {
         $userId = Auth::id();
+        $userRole = Auth::user()->role;
         
         // Mengambil semua item dalam satu transaksi
-        $orders = Order::with('menu')
-            ->where('id_user', $userId)
-            ->where('transaction_id', $transactionId)
-            ->get();
+        if ($userRole === 'seller') {
+            $orders = Order::with(['menu', 'user'])
+                ->where('transaction_id', $transactionId)
+                ->whereHas('menu', function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                })
+                ->get();
+        } else {
+            $orders = Order::with(['menu', 'user'])
+                ->where('id_user', $userId)
+                ->where('transaction_id', $transactionId)
+                ->get();
+        }
 
         if ($orders->isEmpty()) {
-            return redirect()->route('dashboard')->with('error', 'Invoice tidak ditemukan.');
+            $redirectRoute = match ($userRole) {
+                'seller' => 'seller.dashboard',
+                'lembaga_sosial' => 'sosial.dashboard',
+                default => 'dashboard',
+            };
+            return redirect()->route($redirectRoute)->with('error', 'Invoice tidak ditemukan.');
         }
 
         // Membuat variabel tunggal $order untuk data umum invoice (menghindari error 'Property [id] does not exist')
         $order = $orders->first();
+        $buyer = $order->user;
 
         $transaction = (object) [
             'id' => $transactionId,
             'date' => $order->created_at,
             'payment_method' => $order->payment_method,
             'status' => $order->status,
-            'customer_name' => Auth::user()->name,
-            'customer_email' => Auth::user()->email,
+            'customer_name' => $buyer ? $buyer->name : 'N/A',
+            'customer_email' => $buyer ? $buyer->email : 'N/A',
         ];
 
         // Mengirimkan $orders (untuk list tabel) dan $order (untuk info header)
