@@ -622,12 +622,19 @@ body::before {
                 Ringkasan Stok
                 <span class="live-dot">Live</span>
             </div>
-            <div class="stok-num">7</div>
+            <div class="stok-num">{{ $activeMenusCount }}</div>
             <div class="stok-sub">menu aktif tersedia sekarang</div>
-            <div class="stok-warn">
-                <div class="warn-ico">!</div>
-                <div class="warn-txt">3 menu dengan stok &lt; 5 porsi — segera perbarui sebelum kehabisan</div>
-            </div>
+            @if($lowStockMenusCount > 0)
+                <div class="stok-warn">
+                    <div class="warn-ico">!</div>
+                    <div class="warn-txt">{{ $lowStockMenusCount }} menu dengan stok &lt; 5 porsi — segera perbarui sebelum kehabisan</div>
+                </div>
+            @else
+                <div class="stok-warn" style="background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.22); margin-top: 1.25rem; border-radius: var(--r-md); padding: 0.75rem 1rem; display: flex; align-items: flex-start; gap: 9px;">
+                    <div class="warn-ico" style="background: var(--mint-500);">✓</div>
+                    <div class="warn-txt" style="color: var(--mint-600);">Semua stok menu aktif Anda aman.</div>
+                </div>
+            @endif
         </div>
 
         {{-- CARD 2 — Kelola Menu (PINTU Dev 2) --}}
@@ -677,7 +684,7 @@ body::before {
                     <div class="pstat-lbl">Rating Toko</div>
                 </div>
                 <div class="pstat">
-                    <div class="pstat-num">128</div>
+                    <div class="pstat-num">{{ $totalClaimsCount }}</div>
                     <div class="pstat-lbl">Total Klaim</div>
                 </div>
             </div>
@@ -735,7 +742,7 @@ body::before {
                 </button>
                 <button class="tab-btn" id="btn-riwayat" onclick="switchTab('riwayat')">
                     Riwayat Penjualan
-                    <span class="tab-count">12</span>
+                    <span class="tab-count">{{ $orders->count() }}</span>
                 </button>
             </div>
 
@@ -781,7 +788,7 @@ body::before {
                     <table class="sel-table">
                         <thead>
                             <tr>
-                                <th>Nama Makanan</th>
+                                <th>Invoice</th>
                                 <th>Pemesan</th>
                                 <th>Keterangan Transaksi</th>
                                 <th>Status</th>
@@ -790,7 +797,20 @@ body::before {
                         <tbody>
                             @forelse($orders as $order)
                             <tr>
-                                <td style="font-weight: 700;">{{ $order->menu->name }}</td>
+                                <td style="vertical-align: middle;">
+                                    @if($order->transaction_id)
+                                        <a href="{{ route('transaction.invoice', $order->transaction_id) }}" 
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-mint-50 border border-mint-200 text-mint-700 hover:bg-mint-100 hover:border-mint-300 font-bold text-xs rounded-xl transition-all shadow-sm"
+                                           style="text-decoration: none;">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: inline-block; vertical-align: middle;">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                            {{ $order->transaction_id }}
+                                        </a>
+                                    @else
+                                        <span class="text-xs text-gray-400 font-semibold">-</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <div style="font-weight: 600;">{{ $order->user->name }}</div>
                                     <div style="font-size: 0.65rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em;">
