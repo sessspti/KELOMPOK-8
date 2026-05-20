@@ -31,6 +31,20 @@ class User extends Authenticatable
         ];
     }
 
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            // Dapatkan semua ID menu milik user/seller ini
+            $menuIds = \App\Models\Menu::where('user_id', $user->id)->pluck('id');
+            if ($menuIds->isNotEmpty()) {
+                // Hapus semua order yang merujuk ke menu-menu ini
+                \App\Models\Order::whereIn('menu_id', $menuIds)->delete();
+                // Hapus semua menu ini agar database cascade tidak bentrok
+                \App\Models\Menu::whereIn('id', $menuIds)->delete();
+            }
+        });
+    }
+
     public function verification()
     {
         return $this->hasOne(UserVerification::class);
