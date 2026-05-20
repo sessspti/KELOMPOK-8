@@ -30,8 +30,23 @@ Route::get('/', function () {
 
 // ─── ROUTE PUBLIK: Dashboard Guest/Konsumen ───
 // Alias /home → sama dengan /dashboard (friendly URL)
+// ─── ROUTE PUBLIK: Dashboard Guest/Konsumen ───
+// Alias /home → sama dengan /dashboard (friendly URL)
 Route::get('/home', function () {
-    return view('dashboard');
+    // 1. Ambil data menu agar Guest tetap bisa melihat produk/makanan yang tersedia
+    $menus = \App\Models\Menu::with('user')->notExpired()->latest()->get();
+    
+    // Mapping data is_open milik user ke dalam setiap item menu
+    $menus->map(function ($menu) {
+        $menu->store_is_open = $menu->user ? $menu->user->is_open : 0;
+        return $menu;
+    });
+
+    // 2. Karena guest belum login, buatlah $orders kosong (menggunakan collect())
+    // Ini penting agar file Blade tidak memunculkan error "Undefined variable $orders" nantinya
+    $orders = collect(); 
+
+    return view('dashboard', compact('menus', 'orders'));
 })->name('guest.dashboard');
 
 // --- Group Route untuk User yang Sudah Login ---
