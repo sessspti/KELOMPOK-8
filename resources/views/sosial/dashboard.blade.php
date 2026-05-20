@@ -649,6 +649,7 @@ body::after {
     box-shadow: 0 4px 12px rgba(34,197,94,0.3);
 }
 
+
 .bento-main    { animation: fadeUp 0.6s ease 0.05s both; }
 .bento-img-card{ animation: fadeUp 0.6s ease 0.1s  both; }
 .bento-tracker { animation: fadeUp 0.6s ease 0.15s both; }

@@ -13,23 +13,6 @@ use App\Http\Controllers\Admin\VerificationController as AdminVerificationContro
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-<<<<<<<<< Temporary merge branch 1
-// PERBAIKAN: Redirect halaman utama berdasarkan Role (Menghindari Loop)
-Route::get('/', function () {
-    if (!auth()->check()) {
-        return redirect('/login');
-    }
-
-    $role = auth()->user()->role;
-
-    // Arahkan ke dashboard masing-masing sesuai role
-    return match ($role) {
-        'admin'           => redirect()->route('admin.dashboard'),
-        'seller'          => redirect()->route('seller.dashboard'),
-        'lembaga_sosial'  => redirect()->route('sosial.dashboard'),
-        default           => redirect()->route('dashboard'), // Role konsumen
-    };
-=========
 // ─── ROOT: Redirect berdasarkan role ───
 Route::get('/', function () {
     if (Auth::check()) {
@@ -44,24 +27,37 @@ Route::get('/', function () {
     }
     // Guest yang belum login → halaman publik
     return redirect()->route('guest.dashboard');
->>>>>>>>> Temporary merge branch 2
 });
 
 // ─── ROUTE PUBLIK: Dashboard Guest/Konsumen ───
 // Dapat diakses oleh siapapun (guest maupun konsumen yang login)
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $menus = \App\Models\Menu::with('user')->notExpired()->latest()->get();
+    $menus->map(function ($menu) {
+        $menu->store_is_open = $menu->user ? $menu->user->is_open : 0;
+        return $menu;
+    });
+    return view('dashboard', compact('menus'));
 })->name('dashboard');
 
 // Alias /home → sama dengan /dashboard (friendly URL)
 Route::get('/home', function () {
-    return view('dashboard');
+    $menus = \App\Models\Menu::with('user')->notExpired()->latest()->get();
+    $menus->map(function ($menu) {
+        $menu->store_is_open = $menu->user ? $menu->user->is_open : 0;
+        return $menu;
+    });
+    return view('dashboard', compact('menus'));
 })->name('guest.dashboard');
 
 // --- Group Route untuk User yang Sudah Login ---
 Route::middleware(['auth', 'verified'])->group(function () {
 
-<<<<<<<<< Temporary merge branch 1
+    // 0. Shared Routes (Konsumen & Lembaga Sosial)
+    Route::get('/transaction/history', [TransactionController::class, 'history'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.history');
+    Route::get('/transaction/invoice/{id}', [TransactionController::class, 'invoice'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.invoice');
+    Route::post('/transaction/store', [TransactionController::class, 'store'])->middleware('role:konsumen,lembaga_sosial')->name('transaction.store');
+
     // 1. Dashboard Konsumen
     Route::get('/dashboard', function () {
         // Ambil data menu beserta data penjualnya yang belum expired
@@ -81,20 +77,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         return view('dashboard', compact('menus', 'orders'));
     })->middleware('role:konsumen')->name('dashboard');
-    
-    // 2. Profile Management Umum
-=========
-    // 1. Profile Management Umum (bisa diakses semua role yang login)
->>>>>>>>> Temporary merge branch 2
+
+    // UNTUK LIHAT PROFILE SELLER
+    Route::get('/store/{id}', [\App\Http\Controllers\MenuController::class, 'showStore'])->middleware('role:konsumen')->name('store.show');
+
+    // 4. Notification Management
+    Route::controller(NotificationController::class)->group(function () {
+        Route::post('/notifications/{id}/mark-as-read', 'markAsRead')->name('notifications.markAsRead');
+        Route::post('/notifications/mark-all-as-read', 'markAllAsRead')->name('notifications.markAllAsRead');
+    });
+
+    // 2. Profile Management Umum (bisa diakses semua role yang login)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-<<<<<<<<< Temporary merge branch 1
-    // 3. Fitur Seller
-=========
-    // 2. Fitur Seller (Dibagi menjadi Home & Manajemen)
->>>>>>>>> Temporary merge branch 2
+    // 3. Fitur Seller (Dibagi menjadi Home & Manajemen)
     Route::prefix('seller')->middleware('role:seller')->group(function () {
         Route::get('/dashboard', function () {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
@@ -157,10 +155,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return view('seller.tambah-menu');
         })->name('seller.tambah-menu');
 
-<<<<<<<<< Temporary merge branch 1
-=========
         // D. Rute Alias untuk Profil Seller (Agar tidak error di Dashboard Bento)
->>>>>>>>> Temporary merge branch 2
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('seller.profile.edit');
         
         // Order Management for Seller
@@ -187,25 +182,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 4. Fitur Checkout/Pembayaran (Hanya Konsumen)
     Route::post('/checkout/{order}/pay', [CheckoutController::class, 'processPayment'])->middleware('role:konsumen')->name('checkout.pay');
 
-<<<<<<<<< Temporary merge branch 1
-    // 6. Eksplorasi & Transaksi - Hanya Konsumen
-=========
     // 5. Eksplorasi & Transaksi (FoodSave Features) - Hanya Konsumen
->>>>>>>>> Temporary merge branch 2
     Route::get('/checkout-summary', function () {
         return view('transaction.checkout');
     })->middleware('role:konsumen')->name('checkout.summary');
 
-<<<<<<<<< Temporary merge branch 1
-    // 7. Fitur Admin (Pusat Kendali Platform)
-    Route::prefix('admin')->middleware('role:admin')->group(function () {
-        
-=========
     // 6. Fitur Admin (Pusat Kendali Platform)
     Route::prefix('admin')->middleware('role:admin')->group(function () {
         
         // Dashboard Utama Admin
->>>>>>>>> Temporary merge branch 2
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
         })->name('admin.dashboard');
@@ -233,6 +218,3 @@ Route::post('/cart/sync', [App\Http\Controllers\CartController::class, 'sync'])-
 
 // Route Eksplorasi Donasi
 Route::get('/donasi', [DonationController::class, 'index'])->name('donations.index');
-
-
-
