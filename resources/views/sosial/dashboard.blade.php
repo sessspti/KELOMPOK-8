@@ -980,6 +980,14 @@ body::after {
                                 </svg>
                             </div>
                         </template>
+                        {{-- OVERLAY TOKO TUTUP --}}
+                            <template x-if="product.store_is_open == 0">
+                                <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.4); backdrop-filter: blur(1px);">
+                                    <div style="background: #ef4444; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                                        Toko Tutup
+                                    </div>
+                                </div>
+                            </template>
                         <div class="bdg-dist">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -1001,6 +1009,8 @@ body::after {
                             </svg>
                             <span x-text="product.display_status"></span>
                         </div>
+
+                        
 
                         <div class="flex items-center gap-1.5 mb-2" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">

@@ -653,6 +653,12 @@ body.no-scroll { overflow: hidden; }
         </a>
 
         <div class="sb-section-label">Manajemen</div>
+
+        <a href="#sec-monitor" class="sb-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Monitoring & Log
+        </a>
+
         <a href="#sec-user" class="sb-item">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             Manajemen Pengguna
@@ -664,10 +670,7 @@ body.no-scroll { overflow: hidden; }
                 <span class="sb-badge">{{ $pendingVerifications->count() }}</span>
             @endif
         </a>
-        <a href="#sec-monitor" class="sb-item">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            Monitoring & Log
-        </a>
+
         <a href="#sec-artikel" class="sb-item">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
             Manajemen Konten
@@ -765,6 +768,110 @@ body.no-scroll { overflow: hidden; }
                     +341 minggu ini
                 </div>
             </div>
+        </div>
+
+                {{-- ══ 3. MONITORING TRANSAKSI & KELUHAN ══ --}}
+        <div class="two-col">
+            <div id="sec-monitor" class="sec" style="overflow: hidden;">
+            <div class="sec-hdr">
+                <div class="sec-hdr-left">
+                    <div class="sec-kicker">MONITORING</div>
+                    <div class="sec-title">Log Transaksi</div>
+                </div>
+            </div>
+            
+            <div class="tbl-wrap" style="overflow-x: auto; height: 500px; overflow-y: auto;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1.5px solid var(--border); color:var(--faint); text-transform:uppercase; font-size:0.6rem; font-weight:800; letter-spacing:0.12em; background:var(--surface);">
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">ID</th>
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">DARI &rarr; KE</th>
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">ITEM</th>
+                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($ordersGrouped as $storeName => $orders)
+                            @foreach($orders as $order)
+                            <tr class="toko-row" style="border-bottom:1px solid var(--border);">
+                                <td style="padding:1rem 1.5rem; color:var(--blue-500); font-family:'JetBrains Mono', monospace; font-size:0.75rem; font-weight:600;">
+                                    #{{ $order->user->role === 'lembaga_sosial' ? 'DON' : 'TRX' }}-{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}
+                                </td>
+                                <td style="padding:1rem 1.5rem;">
+                                    <div style="font-weight:700; color:var(--ink); font-size:0.875rem;">{{ $storeName }}</div>
+                                    <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">
+                                        &rarr; {{ $order->user->name }}
+                                    </div>
+                                </td>
+                                <td style="padding:1rem 1.5rem; color:var(--ink); font-size:0.8125rem;">
+                                    {{ $order->menu->name }} &times; {{ $order->quantity }}
+                                </td>
+                                <td style="padding:1rem 1.5rem;">
+                                    <span class="pill {{ strtolower($order->status) === 'selesai' ? 'selesai' : 'proses' }}" style="padding:4px 8px; font-size:0.6rem;">
+                                        {{ strtoupper($order->status) }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="4" style="padding: 4rem; text-align: center; color: var(--faint);">
+                                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0.2; margin-bottom: 1rem; margin-left:auto; margin-right:auto; display:block;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    <p>Belum ada data transaksi yang tercatat di sistem.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- KANAN: LAPORAN KELUHAN PENGGUNA --}}
+        <div class="sec">
+            <div class="sec-hdr">
+                <div class="sec-hdr-left">
+                    <div class="sec-kicker">LAPORAN</div>
+                    <div class="sec-title">Keluhan Pengguna</div>
+                </div>
+                <div class="sec-hdr-right">
+                    <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; border-radius:var(--r-pill); font-size:0.6rem; padding:2px 8px;">2 BARU</span>
+                </div>
+            </div>
+            <div style="height: 500px; overflow-y: auto; overflow-x: hidden;">
+                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
+                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Makanan Tidak Layak Konsumsi</div>
+                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
+                    </div>
+                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Andi Pratama · Katering Berkah · 30 menit lalu</div>
+                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Nasi box yang diterima sudah basi dan berbau. Perlu tindakan segera dari pihak Admin untuk menangguhkan listing ini.</div>
+                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
+                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
+                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
+                    </div>
+                </div>
+                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
+                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Stok Tidak Sesuai</div>
+                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
+                    </div>
+                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Rumah Yatim Al-Ikhlas · Warung Bu Yanti · 3 jam lalu</div>
+                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Kami memesan 20 porsi namun saat pengambilan hanya tersedia 8 porsi. Mohon seller dikonfirmasi ulang sebelum publish listing.</div>
+                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
+                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
+                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
+                    </div>
+                </div>
+                <div class="keluhan-card" style="padding:1.25rem 1.75rem;">
+                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Waktu Pickup Tidak Akurat</div>
+                        <span class="pill ditangani" style="background:var(--mint-100); color:var(--mint-600); font-size:0.55rem; padding:2px 6px;">DITANGANI</span>
+                    </div>
+                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Bank Makanan Komunitas · Bakery Sari Rasa · Kemarin</div>
+                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Jadwal pickup tertulis pukul 18.00 namun restoran sudah tutup sejak 17.00. Telah dikonfirmasi dan seller sudah update jam operasional.</div>
+                </div>
+            </div>
+        </div>
         </div>
 
         {{-- ══ 2. MANAJEMEN PENGGUNA ══ --}}
@@ -947,116 +1054,7 @@ body.no-scroll { overflow: hidden; }
             @endforelse
         </div>
 
-        {{-- ══ 3. MONITORING TRANSAKSI & KELUHAN ══ --}}
-        <div class="two-col">
-            <div id="sec-monitor" class="sec" style="overflow: hidden;">
-            <div class="sec-hdr">
-                <div class="sec-hdr-left">
-                    <div class="sec-kicker">MONITORING</div>
-                    <div class="sec-title">Log Transaksi</div>
-                </div>
-                <div class="sec-hdr-right">
-                    <button class="btn btn-outline btn-xs" style="border-radius:var(--r-pill); padding:0.4rem 1rem; font-size:0.75rem; color:var(--muted);">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px; vertical-align:middle; display:inline-block;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Ekspor
-                    </button>
-                </div>
-            </div>
-            
-            <div class="tbl-wrap" style="overflow-x: auto; height: 500px; overflow-y: auto;">
-                <table style="width:100%; border-collapse:collapse;">
-                    <thead>
-                        <tr style="border-bottom:1.5px solid var(--border); color:var(--faint); text-transform:uppercase; font-size:0.6rem; font-weight:800; letter-spacing:0.12em; background:var(--surface);">
-                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">ID</th>
-                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">DARI &rarr; KE</th>
-                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">ITEM</th>
-                            <th style="padding:1rem 1.5rem; text-align:left; position:sticky; top:0; background:var(--surface);">STATUS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($ordersGrouped as $storeName => $orders)
-                            @foreach($orders as $order)
-                            <tr class="toko-row" style="border-bottom:1px solid var(--border);">
-                                <td style="padding:1rem 1.5rem; color:var(--blue-500); font-family:'JetBrains Mono', monospace; font-size:0.75rem; font-weight:600;">
-                                    #{{ $order->user->role === 'lembaga_sosial' ? 'DON' : 'TRX' }}-{{ str_pad($order->id, 4, '0', STR_PAD_LEFT) }}
-                                </td>
-                                <td style="padding:1rem 1.5rem;">
-                                    <div style="font-weight:700; color:var(--ink); font-size:0.875rem;">{{ $storeName }}</div>
-                                    <div style="font-size:0.75rem; color:var(--muted); margin-top:2px;">
-                                        &rarr; {{ $order->user->name }}
-                                    </div>
-                                </td>
-                                <td style="padding:1rem 1.5rem; color:var(--ink); font-size:0.8125rem;">
-                                    {{ $order->menu->name }} &times; {{ $order->quantity }}
-                                </td>
-                                <td style="padding:1rem 1.5rem;">
-                                    <span class="pill {{ strtolower($order->status) === 'selesai' ? 'selesai' : 'proses' }}" style="padding:4px 8px; font-size:0.6rem;">
-                                        {{ strtoupper($order->status) }}
-                                    </span>
-                                </td>
-                            </tr>
-                            @endforeach
-                        @empty
-                            <tr>
-                                <td colspan="4" style="padding: 4rem; text-align: center; color: var(--faint);">
-                                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="opacity: 0.2; margin-bottom: 1rem; margin-left:auto; margin-right:auto; display:block;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                                    <p>Belum ada data transaksi yang tercatat di sistem.</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        {{-- KANAN: LAPORAN KELUHAN PENGGUNA --}}
-        <div class="sec">
-            <div class="sec-hdr">
-                <div class="sec-hdr-left">
-                    <div class="sec-kicker">LAPORAN</div>
-                    <div class="sec-title">Keluhan Pengguna</div>
-                </div>
-                <div class="sec-hdr-right">
-                    <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; border-radius:var(--r-pill); font-size:0.6rem; padding:2px 8px;">2 BARU</span>
-                </div>
-            </div>
-            <div style="height: 500px; overflow-y: auto; overflow-x: hidden;">
-                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
-                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
-                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Makanan Tidak Layak Konsumsi</div>
-                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
-                    </div>
-                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Andi Pratama · Katering Berkah · 30 menit lalu</div>
-                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Nasi box yang diterima sudah basi dan berbau. Perlu tindakan segera dari pihak Admin untuk menangguhkan listing ini.</div>
-                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
-                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
-                    </div>
-                </div>
-                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
-                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
-                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Stok Tidak Sesuai</div>
-                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
-                    </div>
-                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Rumah Yatim Al-Ikhlas · Warung Bu Yanti · 3 jam lalu</div>
-                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Kami memesan 20 porsi namun saat pengambilan hanya tersedia 8 porsi. Mohon seller dikonfirmasi ulang sebelum publish listing.</div>
-                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
-                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
-                    </div>
-                </div>
-                <div class="keluhan-card" style="padding:1.25rem 1.75rem;">
-                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
-                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Waktu Pickup Tidak Akurat</div>
-                        <span class="pill ditangani" style="background:var(--mint-100); color:var(--mint-600); font-size:0.55rem; padding:2px 6px;">DITANGANI</span>
-                    </div>
-                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Bank Makanan Komunitas · Bakery Sari Rasa · Kemarin</div>
-                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Jadwal pickup tertulis pukul 18.00 namun restoran sudah tutup sejak 17.00. Telah dikonfirmasi dan seller sudah update jam operasional.</div>
-                </div>
-            </div>
-        </div>
-        </div>
-
-        {{-- ══ MANAJEMEN KONTEN ARTIKEL ══ --}}
+                {{-- ══ MANAJEMEN KONTEN ARTIKEL ══ --}}
         <div id="sec-artikel" class="sec">
             <div class="sec-hdr">
                 <div class="sec-hdr-left">
