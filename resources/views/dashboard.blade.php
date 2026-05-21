@@ -882,12 +882,6 @@ body::after {
                                     </div>
                                 </div>
                             </template>
-
-
-
-
-
-
                         </div>
                         <div class="pcard-body">
                             <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 block transition-colors" x-text="product.store"></a>                            <h3 class="pcard-name" x-text="product.name"></h3>
