@@ -916,7 +916,7 @@ body::before {
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    Amankan & Bayar Sekarang
+                    Checkout Sekarang
                 </button>
                 <p class="checkout-note">Makanan ini membantu mengurangi food waste 🌿</p>
             </div>
@@ -1282,6 +1282,7 @@ function storePage() {
         },
 
         // ── Checkout & sinkronisasi ke backend ──
+// ── Checkout & sinkronisasi ke backend ──
         directCheckout() {
             fetch('{{ route("cart.sync") }}', {
                 method: 'POST',
@@ -1293,10 +1294,12 @@ function storePage() {
             })
             .then(response => response.json())
             .then(() => {
-                window.location.href = '{{ route("dashboard") }}';
+                // ✅ SEKARANG DIALIHKAN KE HALAMAN CHECKOUT SUMMARY
+                window.location.href = '{{ route("checkout.summary") }}'; 
             })
             .catch(() => {
-                window.location.href = '{{ route("dashboard") }}';
+                // ✅ JIKA ERROR PUN TETAP DIALIHKAN KE HALAMAN CHECKOUT SUMMARY
+                window.location.href = '{{ route("checkout.summary") }}'; 
             });
         },
 
