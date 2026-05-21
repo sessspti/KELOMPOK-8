@@ -27,7 +27,7 @@ class TransactionController extends Controller
                 'payment_method', 
                 'status', 
                 DB::raw('MAX(created_at) as date'), 
-                DB::raw('SUM(quantity * (select (price - (price * discount / 100)) from menus where menus.id = orders.menu_id)) as total_price')
+                DB::raw('SUM(quantity * COALESCE(unit_price, (select ROUND(price - (price * discount / 100)) from menus where menus.id = orders.menu_id))) as total_price')
             )
             ->groupBy('transaction_id', 'payment_method', 'status')
             ->orderBy('date', 'desc')
@@ -53,14 +53,14 @@ class TransactionController extends Controller
         
         // Mengambil semua item dalam satu transaksi
         if ($userRole === 'seller') {
-            $orders = Order::with(['menu', 'user'])
+            $orders = Order::with(['menu.user', 'user'])
                 ->where('transaction_id', $transactionId)
                 ->whereHas('menu', function ($query) use ($userId) {
                     $query->where('user_id', $userId);
                 })
                 ->get();
         } else {
-            $orders = Order::with(['menu', 'user'])
+            $orders = Order::with(['menu.user', 'user'])
                 ->where('id_user', $userId)
                 ->where('transaction_id', $transactionId)
                 ->get();
@@ -78,6 +78,13 @@ class TransactionController extends Controller
         // Membuat variabel tunggal $order untuk data umum invoice (menghindari error 'Property [id] does not exist')
         $order = $orders->first();
         $buyer = $order->user;
+        $isDonation = $buyer && $buyer->role === 'lembaga_sosial';
+
+        $subtotal = $isDonation
+            ? 0
+            : $orders->sum(fn ($item) => $item->line_total);
+        $serviceFee = 0;
+        $grandTotal = $subtotal + $serviceFee;
 
         $transaction = (object) [
             'id' => $transactionId,
@@ -89,7 +96,7 @@ class TransactionController extends Controller
         ];
 
         // Mengirimkan $orders (untuk list tabel) dan $order (untuk info header)
-        return view('transaction.invoice', compact('orders', 'order', 'transaction'));
+        return view('transaction.invoice', compact('orders', 'order', 'transaction', 'subtotal', 'serviceFee', 'grandTotal', 'isDonation'));
     }
 
     /**
@@ -116,10 +123,15 @@ class TransactionController extends Controller
                     throw new \Exception("Menu dengan ID {$item['id']} tidak ditemukan. Silakan periksa kembali keranjang Anda.");
                 }
 
+                $unitPrice = (int) round(
+                    $item['final_price'] ?? ($menu->price - ($menu->price * ($menu->discount / 100)))
+                );
+
                 Order::create([
                     'id_user' => $userId,
                     'menu_id' => $item['id'],
                     'quantity' => $item['qty'],
+                    'unit_price' => $unitPrice,
                     'status' => 'paid',
                     'transaction_id' => $transactionId,
                     'payment_method' => $paymentMethod,

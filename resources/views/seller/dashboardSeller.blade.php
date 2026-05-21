@@ -824,7 +824,7 @@ body::before {
                                         </div>
                                     @else
                                         <div style="color: var(--mint-600); font-weight: 700;">
-                                            Rp {{ number_format($order->menu->final_price * $order->quantity, 0, ',', '.') }}
+                                            Rp {{ number_format($order->line_total, 0, ',', '.') }}
                                         </div>
                                     @endif
                                 </td>
