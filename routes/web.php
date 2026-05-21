@@ -30,8 +30,6 @@ Route::get('/', function () {
 
 // ─── ROUTE PUBLIK: Dashboard Guest/Konsumen ───
 // Alias /home → sama dengan /dashboard (friendly URL)
-// ─── ROUTE PUBLIK: Dashboard Guest/Konsumen ───
-// Alias /home → sama dengan /dashboard (friendly URL)
 Route::get('/home', function () {
     // 1. Ambil data menu agar Guest tetap bisa melihat produk/makanan yang tersedia
     $menus = \App\Models\Menu::with('user')

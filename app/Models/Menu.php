@@ -9,6 +9,14 @@ class Menu extends Model
     protected $fillable = ['user_id', 'name', 'price', 'discount', 'stock', 'image', 'expiry_date'];
     protected $appends = ['final_price', 'image_url', 'formatted_expiry_date', 'store'];
 
+    protected static function booted()
+    {
+        static::deleting(function ($menu) {
+            // Hapus semua order yang terkait dengan menu ini
+            $menu->orders()->delete();
+        });
+    }
+
     // Accessor untuk Nama Toko
     public function getStoreAttribute()
     {

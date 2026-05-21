@@ -49,6 +49,14 @@ class SocialAuthController extends Controller
                         'provider_id' => $socialUser->getId(),
                     ]);
                 }
+
+                // Blokir jika akun ditangguhkan (suspended)
+                if ($user->account_status === 'rejected' && !is_null($user->suspension_reason)) {
+                    return redirect()->route('login')->withErrors([
+                        'email' => "Akun Anda telah ditangguhkan. Alasan: " . $user->suspension_reason,
+                    ]);
+                }
+
                 Auth::login($user);
                 
                 // Redirect based on role
