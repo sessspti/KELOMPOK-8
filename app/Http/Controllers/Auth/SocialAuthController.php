@@ -49,6 +49,14 @@ class SocialAuthController extends Controller
                         'provider_id' => $socialUser->getId(),
                     ]);
                 }
+
+                // Blokir jika akun ditangguhkan (suspended)
+                if ($user->account_status === 'rejected' && !is_null($user->suspension_reason)) {
+                    return redirect()->route('login')->withErrors([
+                        'email' => "Akun Anda telah ditangguhkan. Alasan: " . $user->suspension_reason,
+                    ]);
+                }
+
                 Auth::login($user);
                 
                 // Redirect based on role
@@ -103,6 +111,7 @@ class SocialAuthController extends Controller
         ]);
 
         $googleUser = session('google_user');
+        $accountStatus = in_array($request->role, ['seller', 'lembaga_sosial']) ? 'pending' : 'approved';
 
         if (isset($googleUser['id'])) {
             // Update akun lama yang belum punya password/role valid
@@ -113,6 +122,7 @@ class SocialAuthController extends Controller
                     'role' => $request->role,
                     'provider' => $googleUser['provider'],
                     'provider_id' => $googleUser['provider_id'],
+                    'account_status' => $accountStatus,
                 ]);
             }
         } else {
@@ -124,6 +134,7 @@ class SocialAuthController extends Controller
                 'provider_id' => $googleUser['provider_id'],
                 'password' => \Illuminate\Support\Facades\Hash::make($request->password),
                 'role' => $request->role,
+                'account_status' => $accountStatus,
             ]);
         }
 

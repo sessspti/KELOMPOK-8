@@ -27,11 +27,18 @@ class TransactionController extends Controller
                 'payment_method', 
                 'status', 
                 DB::raw('MAX(created_at) as date'), 
-                DB::raw('SUM(quantity * (select price from menus where menus.id = orders.menu_id)) as total_price')
+                DB::raw('SUM(quantity * COALESCE(unit_price, (select ROUND(price - (price * discount / 100)) from menus where menus.id = orders.menu_id))) as total_price')
             )
             ->groupBy('transaction_id', 'payment_method', 'status')
             ->orderBy('date', 'desc')
             ->get();
+
+        if (Auth::user()->role === 'lembaga_sosial') {
+            $transactions->transform(function ($trx) {
+                $trx->total_price = 0;
+                return $trx;
+            });
+        }
 
         return view('transaction.history', compact('transactions'));
     }
@@ -42,31 +49,54 @@ class TransactionController extends Controller
     public function invoice($transactionId)
     {
         $userId = Auth::id();
+        $userRole = Auth::user()->role;
         
         // Mengambil semua item dalam satu transaksi
-        $orders = Order::with('menu')
-            ->where('id_user', $userId)
-            ->where('transaction_id', $transactionId)
-            ->get();
+        if ($userRole === 'seller') {
+            $orders = Order::with(['menu.user', 'user'])
+                ->where('transaction_id', $transactionId)
+                ->whereHas('menu', function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                })
+                ->get();
+        } else {
+            $orders = Order::with(['menu.user', 'user'])
+                ->where('id_user', $userId)
+                ->where('transaction_id', $transactionId)
+                ->get();
+        }
 
         if ($orders->isEmpty()) {
-            return redirect()->route('dashboard')->with('error', 'Invoice tidak ditemukan.');
+            $redirectRoute = match ($userRole) {
+                'seller' => 'seller.dashboard',
+                'lembaga_sosial' => 'sosial.dashboard',
+                default => 'dashboard',
+            };
+            return redirect()->route($redirectRoute)->with('error', 'Invoice tidak ditemukan.');
         }
 
         // Membuat variabel tunggal $order untuk data umum invoice (menghindari error 'Property [id] does not exist')
         $order = $orders->first();
+        $buyer = $order->user;
+        $isDonation = $buyer && $buyer->role === 'lembaga_sosial';
+
+        $subtotal = $isDonation
+            ? 0
+            : $orders->sum(fn ($item) => $item->line_total);
+        $serviceFee = 0;
+        $grandTotal = $subtotal + $serviceFee;
 
         $transaction = (object) [
             'id' => $transactionId,
             'date' => $order->created_at,
             'payment_method' => $order->payment_method,
             'status' => $order->status,
-            'customer_name' => Auth::user()->name,
-            'customer_email' => Auth::user()->email,
+            'customer_name' => $buyer ? $buyer->name : 'N/A',
+            'customer_email' => $buyer ? $buyer->email : 'N/A',
         ];
 
         // Mengirimkan $orders (untuk list tabel) dan $order (untuk info header)
-        return view('transaction.invoice', compact('orders', 'order', 'transaction'));
+        return view('transaction.invoice', compact('orders', 'order', 'transaction', 'subtotal', 'serviceFee', 'grandTotal', 'isDonation'));
     }
 
     /**
@@ -93,10 +123,15 @@ class TransactionController extends Controller
                     throw new \Exception("Menu dengan ID {$item['id']} tidak ditemukan. Silakan periksa kembali keranjang Anda.");
                 }
 
+                $unitPrice = (int) round(
+                    $item['final_price'] ?? ($menu->price - ($menu->price * ($menu->discount / 100)))
+                );
+
                 Order::create([
                     'id_user' => $userId,
                     'menu_id' => $item['id'],
                     'quantity' => $item['qty'],
+                    'unit_price' => $unitPrice,
                     'status' => 'paid',
                     'transaction_id' => $transactionId,
                     'payment_method' => $paymentMethod,

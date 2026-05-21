@@ -494,6 +494,33 @@ body::after {
 .add-btn:active { transform: scale(0.94); }
 .add-btn svg { width: 22px; height: 22px; color: #fff; }
 
+/* ─── STATUS BADGE ─── */
+.bdg-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--r-pill);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+}
+.bdg-status.tersedia {
+    background: var(--mint-100);
+    color: var(--mint-700);
+}
+.bdg-status.tutup {
+    background: #fed7aa;
+    color: #92400e;
+}
+.bdg-status.habis {
+    background: #fecaca;
+    color: #dc2626;
+}
+
 /* ══════════════════════════════════
    DIVIDER
 ══════════════════════════════════ */
@@ -764,53 +791,89 @@ body::after {
             @endauth
             {{-- Profile Dropdown --}}
             <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false" style="z-index: 110;">
-                <button @click="open = !open"
-                        class="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all focus:outline-none shadow-sm"
-                        style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:#fff;border:1.5px solid rgba(22,163,74,0.2);border-radius:12px;cursor:pointer;">
-                    {{-- Initials Avatar --}}
-                    <div style="width:28px;height:28px;border-radius:8px;background:#e0f2fe;border:1.5px solid rgba(14,165,233,0.3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.6875rem;color:#0284c7;flex-shrink:0;">
-                        {{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 2)) }}
+
+                {{-- Tombol Avatar --}}
+                <button @click="open = !open" class="flex items-center gap-2.5 px-2.5 py-1.5 bg-white border border-gray-100 rounded-2xl hover:bg-blue-50 hover:border-blue-200 transition-all focus:outline-none shadow-sm hover:shadow-md group">
+                    {{-- Foto Profil --}}
+                    <div class="relative flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-cyan-200 border-2 border-blue-300 flex items-center justify-center text-blue-700 font-extrabold text-sm overflow-hidden shadow-sm transition-all duration-300 group-hover:border-blue-400 group-hover:scale-105 group-hover:shadow-[0_0_0_3px_rgba(14,165,233,0.25)]">
+                            @if(Auth::user()->avatar)
+                                <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                            @else
+                                {{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 1)) }}
+                            @endif
+                        </div>
+                        {{-- Online dot --}}
+                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-blue-400 border-2 border-white rounded-full"></span>
                     </div>
-                    <span style="font-size:0.8125rem;font-weight:700;color:#111;">{{ Auth::user()->name ?? 'Lembaga' }}</span>
-                    <svg class="fill-current h-4 w-4" style="color:#9ca3af;transition:transform 0.2s;" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    {{-- Nama User --}}
+                    <div class="text-sm font-bold text-gray-700 max-w-[100px] truncate">{{ Auth::user()->name ?? 'Lembaga' }}</div>
+                    <svg class="fill-current h-3.5 w-3.5 text-gray-400 transition-transform duration-200 flex-shrink-0" :class="{'rotate-180': open}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                     </svg>
                 </button>
 
                 
 
+                {{-- Dropdown Menu --}}
                 <div x-show="open"
                      x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="transform opacity-0 scale-95"
-                     x-transition:enter-end="transform opacity-100 scale-100"
-                     class="absolute right-0 z-[120] mt-2 w-52 rounded-2xl shadow-xl bg-white border border-gray-100 py-2 origin-top-right"
+                     x-transition:enter-start="transform opacity-0 scale-95 translate-y-1"
+                     x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
+                     class="absolute right-0 z-[120] mt-2 w-64 rounded-2xl shadow-xl bg-white border border-gray-100 overflow-hidden origin-top-right"
                      style="display: none;">
-                    <div style="padding:8px 16px 6px;font-size:0.5625rem;color:#9ca3af;text-transform:uppercase;font-weight:900;letter-spacing:0.15em;border-bottom:1px solid #f9fafb;margin-bottom:4px;">
-                        Pengaturan Akun
+
+                    {{-- Profile Card Header --}}
+                    <div class="px-4 py-4 border-b border-blue-100" style="background: linear-gradient(135deg, #eff6ff 0%, #ecfeff 100%);">
+                        <div class="flex items-center gap-3">
+                            {{-- Foto Profil Besar --}}
+                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-200 to-cyan-300 flex items-center justify-center text-blue-700 font-black text-lg overflow-hidden flex-shrink-0 shadow-md" style="border: 3px solid #fff;">
+                                @if(Auth::user()->avatar)
+                                    <img src="{{ asset('storage/' . Auth::user()->avatar) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                                @else
+                                    {{ strtoupper(substr(Auth::user()->name ?? 'L', 0, 1)) }}
+                                @endif
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-black text-gray-800 truncate">{{ Auth::user()->name ?? 'Lembaga' }}</p>
+                                <p class="text-[11px] text-gray-500 truncate">{{ Auth::user()->email ?? '' }}</p>
+                                <span class="inline-flex items-center gap-1 mt-0.5 text-[9px] font-bold text-blue-700 uppercase tracking-wider">
+                                    <span class="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                                    🏛 Lembaga Sosial
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <a href="{{ route('profile.edit') }}"
-                       style="display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:0.875rem;color:#374151;text-decoration:none;font-weight:500;transition:background 0.15s;"
-                       onmouseover="this.style.background='#f0fdf4';this.style.color='#15803d';"
-                       onmouseout="this.style.background='';this.style.color='#374151';">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
-                        Edit Profil
-                    </a>
-                    <div style="border-top:1px solid #f9fafb;margin:4px 0;"></div>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <a href="{{ route('logout') }}"
-                           onclick="event.preventDefault(); this.closest('form').submit();"
-                           style="display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:0.875rem;color:#dc2626;text-decoration:none;font-weight:500;transition:background 0.15s;"
-                           onmouseover="this.style.background='#fef2f2';"
-                           onmouseout="this.style.background='';">
+
+                    {{-- Menu Items --}}
+                    <div class="py-1">
+                        <a href="{{ route('profile.edit') }}"
+                           class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors font-medium">
                             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
-                            Keluar
+                            Edit Profil
                         </a>
-                    </form>
+                        <a href="{{ route('transaction.history') }}"
+                           class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors font-medium">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Riwayat Transaksi
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <a href="{{ route('logout') }}"
+                               onclick="event.preventDefault(); this.closest('form').submit();"
+                               class="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                Keluar
+                            </a>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -902,6 +965,7 @@ body::after {
         .loc-pill{display:inline-flex;align-items:center;gap:5px;font-size:.6875rem;color:var(--muted);background:var(--mint-50);border:1px solid var(--border);border-radius:var(--r-pill);padding:.2rem .65rem;margin-top:.5rem;}
         .loc-pill svg{width:11px;height:11px;color:var(--mint-600);}
         </style>
+        
         <div class="pgrid">
             <template x-for="product in filteredProducts" :key="product.id">
                 <div class="pcard">
@@ -928,8 +992,16 @@ body::after {
                         <div class="bdg-gratis">Gratis</div>
                     </div>
                     <div class="pcard-body">
-                        <p class="pcard-store" x-text="product.store"></p>
-                        <h3 class="pcard-name" x-text="product.name"></h3>
+                        <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 block transition-colors" x-text="product.store"></a>                        <h3 class="pcard-name" x-text="product.name"></h3>
+                        
+                        {{-- Status Badge untuk Lembaga --}}
+                        <div class="bdg-status" :class="product.display_status.toLowerCase()" style="margin-bottom: 0.75rem;">
+                            <svg fill="currentColor" viewBox="0 0 24 24" width="12" height="12">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                            </svg>
+                            <span x-text="product.display_status"></span>
+                        </div>
+
                         <div class="flex items-center gap-1.5 mb-2" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
@@ -942,20 +1014,33 @@ body::after {
                                 <div class="price-was" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)"></div>
                                 <div class="price-now">Rp 0</div>
                             </div>
-                            <button class="req-btn" @click="openCart(); addItemToPickup({
-                                id: product.id,
-                                name: product.name,
-                                store: product.store,
-                                qty: 'Tersedia ' + product.stock + ' porsi',
-                                price: 'Rp 0',
-                                image: product.image_url,
-                                urgent: product.discount > 50 ? 'Sangat Murah!' : 'Hari Ini'
-                            })" aria-label="Ajukan pengambilan">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
-                                </svg>
-                                Ajukan
-                            </button>
+                            {{-- Button untuk Lembaga (disabled jika toko tutup) --}}
+                            <template x-if="product.store_is_open == 1">
+                                <button class="req-btn" @click="openCart(); addItemToPickup({
+                                    id: product.id,
+                                    name: product.name,
+                                    store: product.store,
+                                    stock: product.stock,
+                                    price: 'Rp 0',
+                                    image: product.image_url,
+                                    urgent: product.discount > 50 ? 'Sangat Murah!' : 'Hari Ini'
+                                })" aria-label="Ajukan pengambilan">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
+                                    </svg>
+                                    Ajukan
+                                </button>
+                            </template>
+
+                            {{-- Button disabled untuk Lembaga (jika toko tutup) --}}
+                            <template x-if="product.store_is_open == 0">
+                                <button class="req-btn" disabled style="background: #e2e8f0; color: #94a3b8; cursor: not-allowed; opacity: 0.6;" aria-label="Toko Tutup">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                    Tutup
+                                </button>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -967,59 +1052,6 @@ body::after {
         </div>
     </section>
 
-    <hr class="divider">
-
-    {{-- ── TRANSACTION HISTORY ── --}}
-    <section class="sec" style="padding-top: 0;">
-        <div class="sec-hdr">
-            <div>
-                <p class="sec-label"><span class="sec-label-dot"></span> Riwayat Klaim</p>
-                <h2 class="sec-title">Klaim Kamu</h2>
-                <p class="sec-sub">Pantau status klaim donasi surplus kamu di sini.</p>
-            </div>
-        </div>
-
-        <div class="tx-table-card">
-            <table class="tx-table">
-                <thead>
-                    <tr>
-                        <th>Nama Makanan</th>
-                        <th>Jumlah Donasi</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($orders as $order)
-                    <tr>
-                        <td style="font-weight: 700;">{{ $order->menu->name }}</td>
-                        <td style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; color: #0284c7;">
-                            {{ $order->quantity }} porsi
-                        </td>
-                        <td>
-                            <span class="tx-status {{ strtolower($order->status) === 'selesai' ? 'selesai' : 'proses' }}">
-                                {{ $order->status }}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="{{ strtolower($order->status) === 'selesai' ? route('orders.invoice', $order) : 'javascript:void(0)' }}" 
-                               class="btn-action {{ strtolower($order->status) === 'selesai' ? 'active' : '' }}"
-                               title="{{ strtolower($order->status) === 'selesai' ? 'Lihat Invoice' : 'Klaim belum selesai' }}">
-                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                </svg>
-                            </a>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="4" style="text-align: center; color: var(--faint); padding: 3rem;">Belum ada riwayat klaim.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </section>
 
     {{-- ── EDUCATION ── --}}
     <section class="sec">
@@ -1223,20 +1255,56 @@ function updateCount(){
         }
 
         // Cek jika item sudah ada di daftar pengambilan saat ini
-        if (pickupItems.find(item => item.name === product.name && item.store === product.store)) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Sudah Terdaftar',
-                text: 'Item ini sudah ada di daftar pengambilan Anda.',
-                confirmButtonColor: '#22c55e',
-                confirmButtonText: 'OK'
-            });
+        const existingItem = pickupItems.find(item => item.name === product.name && item.store === product.store);
+        if (existingItem) {
+            // Jika sudah ada, tambah quantity
+            if (existingItem.qty < product.stock) {
+                existingItem.qty++;
+                renderPickupList();
+                openCart();
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Stok Terbatas',
+                    text: 'Anda sudah mengajukan semua stok yang tersedia.',
+                    confirmButtonColor: '#22c55e',
+                    confirmButtonText: 'OK'
+                });
+            }
             return;
         }
 
-        pickupItems.push(product);
+        // Tambah item baru dengan qty = 1
+        const newItem = { ...product, qty: 1 };
+        pickupItems.push(newItem);
         renderPickupList();
         openCart(); // Buka sidebar setelah menambahkan
+    };
+
+    // 3.1. Fungsi Update Quantity
+    window.updatePickupQty = function(index, delta) {
+        const item = pickupItems[index];
+        if (!item) return;
+
+        const newQty = item.qty + delta;
+        
+        if (newQty <= 0) {
+            // Hapus item jika qty jadi 0 atau kurang
+            removePickupItem(index);
+        } else if (newQty > item.stock) {
+            // Tidak boleh melebihi stok
+            Swal.fire({
+                icon: 'warning',
+                title: 'Stok Terbatas',
+                text: `Stok maksimal untuk ${item.name} adalah ${item.stock} porsi.`,
+                confirmButtonColor: '#22c55e',
+                confirmButtonText: 'OK'
+            });
+        } else {
+            // Update quantity
+            item.qty = newQty;
+            renderPickupList();
+        }
     };
 
     // 4. Fungsi Render Sidebar
@@ -1262,10 +1330,18 @@ function updateCount(){
                     <button onclick="removePickupItem(${index})" style="position:absolute;top:.875rem;right:.875rem;width:26px;height:26px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:#fff;cursor:pointer;color:var(--faint);font-size:14px;display:flex;align-items:center;justify-content:center;">×</button>
                     <div style="display:flex;gap:.75rem;margin-bottom:.875rem;">
                         <div style="width:52px;height:52px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--mint-100);"><img src="${item.image || '{{ asset('images/placeholder.png') }}'}" style="width:100%;height:100%;object-fit:cover;"></div>
-                        <div>
+                        <div style="flex:1;">
                             <div style="font-size:.5625rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--mint-600);margin-bottom:3px;">${item.store}</div>
                             <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.9375rem;letter-spacing:-.03em;color:var(--ink);">${item.name}</div>
-                            <div style="font-size:.8125rem;color:var(--muted);margin-top:3px;">${item.qty} · ${item.price}</div>
+                            <div style="font-size:.8125rem;color:var(--muted);margin-top:3px;">${item.price}</div>
+                            
+                            {{-- Quantity Adjuster --}}
+                            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                                <button onclick="updatePickupQty(${index}, -1)" style="width:24px;height:24px;border-radius:6px;border:1.5px solid var(--border-md);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--muted);transition:all 0.2s;" onmouseover="this.style.borderColor='var(--mint-400)';this.style.color='var(--mint-600)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">−</button>
+                                <span style="font-weight:700;color:var(--ink);font-size:14px;min-width:20px;text-align:center;">${item.qty || 1}</span>
+                                <button onclick="updatePickupQty(${index}, 1)" style="width:24px;height:24px;border-radius:6px;border:1.5px solid var(--border-md);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--muted);transition:all 0.2s;" onmouseover="this.style.borderColor='var(--mint-400)';this.style.color='var(--mint-600)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">+</button>
+                                <span style="font-size:.75rem;color:var(--faint);margin-left:4px;">porsi</span>
+                            </div>
                         </div>
                     </div>
                     <div style="background:var(--mint-50);border:1px solid var(--border);border-radius:12px;padding:.625rem .875rem;display:flex;align-items:flex-start;gap:7px;">
@@ -1281,8 +1357,11 @@ function updateCount(){
         });
 
         sidebarBody.innerHTML = html;
-        fabCount.textContent = pickupItems.length;
-        itemCount.textContent = `${pickupItems.length} lokasi · Tersedia`;
+        
+        // Update counter dengan total quantity
+        const totalQty = pickupItems.reduce((sum, item) => sum + (item.qty || 1), 0);
+        fabCount.textContent = totalQty;
+        itemCount.textContent = `${pickupItems.length} lokasi · ${totalQty} porsi`;
     }
 
     // 5. Override Fungsi Hapus

@@ -508,6 +508,33 @@ body::after {
 .add-btn:active { transform: scale(0.94); }
 .add-btn svg { width: 22px; height: 22px; color: #fff; }
 
+/* ─── STATUS BADGE ─── */
+.bdg-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--r-pill);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+}
+.bdg-status.tersedia {
+    background: var(--mint-100);
+    color: var(--mint-700);
+}
+.bdg-status.tutup {
+    background: #fed7aa;
+    color: #92400e;
+}
+.bdg-status.habis {
+    background: #fecaca;
+    color: #dc2626;
+}
+
 /* ══════════════════════════════════
    DIVIDER
 ══════════════════════════════════ */
@@ -864,6 +891,15 @@ body::after {
                         </div>
                         <div class="pcard-body">
                             <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 block transition-colors" x-text="product.store"></a>                            <h3 class="pcard-name" x-text="product.name"></h3>
+                            
+                            {{-- Status Badge --}}
+                            <div class="bdg-status" :class="product.display_status.toLowerCase()">
+                                <svg fill="currentColor" viewBox="0 0 24 24" width="12" height="12">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                </svg>
+                                <span x-text="product.display_status"></span>
+                            </div>
+
                             <div class="flex items-center gap-1.5 mb-3" style="font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
@@ -886,41 +922,25 @@ body::after {
                                     </template>
                                     <div class="price-now" x-text="formatRupiah(product.final_price)"></div>
                                 </div>
-                                {{-- Tombol Keranjang: hanya untuk Konsumen yang login --}}
+                                {{-- Tombol Keranjang untuk KONSUMEN dan LEMBAGA (hanya jika toko buka) --}}
+                                <template x-if="product.store_is_open == 1">
+                                    <button @click="addToCart(product, $event)" class="add-btn" :aria-label="isKonsumen ? 'Tambah ke keranjang' : 'Ajukan ke Seller'">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                        </svg>
+                                    </button>
+                                </template>
 
+                                {{-- Tombol disabled untuk KONSUMEN dan LEMBAGA (jika toko tutup) --}}
+                                <template x-if="product.store_is_open == 0">
+                                    <button disabled class="add-btn" aria-label="Toko Tutup" style="background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none;">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                        </svg>
+                                    </button>
+                                </template>
 
-                                {{-- Tombol Keranjang (Cek Status Toko & Login Konsumen) --}}
-                                    <template x-if="product.store_is_open == 1">
-                                        <button x-show="isKonsumen" @click="addToCart(product, $event)" class="add-btn" aria-label="Tambah ke keranjang">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                            </svg>
-                                        </button>
-                                    </template>
-
-                                    {{-- Tampilan Tombol Jika Toko Tutup --}}
-                                    <template x-if="product.store_is_open == 0">
-                                        <button x-show="isKonsumen" disabled class="add-btn" aria-label="Toko Tutup" style="background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none;">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                            </svg>
-                                        </button>
-                                    </template>
-
-
-
-
-
-                                <!-- <button x-show="isKonsumen" @click="addToCart(product, $event)" class="add-btn" aria-label="Tambah ke keranjang">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                    </svg>
-                                </button> -->
-
-
-
-
-                                {{-- CTA Masuk: untuk guest / role bukan konsumen --}}
+                                {{-- CTA Masuk untuk guest / role bukan konsumen --}}
                                 <a x-show="!isKonsumen" href="{{ route('login') }}"
                                    class="add-btn" aria-label="Masuk untuk membeli"
                                    style="background:var(--ink); text-decoration:none; width:auto; padding: 0 12px; font-family:'Space Grotesk',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; gap:5px; white-space:nowrap;">
@@ -1025,10 +1045,22 @@ body::after {
             },
 
             get cartTotal() {
-                return this.cart.reduce((total, item) => total + (item.final_price * item.qty), 0);
+                return this.cart.reduce((total, item) => total + ((item.final_price !== undefined ? item.final_price : item.price) * item.qty), 0);
             },
 
             addToCart(product, event) {
+                // Validasi: Cek apakah toko buka
+                if (!product.store_is_open || product.store_is_open == 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Toko Tutup',
+                        text: 'Toko sedang tutup. Tidak bisa menambahkan produk ke keranjang.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
+
                 // 1. Logic Update Cart
                 const existing = this.cart.find(item => item.id === product.id);
                 if (existing) {
