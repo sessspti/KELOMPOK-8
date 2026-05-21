@@ -27,7 +27,7 @@ class TransactionController extends Controller
                 'payment_method', 
                 'status', 
                 DB::raw('MAX(created_at) as date'), 
-                DB::raw('SUM(quantity * (select price from menus where menus.id = orders.menu_id)) as total_price')
+                DB::raw('SUM(quantity * (select (price - (price * discount / 100)) from menus where menus.id = orders.menu_id)) as total_price')
             )
             ->groupBy('transaction_id', 'payment_method', 'status')
             ->orderBy('date', 'desc')

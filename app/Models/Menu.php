@@ -33,10 +33,31 @@ class Menu extends Model
         return $this->price - ($this->price * ($this->discount / 100));
     }
 
+    // Accessor untuk status tampilan produk
+    public function getDisplayStatusAttribute(): string
+    {
+        if ($this->stock <= 0) {
+            return 'Habis';
+        }
+
+        if ($this->user && $this->user->is_open == 0) {
+            return 'Tutup';
+        }
+
+        return 'Tersedia';
+    }
+
     // Helper untuk cek apakah stok habis
     public function isOutOfStock(): bool
     {
         return $this->stock <= 0;
+    }
+
+    // Accessor untuk visibility di dashboard publik
+    // Products are visible if they have stock > 0, regardless of store status
+    public function getIsVisibleAttribute(): bool
+    {
+        return $this->stock > 0;
     }
 
     // Scope untuk produk yang belum expired
@@ -46,6 +67,12 @@ class Menu extends Model
             $q->whereNull('expiry_date')
               ->orWhere('expiry_date', '>=', now()->toDateString());
         });
+    }
+
+    // Scope untuk produk dengan stok > 0
+    public function scopeAvailable($query)
+    {
+        return $query->where('stock', '>', 0);
     }
 
     // Relasi ke tabel Order
@@ -58,5 +85,21 @@ class Menu extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    // Scope untuk produk dari toko yang buka
+    public function scopeFromOpenStore($query)
+    {
+        return $query->whereHas('user', function ($q) {
+            $q->where('is_open', 1);
+        });
+    }
+
+    // Scope untuk produk yang visible di consumer/lembaga dashboard
+    // Products with stock > 0 are visible regardless of store status
+    // Products from closed stores will show "Tutup" status but remain visible
+    public function scopeVisibleForPublic($query)
+    {
+        return $query->available()->notExpired();
     }
 }

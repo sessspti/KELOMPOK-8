@@ -35,4 +35,24 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserVerification::class);
     }
+
+    /**
+     * Get the readable store status.
+     *
+     * @return string
+     */
+    public function getStoreStatusDisplayAttribute(): string
+    {
+        return $this->store_status === 'Buka' ? 'Buka' : 'Tutup';
+    }
+
+    /**
+     * Check whether the store is open.
+     *
+     * @return bool
+     */
+    public function getIsStoreOpenAttribute(): bool
+    {
+        return $this->store_status === 'Buka';
+    }
 }

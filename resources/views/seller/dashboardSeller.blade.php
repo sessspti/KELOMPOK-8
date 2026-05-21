@@ -824,7 +824,7 @@ body::before {
                                         </div>
                                     @else
                                         <div style="color: var(--mint-600); font-weight: 700;">
-                                            Rp {{ number_format(($order->menu->price * ($order->menu->discount / 100)) * $order->quantity, 0, ',', '.') }} (Diskon)
+                                            Rp {{ number_format($order->menu->final_price * $order->quantity, 0, ',', '.') }}
                                         </div>
                                     @endif
                                 </td>

@@ -33,27 +33,21 @@ Route::get('/', function () {
 // ─── ROUTE PUBLIK: Dashboard Guest/Konsumen ───
 // Alias /home → sama dengan /dashboard (friendly URL)
 Route::get('/home', function () {
-<<<<<<< HEAD
-    $menus = \App\Models\Menu::with('user')->notExpired()->latest()->get();
-    
-=======
     // 1. Ambil data menu agar Guest tetap bisa melihat produk/makanan yang tersedia
-    $menus = \App\Models\Menu::with('user')->notExpired()->latest()->get();
+    $menus = \App\Models\Menu::with('user')
+        ->where('stock', '>', 0)
+        ->whereHas('user', fn($q) => $q->where('is_open', 1))
+        ->notExpired()->latest()->get();
     
     // Mapping data is_open milik user ke dalam setiap item menu
->>>>>>> e0d11d27c23d55d9325b42723e1a67bc79d64175
     $menus->map(function ($menu) {
         $menu->store_is_open = $menu->user ? $menu->user->is_open : 0;
         return $menu;
     });
 
-<<<<<<< HEAD
-    $orders = collect();
-=======
     // 2. Karena guest belum login, buatlah $orders kosong (menggunakan collect())
     // Ini penting agar file Blade tidak memunculkan error "Undefined variable $orders" nantinya
     $orders = collect(); 
->>>>>>> e0d11d27c23d55d9325b42723e1a67bc79d64175
 
     return view('dashboard', compact('menus', 'orders'));
 })->name('guest.dashboard');
@@ -62,24 +56,9 @@ Route::get('/home', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // 1. Dashboard Konsumen
-    Route::get('/dashboard', function () {
-        // Ambil data menu beserta data penjualnya yang belum expired
-        $menus = \App\Models\Menu::with('user')->notExpired()->latest()->get();
-
-        // Mapping data is_open milik user ke dalam setiap item menu
-        $menus->map(function ($menu) {
-            $menu->store_is_open = $menu->user ? $menu->user->is_open : 0;
-            return $menu;
-        });
-
-        // Ambil data orders milik user
-        $orders = \App\Models\Order::where('id_user', auth()->id())
-            ->with('menu.user')
-            ->latest()
-            ->get();
-
-        return view('dashboard', compact('menus', 'orders'));
-    })->middleware('role:konsumen')->name('dashboard');
+    Route::get('/dashboard', [MenuController::class, 'consumerDashboard'])
+        ->middleware('role:konsumen')
+        ->name('dashboard');
 
     // Store / Seller Profile
     Route::get('/store/{id}', [MenuController::class, 'showStore'])->name('store.show');
@@ -200,11 +179,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 7. Fitur Lembaga Sosial
     Route::prefix('sosial')->middleware(['role:lembaga_sosial', 'approved'])->group(function () {
-        Route::get('/dashboard', function () {
-            $orders = \App\Models\Order::where('id_user', auth()->id())->with('menu.user')->latest()->get();
-            $menus  = \App\Models\Menu::with('user')->where('stock', '>', 0)->notExpired()->latest()->get();
-            return view('sosial.dashboard', compact('orders', 'menus'));
-        })->name('sosial.dashboard');
+        Route::get('/dashboard', [MenuController::class, 'institutionDashboard'])->name('sosial.dashboard');
 
         Route::post('/claim', [TransactionController::class, 'claimDonation'])->name('sosial.claim');
 
