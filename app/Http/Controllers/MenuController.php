@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Menu;
+use App\Services\ProductVisibilityService;
 
 class MenuController extends Controller
 {
@@ -98,7 +99,13 @@ class MenuController extends Controller
                             ->latest()
                             ->get();
 
-    // 3. Kirim data penjual ($seller) dan daftar makanannya ($menus) ke file tampilan baru
+    // 3. Tambahkan informasi store status ke setiap menu
+    $menus = $menus->map(function ($menu) use ($seller) {
+        $menu->store_is_open = $seller->is_open ? 1 : 0;
+        return $menu;
+    });
+
+    // 4. Kirim data penjual ($seller) dan daftar makanannya ($menus) ke file tampilan baru
     return view('store.show', compact('seller', 'menus'));
 }
 
@@ -116,4 +123,48 @@ public function toggleStatus()
     // 4. Kembalikan ke halaman dashboard dengan pesan sukses
     return back()->with('success', 'Status toko berhasil diperbarui!');
 }
+
+    /**
+     * Display consumer dashboard with visible products only.
+     */
+    public function consumerDashboard(ProductVisibilityService $visibilityService)
+    {
+        $menus = $visibilityService->getVisibleProductsForConsumer();
+        
+        // Add store_is_open information to each menu
+        $menus = $menus->map(function ($menu) {
+            $menu->store_is_open = $menu->user->is_open ? 1 : 0;
+            return $menu;
+        });
+        
+        // Get orders for authenticated user
+        $orders = \App\Models\Order::where('id_user', auth()->id())
+            ->with('menu.user')
+            ->latest()
+            ->get();
+
+        return view('dashboard', compact('menus', 'orders'));
+    }
+
+    /**
+     * Display institution dashboard with visible products only.
+     */
+    public function institutionDashboard(ProductVisibilityService $visibilityService)
+    {
+        $menus = $visibilityService->getVisibleProductsForInstitution();
+        
+        // Add store_is_open information to each menu
+        $menus = $menus->map(function ($menu) {
+            $menu->store_is_open = $menu->user->is_open ? 1 : 0;
+            return $menu;
+        });
+        
+        // Get orders for authenticated user
+        $orders = \App\Models\Order::where('id_user', auth()->id())
+            ->with('menu.user')
+            ->latest()
+            ->get();
+
+        return view('sosial.dashboard', compact('menus', 'orders'));
+    }
 }

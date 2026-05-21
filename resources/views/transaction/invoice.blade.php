@@ -1,23 +1,23 @@
 <x-app-layout>
 @php
     // Unify data from different controllers
-    if (isset($order)) {
+    if (isset($orders) && $orders->isNotEmpty()) {
+        $orders_list = $orders;
+        $headerOrder = $orders->first();
+        $display_id = $transaction->id ?? $headerOrder->transaction_id ?? 'INV-' . str_pad($headerOrder->id, 6, '0', STR_PAD_LEFT);
+        $date = $transaction->date ?? $headerOrder->created_at;
+        $customer_name = $transaction->customer_name ?? $headerOrder->user->name;
+        $customer_email = $transaction->customer_email ?? $headerOrder->user->email;
+        $payment_method = $transaction->payment_method ?? $headerOrder->payment_method ?? 'Transfer';
+        $status = $transaction->status ?? $headerOrder->status;
+    } elseif (isset($order)) {
         $orders_list = collect([$order]);
-        $transaction_id = $order->transaction_id ?? 'INV-' . str_pad($order->id, 6, '0', STR_PAD_LEFT);
+        $display_id = $order->transaction_id ?? 'INV-' . str_pad($order->id, 6, '0', STR_PAD_LEFT);
         $date = $order->created_at;
         $customer_name = $order->user->name;
         $customer_email = $order->user->email;
         $payment_method = $order->payment_method ?? 'Transfer';
         $status = $order->status;
-        $display_id = $transaction_id;
-    } else {
-        $orders_list = $orders;
-        $display_id = $transaction->id;
-        $date = $transaction->date;
-        $customer_name = $transaction->customer_name;
-        $customer_email = $transaction->customer_email;
-        $payment_method = $transaction->payment_method;
-        $status = $transaction->status;
     }
 @endphp
 
@@ -110,32 +110,43 @@
     </div>
 
     <div class="item-list">
-        @php $total = 0; @endphp
         @foreach($orders_list as $item)
-            @php 
-                $price = ($item->user->role === 'lembaga_sosial') ? 0 : $item->menu->final_price;
-                $subtotal = $price * $item->quantity;
-                $total += $subtotal;
+            @php
+                $lineTotal = $item->line_total;
+                $unitPrice = $item->unit_price ?? ($item->menu ? (int) round($item->menu->final_price) : 0);
             @endphp
             <div class="item-row">
                 <div>
                     <div class="item-name">{{ $item->menu->name }}</div>
-                    <div class="item-qty">Kuantitas: {{ $item->quantity }} porsi · {{ $item->menu->user->name ?? 'Restoran' }}</div>
+                    <div class="item-qty">
+                        {{ $item->quantity }} porsi × Rp {{ number_format($unitPrice, 0, ',', '.') }}
+                        · {{ $item->menu->user->name ?? 'Restoran' }}
+                    </div>
                 </div>
                 <div class="item-price">
-                    @if($item->user->role === 'lembaga_sosial')
+                    @if(($isDonation ?? false) || ($item->user->role ?? '') === 'lembaga_sosial')
                         GRATIS
                     @else
-                        Rp {{ number_format($subtotal, 0, ',', '.') }}
+                        Rp {{ number_format($lineTotal, 0, ',', '.') }}
                     @endif
                 </div>
             </div>
         @endforeach
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.25rem;">
-        <span>Total</span>
-        <span style="color: var(--mint-600);">Rp {{ number_format($total, 0, ',', '.') }}</span>
+    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1.5px solid #e2e8f0;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--muted); font-size: 0.9375rem;">
+            <span>Subtotal Pesanan</span>
+            <span>Rp {{ number_format($subtotal ?? 0, 0, ',', '.') }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1.5px dashed #e2e8f0; color: var(--muted); font-size: 0.9375rem;">
+            <span>Biaya Layanan</span>
+            <span>Rp {{ number_format($serviceFee ?? 0, 0, ',', '.') }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.25rem;">
+            <span>Total Pembayaran</span>
+            <span style="color: var(--mint-600);">Rp {{ number_format($grandTotal ?? 0, 0, ',', '.') }}</span>
+        </div>
     </div>
 
     <div class="pickup-box">

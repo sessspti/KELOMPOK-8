@@ -494,6 +494,33 @@ body::after {
 .add-btn:active { transform: scale(0.94); }
 .add-btn svg { width: 22px; height: 22px; color: #fff; }
 
+/* ─── STATUS BADGE ─── */
+.bdg-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--r-pill);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+}
+.bdg-status.tersedia {
+    background: var(--mint-100);
+    color: var(--mint-700);
+}
+.bdg-status.tutup {
+    background: #fed7aa;
+    color: #92400e;
+}
+.bdg-status.habis {
+    background: #fecaca;
+    color: #dc2626;
+}
+
 /* ══════════════════════════════════
    DIVIDER
 ══════════════════════════════════ */
@@ -648,6 +675,7 @@ body::after {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(34,197,94,0.3);
 }
+
 
 .bento-main    { animation: fadeUp 0.6s ease 0.05s both; }
 .bento-img-card{ animation: fadeUp 0.6s ease 0.1s  both; }
@@ -965,6 +993,15 @@ body::after {
                     </div>
                     <div class="pcard-body">
                         <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 block transition-colors" x-text="product.store"></a>                        <h3 class="pcard-name" x-text="product.name"></h3>
+                        
+                        {{-- Status Badge untuk Lembaga --}}
+                        <div class="bdg-status" :class="product.display_status.toLowerCase()" style="margin-bottom: 0.75rem;">
+                            <svg fill="currentColor" viewBox="0 0 24 24" width="12" height="12">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                            </svg>
+                            <span x-text="product.display_status"></span>
+                        </div>
+
                         <div class="flex items-center gap-1.5 mb-2" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>
@@ -977,20 +1014,33 @@ body::after {
                                 <div class="price-was" x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(product.price)"></div>
                                 <div class="price-now">Rp 0</div>
                             </div>
-                            <button class="req-btn" @click="openCart(); addItemToPickup({
-                                id: product.id,
-                                name: product.name,
-                                store: product.store,
-                                qty: 'Tersedia ' + product.stock + ' porsi',
-                                price: 'Rp 0',
-                                image: product.image_url,
-                                urgent: product.discount > 50 ? 'Sangat Murah!' : 'Hari Ini'
-                            })" aria-label="Ajukan pengambilan">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
-                                </svg>
-                                Ajukan
-                            </button>
+                            {{-- Button untuk Lembaga (disabled jika toko tutup) --}}
+                            <template x-if="product.store_is_open == 1">
+                                <button class="req-btn" @click="openCart(); addItemToPickup({
+                                    id: product.id,
+                                    name: product.name,
+                                    store: product.store,
+                                    stock: product.stock,
+                                    price: 'Rp 0',
+                                    image: product.image_url,
+                                    urgent: product.discount > 50 ? 'Sangat Murah!' : 'Hari Ini'
+                                })" aria-label="Ajukan pengambilan">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
+                                    </svg>
+                                    Ajukan
+                                </button>
+                            </template>
+
+                            {{-- Button disabled untuk Lembaga (jika toko tutup) --}}
+                            <template x-if="product.store_is_open == 0">
+                                <button class="req-btn" disabled style="background: #e2e8f0; color: #94a3b8; cursor: not-allowed; opacity: 0.6;" aria-label="Toko Tutup">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                    Tutup
+                                </button>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -1205,20 +1255,56 @@ function updateCount(){
         }
 
         // Cek jika item sudah ada di daftar pengambilan saat ini
-        if (pickupItems.find(item => item.name === product.name && item.store === product.store)) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Sudah Terdaftar',
-                text: 'Item ini sudah ada di daftar pengambilan Anda.',
-                confirmButtonColor: '#22c55e',
-                confirmButtonText: 'OK'
-            });
+        const existingItem = pickupItems.find(item => item.name === product.name && item.store === product.store);
+        if (existingItem) {
+            // Jika sudah ada, tambah quantity
+            if (existingItem.qty < product.stock) {
+                existingItem.qty++;
+                renderPickupList();
+                openCart();
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Stok Terbatas',
+                    text: 'Anda sudah mengajukan semua stok yang tersedia.',
+                    confirmButtonColor: '#22c55e',
+                    confirmButtonText: 'OK'
+                });
+            }
             return;
         }
 
-        pickupItems.push(product);
+        // Tambah item baru dengan qty = 1
+        const newItem = { ...product, qty: 1 };
+        pickupItems.push(newItem);
         renderPickupList();
         openCart(); // Buka sidebar setelah menambahkan
+    };
+
+    // 3.1. Fungsi Update Quantity
+    window.updatePickupQty = function(index, delta) {
+        const item = pickupItems[index];
+        if (!item) return;
+
+        const newQty = item.qty + delta;
+        
+        if (newQty <= 0) {
+            // Hapus item jika qty jadi 0 atau kurang
+            removePickupItem(index);
+        } else if (newQty > item.stock) {
+            // Tidak boleh melebihi stok
+            Swal.fire({
+                icon: 'warning',
+                title: 'Stok Terbatas',
+                text: `Stok maksimal untuk ${item.name} adalah ${item.stock} porsi.`,
+                confirmButtonColor: '#22c55e',
+                confirmButtonText: 'OK'
+            });
+        } else {
+            // Update quantity
+            item.qty = newQty;
+            renderPickupList();
+        }
     };
 
     // 4. Fungsi Render Sidebar
@@ -1244,10 +1330,18 @@ function updateCount(){
                     <button onclick="removePickupItem(${index})" style="position:absolute;top:.875rem;right:.875rem;width:26px;height:26px;border-radius:50%;border:1px solid rgba(0,0,0,.08);background:#fff;cursor:pointer;color:var(--faint);font-size:14px;display:flex;align-items:center;justify-content:center;">×</button>
                     <div style="display:flex;gap:.75rem;margin-bottom:.875rem;">
                         <div style="width:52px;height:52px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--mint-100);"><img src="${item.image || '{{ asset('images/placeholder.png') }}'}" style="width:100%;height:100%;object-fit:cover;"></div>
-                        <div>
+                        <div style="flex:1;">
                             <div style="font-size:.5625rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--mint-600);margin-bottom:3px;">${item.store}</div>
                             <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.9375rem;letter-spacing:-.03em;color:var(--ink);">${item.name}</div>
-                            <div style="font-size:.8125rem;color:var(--muted);margin-top:3px;">${item.qty} · ${item.price}</div>
+                            <div style="font-size:.8125rem;color:var(--muted);margin-top:3px;">${item.price}</div>
+                            
+                            {{-- Quantity Adjuster --}}
+                            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                                <button onclick="updatePickupQty(${index}, -1)" style="width:24px;height:24px;border-radius:6px;border:1.5px solid var(--border-md);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--muted);transition:all 0.2s;" onmouseover="this.style.borderColor='var(--mint-400)';this.style.color='var(--mint-600)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">−</button>
+                                <span style="font-weight:700;color:var(--ink);font-size:14px;min-width:20px;text-align:center;">${item.qty || 1}</span>
+                                <button onclick="updatePickupQty(${index}, 1)" style="width:24px;height:24px;border-radius:6px;border:1.5px solid var(--border-md);background:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--muted);transition:all 0.2s;" onmouseover="this.style.borderColor='var(--mint-400)';this.style.color='var(--mint-600)'" onmouseout="this.style.borderColor='var(--border-md)';this.style.color='var(--muted)'">+</button>
+                                <span style="font-size:.75rem;color:var(--faint);margin-left:4px;">porsi</span>
+                            </div>
                         </div>
                     </div>
                     <div style="background:var(--mint-50);border:1px solid var(--border);border-radius:12px;padding:.625rem .875rem;display:flex;align-items:flex-start;gap:7px;">
@@ -1263,8 +1357,11 @@ function updateCount(){
         });
 
         sidebarBody.innerHTML = html;
-        fabCount.textContent = pickupItems.length;
-        itemCount.textContent = `${pickupItems.length} lokasi · Tersedia`;
+        
+        // Update counter dengan total quantity
+        const totalQty = pickupItems.reduce((sum, item) => sum + (item.qty || 1), 0);
+        fabCount.textContent = totalQty;
+        itemCount.textContent = `${pickupItems.length} lokasi · ${totalQty} porsi`;
     }
 
     // 5. Override Fungsi Hapus

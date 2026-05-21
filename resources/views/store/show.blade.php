@@ -579,6 +579,28 @@ body::before {
 .pcard:nth-child(4){animation:fadeUp .45s ease .48s both}
 .pcard:nth-child(n+5){animation:fadeUp .45s ease .52s both}
 
+/* ──── CART SHAKE ANIMATION ──── */
+@keyframes cart-wiggle {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.1) rotate(-8deg); }
+    50% { transform: scale(1.1) rotate(8deg); }
+    75% { transform: scale(1.1) rotate(-8deg); }
+}
+.fab-cart.wiggle { animation: cart-wiggle 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+
+/* ──── FLYING ITEM ──── */
+.fly-item {
+    position: fixed;
+    z-index: 1000;
+    width: 60px;
+    height: 60px;
+    border-radius: var(--r-lg);
+    object-fit: cover;
+    pointer-events: none;
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 8px 32px rgba(17,25,23,0.3);
+}
+
 [x-cloak] { display: none !important; }
 </style>
 
@@ -810,79 +832,97 @@ body::before {
 ══════════════════ --}}
 <div x-data="storePage()" x-init="initCart()" x-cloak>
 
-{{-- ══ FAB CART ══ --}}
-<button class="fab-cart" @click="openDrawer = true" x-show="true">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-    </svg>
-    Keranjang
-    <span class="fab-count" x-text="getCartCount()"></span>
-</button>
+{{-- ══ FAB CART (hanya untuk konsumen) ══ --}}
+@auth
+    @if(auth()->user()->role === 'konsumen')
+        <button class="fab-cart" @click="openDrawer = true" x-show="true" :class="{'wiggle': cartAnimation}">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Keranjang
+            <span class="fab-count" x-text="getCartCount()"></span>
+        </button>
+    @endif
+@endauth
 
 {{-- ══ TOAST ══ --}}
 <div class="toast-wrap" id="toastWrap"></div>
 
-{{-- ══ DRAWER OVERLAY ══ --}}
-<div class="drawer-overlay" x-show="openDrawer" @click="openDrawer = false"
-     x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-     x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-     style="display:none;"></div>
+{{-- ══ DRAWER OVERLAY (hanya untuk konsumen) ══ --}}
+@auth
+    @if(auth()->user()->role === 'konsumen')
+        <div class="drawer-overlay" x-show="openDrawer" @click="openDrawer = false"
+             x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             style="display:none;"></div>
+    @endif
+@endauth
 
-{{-- ══ CART DRAWER ══ --}}
-<div class="drawer" x-show="openDrawer"
-     x-transition:enter="transform transition ease-in-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
-     x-transition:leave="transform transition ease-in-out duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
-     style="display:none;">
+{{-- ══ CART DRAWER (hanya untuk konsumen) ══ --}}
+@auth
+    @if(auth()->user()->role === 'konsumen')
+        <div class="drawer" x-show="openDrawer"
+             x-transition:enter="transform transition ease-in-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+             x-transition:leave="transform transition ease-in-out duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
+             style="display:none;">
 
-    <div class="drawer-hdr">
-        <div>
-            <div class="drawer-title">🛒 Keranjang Belanja</div>
-            <div class="drawer-subtitle" x-text="getCartCount() + ' item dari ' + getStoreCount() + ' toko'"></div>
-        </div>
-        <button class="drawer-close" @click="openDrawer = false">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-        </button>
-    </div>
-
-    <div class="drawer-body">
-        <template x-for="item in cart" :key="item.id">
-            <div class="cart-item">
-                <div class="cart-thumb">
-                    <img :src="item.image_url || item.image" :alt="item.name">
+            <div class="drawer-hdr">
+                <div>
+                    <div class="drawer-title">🛒 Keranjang Belanja</div>
+                    <div class="drawer-subtitle" x-text="getCartCount() + ' item dari ' + getStoreCount() + ' toko'"></div>
                 </div>
-                <div class="cart-info">
-                    <div class="cart-name" x-text="item.name"></div>
-                    <div class="cart-price" x-text="formatRupiah(item.final_price !== undefined ? item.final_price : item.price)"></div>
-                    <div class="cart-qty" x-text="'× ' + item.qty + ' porsi'"></div>
+                <button class="drawer-close" @click="openDrawer = false">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="drawer-body">
+                <template x-for="item in cart" :key="item.id">
+                    <div class="cart-item">
+                        <div class="cart-thumb">
+                            <img :src="item.image_url || item.image" :alt="item.name">
+                        </div>
+                        <div class="cart-info">
+                            <div class="cart-name" x-text="item.name"></div>
+                            <div class="cart-price" x-text="formatRupiah(item.final_price !== undefined ? item.final_price : item.price)"></div>
+                            <div class="cart-qty" x-text="'× ' + item.qty + ' porsi'"></div>
+                            {{-- Quantity Adjuster --}}
+                            <div class="flex items-center gap-2 mt-2">
+                                <button @click="updateQty(item.id, -1)" class="w-6 h-6 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-sm font-bold">−</button>
+                                <span class="font-bold text-gray-800 text-sm" x-text="item.qty" style="min-width: 20px; text-align: center;"></span>
+                                <button @click="updateQty(item.id, 1)" class="w-6 h-6 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-sm font-bold">+</button>
+                            </div>
+                        </div>
+                        <button class="cart-remove" @click="removeFromCart(item.id)" title="Hapus">×</button>
+                    </div>
+                </template>
+
+                <template x-if="cart.length === 0">
+                    <div class="cart-empty">
+                        <div class="cart-empty-ico">🛒</div>
+                        <p>Keranjang masih kosong.<br>Yuk pilih makanan di atas!</p>
+                    </div>
+                </template>
+            </div>
+
+            <div class="drawer-footer">
+                <div class="drawer-subtotal">
+                    <span class="subtotal-label">Subtotal</span>
+                    <span class="subtotal-val" x-text="formatRupiah(getCartTotal())"></span>
                 </div>
-                <button class="cart-remove" @click="removeFromCart(item.id)" title="Hapus">×</button>
+                <button class="checkout-btn" @click="directCheckout()" :disabled="cart.length === 0">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    Amankan & Bayar Sekarang
+                </button>
+                <p class="checkout-note">Makanan ini membantu mengurangi food waste 🌿</p>
             </div>
-        </template>
-
-        <template x-if="cart.length === 0">
-            <div class="cart-empty">
-                <div class="cart-empty-ico">🛒</div>
-                <p>Keranjang masih kosong.<br>Yuk pilih makanan di atas!</p>
-            </div>
-        </template>
-    </div>
-
-    <div class="drawer-footer">
-        <div class="drawer-subtotal">
-            <span class="subtotal-label">Subtotal</span>
-            <span class="subtotal-val" x-text="formatRupiah(getCartTotal())"></span>
         </div>
-        <button class="checkout-btn" @click="directCheckout()" :disabled="cart.length === 0">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
-            Amankan & Bayar Sekarang
-        </button>
-        <p class="checkout-note">Makanan ini membantu mengurangi food waste 🌿</p>
-    </div>
-</div>
+    @endif
+@endauth
 
 {{-- ══════════════════
      PAGE CONTENT
@@ -1044,32 +1084,50 @@ body::before {
                         
                         {{-- CEK APAKAH TOKO BUKA ATAU TUTUP --}}
                         @if($seller->is_open)
-                            
-                            <button class="pcard-btn"
-                                    @click="addToCart(product)"
-                                    :disabled="product.stock === 0"
-                                    :class="{ 'added': justAdded === product.id }">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                        :d="product.stock === 0
-                                            ? 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636'
-                                            : justAdded === product.id
-                                            ? 'M5 13l4 4L19 7'
-                                            : 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'">
-                                    </path>
-                                </svg>
-                                <span x-text="product.stock === 0 ? 'Stok Habis' : justAdded === product.id ? 'Ditambahkan!' : 'Masukkan Keranjang'"></span>
-                            </button>
-
+                            {{-- Hanya konsumen yang bisa add to cart di store page --}}
+                            @auth
+                                @if(auth()->user()->role === 'konsumen')
+                                    <button class="pcard-btn"
+                                            @click="addToCart(product, $event)"
+                                            :disabled="product.stock === 0"
+                                            :class="{ 'added': justAdded === product.id }">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                :d="product.stock === 0
+                                                    ? 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636'
+                                                    : justAdded === product.id
+                                                    ? 'M5 13l4 4L19 7'
+                                                    : 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'">
+                                            </path>
+                                        </svg>
+                                        <span x-text="product.stock === 0 ? 'Stok Habis' : justAdded === product.id ? 'Ditambahkan!' : 'Masukkan Keranjang'"></span>
+                                    </button>
+                                @else
+                                    {{-- Lembaga tidak bisa add to cart di store page --}}
+                                    <button class="pcard-btn" disabled style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed; border: none; opacity: 0.8;">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                                        </svg>
+                                        <span>Lihat di Dashboard</span>
+                                    </button>
+                                @endif
+                            @else
+                                {{-- Guest user --}}
+                                <a href="{{ route('login') }}" class="pcard-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                                    </svg>
+                                    <span>Login untuk Beli</span>
+                                </a>
+                            @endauth
                         @else
-
+                            {{-- Toko tutup --}}
                             <button class="pcard-btn" disabled style="background-color: #e2e8f0; color: #94a3b8; cursor: not-allowed; border: none; opacity: 0.8;">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                 </svg>
                                 <span>Toko Tutup</span>
                             </button>
-
                         @endif
                     </div>
 
@@ -1104,6 +1162,7 @@ function storePage() {
         openDrawer: false,
         isFollowed: false,
         justAdded: null,   // id produk yang baru ditambah (untuk feedback visual)
+        cartAnimation: false, // untuk trigger shake animation
 
         // ── Init: ambil cart dari localStorage ──
         initCart() {
@@ -1111,7 +1170,13 @@ function storePage() {
         },
 
         // ── Tambah ke keranjang ──
-        addToCart(product) {
+        addToCart(product, event) {
+            // Validasi: Cek apakah toko buka
+            if (!product.store_is_open || product.store_is_open == 0) {
+                this.showToast('Toko sedang tutup. Tidak bisa menambahkan produk ke keranjang.', '🔒');
+                return;
+            }
+
             let item = this.cart.find(i => i.id === product.id);
             if (item) {
                 if (item.qty < product.stock) {
@@ -1132,6 +1197,41 @@ function storePage() {
             // toast notifikasi
             this.showToast(product.name + ' ditambahkan ke keranjang', '🛒');
 
+            // FLY-TO-CART ANIMATION
+            if (event) {
+                const btn = event.currentTarget;
+                const rect = btn.getBoundingClientRect();
+                const cartBtn = document.querySelector('.fab-cart');
+                const cartRect = cartBtn.getBoundingClientRect();
+
+                const flyEl = document.createElement('img');
+                flyEl.src = product.image_url || product.image || '{{ asset('images/placeholder.png') }}';
+                flyEl.className = 'fly-item';
+                flyEl.style.left = `${rect.left}px`;
+                flyEl.style.top = `${rect.top}px`;
+                document.body.appendChild(flyEl);
+
+                // Force reflow
+                flyEl.offsetWidth;
+
+                // Animate to cart
+                flyEl.style.left = `${cartRect.left + 15}px`;
+                flyEl.style.top = `${cartRect.top + 15}px`;
+                flyEl.style.transform = 'scale(0.2) rotate(360deg)';
+                flyEl.style.opacity = '0.7';
+
+                setTimeout(() => {
+                    flyEl.remove();
+                    // Trigger shake animation on arrival
+                    this.cartAnimation = true;
+                    setTimeout(() => { this.cartAnimation = false; }, 600);
+                }, 800);
+            } else {
+                // Fallback untuk non-event triggers
+                this.cartAnimation = true;
+                setTimeout(() => { this.cartAnimation = false; }, 600);
+            }
+
             // buka drawer setelah 400ms
             setTimeout(() => { this.openDrawer = true; }, 400);
         },
@@ -1140,6 +1240,16 @@ function storePage() {
         removeFromCart(id) {
             this.cart = this.cart.filter(item => item.id !== id);
             this.saveCart();
+        },
+
+        // ── Update quantity ──
+        updateQty(id, delta) {
+            const item = this.cart.find(i => i.id === id);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) this.removeFromCart(id);
+                else this.saveCart();
+            }
         },
 
         // ── Simpan ke localStorage ──

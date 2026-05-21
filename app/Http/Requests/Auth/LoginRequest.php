@@ -52,6 +52,15 @@ class LoginRequest extends FormRequest
             }
         }
 
+        // Blokir jika akun ditangguhkan (suspended)
+        $user = Auth::user();
+        if ($user && $user->account_status === 'rejected' && !is_null($user->suspension_reason)) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'email' => "Akun Anda telah ditangguhkan. Alasan: " . $user->suspension_reason,
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 
