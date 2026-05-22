@@ -412,9 +412,15 @@ body::before {
 .art-time { font-size: 0.6875rem; color: var(--faint); margin-top: 4px; }
 
 /* ── RIWAYAT CARD ── */
-.c-riwayat { padding: 0; }
+.c-riwayat {
+    padding: 0;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+}
 .tabs {
     display: flex; border-bottom: 1.5px solid var(--border);
+    flex-shrink: 0;
 }
 .tab-btn {
     padding: 1.1rem 1.5rem;
@@ -435,7 +441,11 @@ body::before {
 .tab-count.org { background: rgba(249,115,22,0.1); color: var(--orange-500); }
 
 .tab-pane { display: none; }
-.tab-pane.on { display: block; }
+.tab-pane.on {
+    display: block;
+    flex: 1;
+    overflow-y: auto;
+}
 
 /* notif items */
 .nitem {
