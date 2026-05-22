@@ -653,6 +653,12 @@ body.no-scroll { overflow: hidden; }
         </a>
 
         <div class="sb-section-label">Manajemen</div>
+
+        <a href="#sec-monitor" class="sb-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            Monitoring & Log
+        </a>
+
         <a href="#sec-user" class="sb-item">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
             Manajemen Pengguna
@@ -664,10 +670,7 @@ body.no-scroll { overflow: hidden; }
                 <span class="sb-badge">{{ $pendingVerifications->count() }}</span>
             @endif
         </a>
-        <a href="#sec-monitor" class="sb-item">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            Monitoring & Log
-        </a>
+
         <a href="#sec-artikel" class="sb-item">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
             Manajemen Konten
@@ -735,10 +738,6 @@ body.no-scroll { overflow: hidden; }
                 </div>
                 <div class="stat-label">Total Pengguna</div>
                 <div class="stat-num">{{ number_format($totalUsers, 0, ',', '.') }}</div>
-                <div class="stat-delta up">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                    +128 bulan ini
-                </div>
             </div>
             <div class="stat-card sky">
                 <div class="stat-icon sky">
@@ -746,10 +745,6 @@ body.no-scroll { overflow: hidden; }
                 </div>
                 <div class="stat-label">Pedagang Aktif</div>
                 <div class="stat-num">{{ number_format($activeSellers, 0, ',', '.') }}</div>
-                <div class="stat-delta up">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                    +24 pedagang baru
-                </div>
             </div>
             <div class="stat-card mint">
                 <div class="stat-icon mint">
@@ -775,180 +770,13 @@ body.no-scroll { overflow: hidden; }
             </div>
         </div>
 
-        {{-- ══ 2. MANAJEMEN PENGGUNA ══ --}}
-        <div id="sec-user" class="sec">
-            <div class="sec-hdr">
-                <div class="sec-hdr-left">
-                    <div class="sec-kicker">Manajemen Pengguna</div>
-                    <div class="sec-title">Daftar Semua Akun</div>
-                </div>
-                <div class="sec-hdr-right" style="display:flex; gap:1rem; align-items:center;">
-                    <form method="GET" action="{{ route('admin.dashboard') }}" id="searchUserForm" style="display:flex; gap:1rem; align-items:center; margin:0;">
-                        <input type="hidden" name="role_filter" id="role_filter_input" value="{{ request('role_filter', 'semua') }}">
-                        <div class="tbl-search">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pengguna..." onkeypress="if(event.keyCode==13) document.getElementById('searchUserForm').submit();">
-                        </div>
-                        <div class="filter-tabs">
-                            <button type="button" class="ftab {{ request('role_filter', 'semua') == 'semua' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='semua'; document.getElementById('searchUserForm').submit();">Semua</button>
-                            <button type="button" class="ftab {{ request('role_filter') == 'konsumen' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='konsumen'; document.getElementById('searchUserForm').submit();">Konsumen</button>
-                            <button type="button" class="ftab {{ request('role_filter') == 'lembaga_sosial' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='lembaga_sosial'; document.getElementById('searchUserForm').submit();">Lembaga</button>
-                            <button type="button" class="ftab {{ request('role_filter') == 'seller' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='seller'; document.getElementById('searchUserForm').submit();">Seller</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="tbl-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Pengguna</th>
-                            <th>Role</th>
-                            <th>Bergabung</th>
-                            <th>Status Akun</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($usersList as $user)
-                        <tr>
-                            <td>
-                                <div class="td-user">
-                                    <div class="td-avatar {{ ['blue','violet','mint','amber'][rand(0,3)] }}">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
-                                    <div>
-                                        <div class="td-name">{{ $user->name }}</div>
-                                        <div class="td-email">{{ $user->email }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                @if($user->role === 'konsumen') <span class="pill konsumen">Konsumen</span>
-                                @elseif($user->role === 'seller') <span class="pill fnb">F&B Seller</span>
-                                @elseif($user->role === 'lembaga_sosial') <span class="pill lembaga">Lembaga Sosial</span>
-                                @endif
-                            </td>
-                            <td class="td-mono">{{ $user->created_at->format('d M Y') }}</td>
-                            <td>
-                                @if($user->account_status === 'approved') <span class="pill aktif">Aktif</span>
-                                @elseif($user->account_status === 'pending') <span class="pill pending">Pending</span>
-                                @elseif($user->account_status === 'rejected') <span class="pill suspend">Ditolak</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="actions">
-                                    <button class="btn btn-outline btn-xs btn-icon" title="Lihat Profil"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                                    @if($user->account_status === 'approved')
-                                    <button class="btn btn-amber btn-xs btn-icon" title="Suspend"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg></button>
-                                    @endif
-                                    <button class="btn btn-danger btn-xs btn-icon" title="Hapus"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" style="text-align:center; padding:2rem; color:var(--muted);">Tidak ada pengguna yang ditemukan.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
-            <div style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0.75rem; border-top: 1px solid var(--border);">
-                <div style="font-size: 0.875rem; color: var(--muted);">
-                    Menampilkan {{ $usersList->firstItem() ?? 0 }} hingga {{ $usersList->lastItem() ?? 0 }} dari {{ $usersList->total() }} pengguna
-                </div>
-                <div style="display: flex; gap: 0.5rem;">
-                    @if ($usersList->onFirstPage())
-                        <button class="btn btn-primary" style="opacity: 0.5; cursor: not-allowed; background-color: var(--mint-500); border-color: var(--mint-500); box-shadow: none;" disabled>
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                            Prev
-                        </button>
-                    @else
-                        <a href="{{ $usersList->previousPageUrl() }}" class="btn btn-primary" style="background-color: var(--mint-500); border-color: var(--mint-500);">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                            Prev
-                        </a>
-                    @endif
-
-                    @if ($usersList->hasMorePages())
-                        <a href="{{ $usersList->nextPageUrl() }}" class="btn btn-primary" style="background-color: var(--mint-500); border-color: var(--mint-500);">
-                            Next
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </a>
-                    @else
-                        <button class="btn btn-primary" style="opacity: 0.5; cursor: not-allowed; background-color: var(--mint-500); border-color: var(--mint-500); box-shadow: none;" disabled>
-                            Next
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </button>
-                    @endif
-                </div>
-            </div>
-
-            {{-- VALIDASI PENDING --}}
-            <div id="sec-pending" style="padding:1.375rem 1.75rem 0.875rem; border-top:1.5px solid var(--border); margin-top:0;">
-                <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:0.9375rem;letter-spacing:-0.04em;color:var(--ink);margin-bottom:0.125rem;">
-                    Validasi Akun Pending
-                </div>
-                <div style="font-size:0.8125rem;color:var(--muted);">Lembaga & Seller baru yang menunggu persetujuan Admin.</div>
-            </div>
-            @forelse($pendingVerifications as $verification)
-            <div class="pending-card">
-                <div class="pending-av">{{ strtoupper(substr($verification->user->name, 0, 2)) }}</div>
-                <div class="pending-info">
-                    <div class="pending-name">{{ $verification->user->name }}</div>
-                    <div class="pending-meta">
-                        {{ $verification->user->role === 'seller' ? 'F&B Seller' : 'Lembaga Sosial' }} · 
-                        Daftar {{ $verification->user->created_at->diffForHumans() }} · 
-                        {{ $verification->user->address ?? 'Alamat belum diatur' }}
-                    </div>
-                </div>
-                <span class="pill pending" style="flex-shrink:0;">Pending</span>
-                <div class="pending-actions" style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-                    @if($verification->ktp_path)
-                    <a href="{{ asset('storage/' . $verification->ktp_path) }}" target="_blank" class="btn btn-outline btn-xs">KTP</a>
-                    @endif
-                    @if($verification->nib_path)
-                    <a href="{{ asset('storage/' . $verification->nib_path) }}" target="_blank" class="btn btn-outline btn-xs">NIB</a>
-                    @endif
-                    @if($verification->surat_izin_path)
-                    <a href="{{ asset('storage/' . $verification->surat_izin_path) }}" target="_blank" class="btn btn-outline btn-xs">Surat Izin</a>
-                    @endif
-                    @if($verification->profil_seller_path)
-                    <a href="{{ asset('storage/' . $verification->profil_seller_path) }}" target="_blank" class="btn btn-outline btn-xs">Profil</a>
-                    @endif
-                    
-                    <form action="{{ route('admin.verifications.approve', $verification->user->id) }}" method="POST" style="margin:0;" id="approveForm_{{ $verification->user->id }}">
-                        @csrf
-                        <button type="button" class="btn btn-success btn-xs" onclick="confirmApprove('{{ $verification->user->id }}', '{{ $verification->user->name }}')">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                            Approve
-                        </button>
-                    </form>
-
-                    <button class="btn btn-danger btn-xs" onclick="confirmReject('{{ $verification->user->id }}', '{{ $verification->user->name }}')">
-                        Tolak
-                    </button>
-                </div>
-            </div>
-            @empty
-            <div style="padding: 1rem 1.75rem; color: var(--muted); font-size: 0.875rem;">
-                Tidak ada pendaftaran yang menunggu persetujuan.
-            </div>
-            @endforelse
-        </div>
-
-        {{-- ══ 3. MONITORING TRANSAKSI & KELUHAN ══ --}}
+                {{-- ══ 3. MONITORING TRANSAKSI & KELUHAN ══ --}}
         <div class="two-col">
             <div id="sec-monitor" class="sec" style="overflow: hidden;">
             <div class="sec-hdr">
                 <div class="sec-hdr-left">
                     <div class="sec-kicker">MONITORING</div>
                     <div class="sec-title">Log Transaksi</div>
-                </div>
-                <div class="sec-hdr-right">
-                    <button class="btn btn-outline btn-xs" style="border-radius:var(--r-pill); padding:0.4rem 1rem; font-size:0.75rem; color:var(--muted);">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right:4px; vertical-align:middle; display:inline-block;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Ekspor
-                    </button>
                 </div>
             </div>
             
@@ -1046,7 +874,187 @@ body.no-scroll { overflow: hidden; }
         </div>
         </div>
 
-        {{-- ══ MANAJEMEN KONTEN ARTIKEL ══ --}}
+        {{-- ══ 2. MANAJEMEN PENGGUNA ══ --}}
+        <div id="sec-user" class="sec">
+            <div class="sec-hdr">
+                <div class="sec-hdr-left">
+                    <div class="sec-kicker">Manajemen Pengguna</div>
+                    <div class="sec-title">Daftar Semua Akun</div>
+                </div>
+                <div class="sec-hdr-right" style="display:flex; gap:1rem; align-items:center;">
+                    <form method="GET" action="{{ route('admin.dashboard') }}" id="searchUserForm" style="display:flex; gap:1rem; align-items:center; margin:0;">
+                        <input type="hidden" name="role_filter" id="role_filter_input" value="{{ request('role_filter', 'semua') }}">
+                        <div class="tbl-search">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari pengguna..." onkeypress="if(event.keyCode==13) document.getElementById('searchUserForm').submit();">
+                        </div>
+                        <div class="filter-tabs">
+                            <button type="button" class="ftab {{ request('role_filter', 'semua') == 'semua' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='semua'; document.getElementById('searchUserForm').submit();">Semua</button>
+                            <button type="button" class="ftab {{ request('role_filter') == 'konsumen' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='konsumen'; document.getElementById('searchUserForm').submit();">Konsumen</button>
+                            <button type="button" class="ftab {{ request('role_filter') == 'lembaga_sosial' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='lembaga_sosial'; document.getElementById('searchUserForm').submit();">Lembaga</button>
+                            <button type="button" class="ftab {{ request('role_filter') == 'seller' ? 'on' : '' }}" onclick="document.getElementById('role_filter_input').value='seller'; document.getElementById('searchUserForm').submit();">Seller</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="tbl-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pengguna</th>
+                            <th>Role</th>
+                            <th>Bergabung</th>
+                            <th>Status Akun</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($usersList as $user)
+                        <tr>
+                            <td>
+                                <div class="td-user">
+                                    <div class="td-avatar {{ ['blue','violet','mint','amber'][rand(0,3)] }}">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
+                                    <div>
+                                        <div class="td-name">{{ $user->name }}</div>
+                                        <div class="td-email">{{ $user->email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if($user->role === 'konsumen') <span class="pill konsumen">Konsumen</span>
+                                @elseif($user->role === 'seller') <span class="pill fnb">F&B Seller</span>
+                                @elseif($user->role === 'lembaga_sosial') <span class="pill lembaga">Lembaga Sosial</span>
+                                @endif
+                            </td>
+                            <td class="td-mono">{{ $user->created_at->format('d M Y') }}</td>
+                            <td>
+                                @if($user->account_status === 'approved') <span class="pill aktif">Aktif</span>
+                                @elseif($user->account_status === 'pending') <span class="pill pending">Pending</span>
+                                @elseif($user->account_status === 'rejected') <span class="pill suspend">Ditangguhkan</span>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="actions">
+                                    @if($user->account_status === 'approved')
+                                    <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" style="margin:0;" id="toggleForm_{{ $user->id }}">
+                                        @csrf
+                                        <button type="button" class="btn btn-amber btn-xs btn-icon" title="Tangguhkan Akun" onclick="confirmToggleStatus('{{ $user->id }}', '{{ $user->name }}', 'tangguhkan')">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                        </button>
+                                    </form>
+                                    @elseif($user->account_status === 'rejected')
+                                    <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" style="margin:0;" id="toggleForm_{{ $user->id }}">
+                                        @csrf
+                                        <button type="button" class="btn btn-amber btn-xs btn-icon" style="background-color: #f59e0b; color: #fff;" title="Aktifkan Akun" onclick="confirmToggleStatus('{{ $user->id }}', '{{ $user->name }}', 'aktifkan')">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                        </button>
+                                    </form>
+                                    @endif
+
+                                    <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="margin:0;" id="deleteUserForm_{{ $user->id }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" class="btn btn-danger btn-xs btn-icon" title="Hapus" onclick="confirmDeleteUser('{{ $user->id }}', '{{ $user->name }}')">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" style="text-align:center; padding:2rem; color:var(--muted);">Tidak ada pengguna yang ditemukan.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0.75rem; border-top: 1px solid var(--border);">
+                <div style="font-size: 0.875rem; color: var(--muted);">
+                    Menampilkan {{ $usersList->firstItem() ?? 0 }} hingga {{ $usersList->lastItem() ?? 0 }} dari {{ $usersList->total() }} pengguna
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    @if ($usersList->onFirstPage())
+                        <button class="btn btn-primary" style="opacity: 0.5; cursor: not-allowed; background-color: var(--mint-500); border-color: var(--mint-500); box-shadow: none;" disabled>
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            Prev
+                        </button>
+                    @else
+                        <a href="{{ $usersList->previousPageUrl() }}" class="btn btn-primary" style="background-color: var(--mint-500); border-color: var(--mint-500);">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                            Prev
+                        </a>
+                    @endif
+
+                    @if ($usersList->hasMorePages())
+                        <a href="{{ $usersList->nextPageUrl() }}" class="btn btn-primary" style="background-color: var(--mint-500); border-color: var(--mint-500);">
+                            Next
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </a>
+                    @else
+                        <button class="btn btn-primary" style="opacity: 0.5; cursor: not-allowed; background-color: var(--mint-500); border-color: var(--mint-500); box-shadow: none;" disabled>
+                            Next
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                    @endif
+                </div>
+            </div>
+
+            {{-- VALIDASI PENDING --}}
+            <div id="sec-pending" style="padding:1.375rem 1.75rem 0.875rem; border-top:1.5px solid var(--border); margin-top:0;">
+                <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:0.9375rem;letter-spacing:-0.04em;color:var(--ink);margin-bottom:0.125rem;">
+                    Validasi Akun Pending
+                </div>
+                <div style="font-size:0.8125rem;color:var(--muted);">Lembaga & Seller baru yang menunggu persetujuan Admin.</div>
+            </div>
+            @forelse($pendingVerifications as $verification)
+            <div class="pending-card">
+                <div class="pending-av">{{ strtoupper(substr($verification->user->name, 0, 2)) }}</div>
+                <div class="pending-info">
+                    <div class="pending-name">{{ $verification->user->name }}</div>
+                    <div class="pending-meta">
+                        {{ $verification->user->role === 'seller' ? 'F&B Seller' : 'Lembaga Sosial' }} · 
+                        Daftar {{ $verification->user->created_at->diffForHumans() }} · 
+                        {{ $verification->user->address ?? 'Alamat belum diatur' }}
+                    </div>
+                </div>
+                <span class="pill pending" style="flex-shrink:0;">Pending</span>
+                <div class="pending-actions" style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                    @if($verification->ktp_path)
+                    <a href="{{ asset('storage/' . $verification->ktp_path) }}" target="_blank" class="btn btn-outline btn-xs">KTP</a>
+                    @endif
+                    @if($verification->nib_path)
+                    <a href="{{ asset('storage/' . $verification->nib_path) }}" target="_blank" class="btn btn-outline btn-xs">NIB</a>
+                    @endif
+                    @if($verification->surat_izin_path)
+                    <a href="{{ asset('storage/' . $verification->surat_izin_path) }}" target="_blank" class="btn btn-outline btn-xs">Surat Izin</a>
+                    @endif
+                    @if($verification->profil_seller_path)
+                    <a href="{{ asset('storage/' . $verification->profil_seller_path) }}" target="_blank" class="btn btn-outline btn-xs">Profil</a>
+                    @endif
+                    
+                    <form action="{{ route('admin.verifications.approve', $verification->user->id) }}" method="POST" style="margin:0;" id="approveForm_{{ $verification->user->id }}">
+                        @csrf
+                        <button type="button" class="btn btn-success btn-xs" onclick="confirmApprove('{{ $verification->user->id }}', '{{ $verification->user->name }}')">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            Approve
+                        </button>
+                    </form>
+
+                    <button class="btn btn-danger btn-xs" onclick="confirmReject('{{ $verification->user->id }}', '{{ $verification->user->name }}')">
+                        Tolak
+                    </button>
+                </div>
+            </div>
+            @empty
+            <div style="padding: 1rem 1.75rem; color: var(--muted); font-size: 0.875rem;">
+                Tidak ada pendaftaran yang menunggu persetujuan.
+            </div>
+            @endforelse
+        </div>
+
+                {{-- ══ MANAJEMEN KONTEN ARTIKEL ══ --}}
         <div id="sec-artikel" class="sec">
             <div class="sec-hdr">
                 <div class="sec-hdr-left">
@@ -1343,6 +1351,74 @@ function confirmApprove(userId, userName) {
     }).then((result) => {
         if (result.isConfirmed) {
             document.getElementById('approveForm_' + userId).submit();
+        }
+    });
+}
+
+function confirmToggleStatus(userId, userName, action) {
+    const titleText = action === 'tangguhkan' ? 'Tangguhkan Akun?' : 'Aktifkan Kembali Akun?';
+    const confirmColor = action === 'tangguhkan' ? '#f59e0b' : '#22c55e';
+    const btnText = action === 'tangguhkan' ? 'Ya, Tangguhkan' : 'Ya, Aktifkan';
+
+    if (action === 'tangguhkan') {
+        Swal.fire({
+            title: titleText,
+            text: "Masukkan alasan penangguhan untuk akun " + userName,
+            input: 'textarea',
+            inputPlaceholder: 'Contoh: Melanggar ketentuan layanan, terindikasi penipuan...',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: confirmColor,
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: btnText,
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Alasan penangguhan harus diisi!'
+                }
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('toggleForm_' + userId);
+                const reasonInput = document.createElement('input');
+                reasonInput.type = 'hidden';
+                reasonInput.name = 'suspension_reason';
+                reasonInput.value = result.value;
+                form.appendChild(reasonInput);
+                form.submit();
+            }
+        });
+    } else {
+        Swal.fire({
+            title: titleText,
+            text: "Apakah Anda yakin mengaktifkan kembali akun " + userName + "?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: confirmColor,
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: btnText,
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('toggleForm_' + userId).submit();
+            }
+        });
+    }
+}
+
+function confirmDeleteUser(userId, userName) {
+    Swal.fire({
+        title: 'Hapus Akun?',
+        text: "Apakah Anda yakin menghapus akun " + userName + " secara permanen?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('deleteUserForm_' + userId).submit();
         }
     });
 }

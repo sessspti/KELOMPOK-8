@@ -43,7 +43,7 @@
                                     </div>
                                     <span class="font-semibold text-gray-700" x-text="item.name"></span>
                                 </div>
-                                <span class="font-bold text-gray-900" x-text="formatRupiah(item.final_price * item.qty)"></span>
+                                <span class="font-bold text-gray-900" x-text="formatRupiah((item.final_price !== undefined ? item.final_price : item.price) * item.qty)"></span>
                             </div>
                         </template>
                     </div>
@@ -163,7 +163,10 @@
                 ],
 
                 get cartTotal() {
-                    return this.cart.reduce((total, item) => total + (item.final_price * item.qty), 0);
+                    return this.cart.reduce((total, item) => {
+                        const price = item.final_price !== undefined ? item.final_price : item.price;
+                        return total + (price * item.qty);
+                    }, 0);
                 },
 
                 get grandTotal() {
@@ -224,7 +227,10 @@
                         },
                         body: JSON.stringify({
                             cart: this.cart,
-                            payment_method: this.paymentMethods.find(m => m.id === this.selectedMethod).name
+                            payment_method: this.paymentMethods.find(m => m.id === this.selectedMethod).name,
+                            subtotal: this.cartTotal,
+                            service_fee: this.serviceFee,
+                            grand_total: this.grandTotal
                         })
                     })
                     .then(response => response.json())
