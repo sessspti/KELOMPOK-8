@@ -835,11 +835,20 @@ body::before {
                                         <select name="status" class="status-select {{ strtolower($order->status) }}" onchange="this.form.submit()">
                                             <option value="paid" {{ $order->status === 'paid' ? 'selected' : '' }}>Sudah Dibayar</option>
                                             <option value="proses" {{ $order->status === 'proses' ? 'selected' : '' }}>Diproses</option>
-                                            <option value="siap_diambil" {{ $order->status === 'siap_diambil' ? 'selected' : '' }}>Siap Diambil</option>
+                                            {{-- TAMBAHAN AC 4: Opsi 'Siap Diambil' hanya muncul jika tipe pengiriman adalah self-pickup --}}
+                                            @if($order->pickup_method === 'self-pickup')
+                                                <option value="siap_diambil" {{ $order->status === 'siap_diambil' ? 'selected' : '' }}>Siap Diambil</option>
+                                            @endif
                                             <option value="selesai" {{ $order->status === 'selesai' ? 'selected' : '' }}>Selesai</option>
                                             <option value="dibatalkan" {{ $order->status === 'dibatalkan' ? 'selected' : '' }}>Batalkan</option>
                                         </select>
                                     </form>
+                                    {{-- AC 5 — Tampilkan jam pengambilan self-pickup jika sudah selesai --}}
+                                    @if($order->status === 'selesai' && $order->picked_up_at)
+                                        <div class="text-sm text-green-600 mt-1">
+                                            Diserahkan: {{ $order->picked_up_at->format('H:i') }} WIB
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                             @empty

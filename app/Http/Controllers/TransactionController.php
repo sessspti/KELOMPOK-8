@@ -107,6 +107,18 @@ class TransactionController extends Controller
         $userId = Auth::id();
         $cart = $request->input('cart', []);
         $paymentMethod = $request->input('payment_method', 'Transfer Bank');
+        $pickupMethod = $request->input('pickup_method', 'antri');
+        $pickupTime = $request->input('pickup_time');
+        
+        // Simpan ke session untuk menandai jenis pengambilan pesanan
+        session(['pickup_method' => $pickupMethod]);
+        
+        if ($pickupMethod === 'self-pickup' && $pickupTime) {
+            session(['pickup_time' => $pickupTime]);
+        } else {
+            session()->forget('pickup_time');
+        }
+
         $transactionId = 'INV-' . strtoupper(bin2hex(random_bytes(4)));
 
         if (empty($cart)) {
@@ -135,6 +147,8 @@ class TransactionController extends Controller
                     'status' => 'paid',
                     'transaction_id' => $transactionId,
                     'payment_method' => $paymentMethod,
+                    'pickup_method' => $pickupMethod,     // TAMBAHAN AC 4: simpan metode pengambilan ke DB
+                    'pickup_schedule' => ($pickupMethod === 'self-pickup' && $pickupTime) ? $pickupTime : null, // TAMBAHAN AC 2: simpan jadwal pengambilan ke DB
                 ]);
 
                 // Mengurangi stok menu
