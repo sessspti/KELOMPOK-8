@@ -918,6 +918,25 @@ body::before {
                     </svg>
                     Checkout Sekarang
                 </button>
+
+                <button class="sb-btn-card" 
+                        :disabled="menu.stock <= 0 || (seller && seller.is_open == 0)"
+                        @click="addToCart(menu)">
+                    <svg ...></svg>
+                    <span>Tambah ke Keranjang</span>
+                </button>
+
+                
+
+<button class="sb-btn-card" :disabled="menu.stock <= 0 || (seller && seller.is_open == 0)" @click="addToCart(menu)">
+    </button>
+
+
+
+
+
+
+
                 <p class="checkout-note">Makanan ini membantu mengurangi food waste 🌿</p>
             </div>
         </div>
@@ -983,35 +1002,42 @@ body::before {
             </div>
         </div>
 
-        {{-- Stats card kanan atas --}}
-        <div class="sb-stats">
-            <div class="sb-stats-grid">
-                <div class="sb-stat-item">
-                    <div class="sb-stat-num">4.8 <span style="font-size:1rem;">⭐</span></div>
-                    <div class="sb-stat-lbl">Rating</div>
-                </div>
-                <div class="sb-stat-item">
-                    <div class="sb-stat-num">{{ count($menus) }}</div>
-                    <div class="sb-stat-lbl">Menu Aktif</div>
-                </div>
-                <div class="sb-stat-item">
-                    <div class="sb-stat-num">1.4k</div>
-                    <div class="sb-stat-lbl">Pengikut</div>
-                </div>
-                <div class="sb-stat-item">
-                    <div class="sb-stat-num">120+</div>
-                    <div class="sb-stat-lbl">Penilaian</div>
-                </div>
+
+       {{-- Stats card kanan atas --}}
+<div class="sb-stats">
+    <div class="sb-stats-grid">
+        <div class="sb-stat-item">
+            <div class="sb-stat-num">
+                {{ $menus->avg('reviews_avg_rating') ? number_format($menus->avg('reviews_avg_rating'), 1) : '0.0' }} 
+                <span style="font-size:1rem;">⭐</span>
             </div>
-            <div class="sb-divider"></div>
-            <div class="sb-location">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px; flex-shrink: 0;">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                    <circle cx="12" cy="11" r="3"/>
-                </svg>
-                <span>{{ $seller->address ?? $seller->alamat ?? 'Lokasi belum diatur' }}</span>
-            </div>
+            <div class="sb-stat-lbl">Rating</div>
         </div>
+
+        <div class="sb-stat-item">
+            <div class="sb-stat-num">{{ count($menus) }}</div>
+            <div class="sb-stat-lbl">Menu Aktif</div>
+        </div>
+
+        <div class="sb-stat-item">
+            <div class="sb-stat-num">1.4k</div>
+            <div class="sb-stat-lbl">Pengikut</div>
+        </div>
+
+        <div class="sb-stat-item">
+            <div class="sb-stat-num">{{ $menus->sum('reviews_count') }}</div>
+            <div class="sb-stat-lbl">Penilaian</div>
+        </div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-location">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px; flex-shrink: 0;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <span>{{ $seller->address ?? 'Lokasi tidak tersedia' }}</span>
+    </div>
+</div>
 
         {{-- Visual tracker kanan bawah --}}
         <div class="sb-tracker">

@@ -110,4 +110,9 @@ class Menu extends Model
     {
         return $query->available()->notExpired();
     }
+    // Tambahkan di dalam class Menu
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

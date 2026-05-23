@@ -95,6 +95,8 @@ class MenuController extends Controller
     // 2. Ambil SEMUA makanan dari tabel menus yang kolom 'user_id'-nya COCOK dengan ID penjual ini
     // Kita juga gunakan 'notExpired()' agar makanan yang sudah kedaluwarsa tidak ikut tampil
     $menus = \App\Models\Menu::where('user_id', $id)
+                            ->withAvg('reviews', 'rating') // ✅ TAMBAHKAN BARIS INI
+                            ->withCount('reviews')
                             ->notExpired()
                             ->latest()
                             ->get();
@@ -130,6 +132,9 @@ public function toggleStatus()
     public function consumerDashboard(ProductVisibilityService $visibilityService)
     {
         $menus = $visibilityService->getVisibleProductsForConsumer();
+
+        //(Karena data dari Service, gunakan loadAvg & loadCount)
+        $menus->loadAvg('reviews', 'rating')->loadCount('reviews');
         
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
@@ -167,6 +172,7 @@ public function toggleStatus()
     {
         $menus = $visibilityService->getVisibleProductsForInstitution();
         
+        $menus->loadAvg('reviews', 'rating')->loadCount('reviews');
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
             $menu->store_is_open = $menu->user->is_open ? 1 : 0;

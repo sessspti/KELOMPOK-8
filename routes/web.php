@@ -34,6 +34,8 @@ Route::get('/', function () {
 Route::get('/home', function () {
     // 1. Ambil data menu agar Guest tetap bisa melihat produk/makanan yang tersedia
     $menus = \App\Models\Menu::with('user')
+        ->withAvg('reviews', 'rating') 
+        ->withCount('reviews')        
         ->where('stock', '>', 0)
         ->whereHas('user', fn($q) => $q->where('is_open', 1))
         ->notExpired()->latest()->get();
