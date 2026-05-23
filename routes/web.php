@@ -215,6 +215,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('transaction.checkout');
     })->middleware('role:konsumen')->name('checkout.summary');
 
+    // 9b. Fitur Ulasan / Review Makanan (Konsumen dan Lembaga Sosial)
+    Route::post('/reviews/store', [\App\Http\Controllers\ReviewController::class, 'store'])
+        ->name('reviews.store');
+
     // 10. Fitur Admin (Pusat Kendali Platform)
     Route::prefix('admin')->middleware('role:admin')->group(function () {
         

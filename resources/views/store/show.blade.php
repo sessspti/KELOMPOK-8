@@ -832,14 +832,14 @@ body::before {
 ══════════════════ --}}
 <div x-data="storePage()" x-init="initCart()" x-cloak>
 
-{{-- ══ FAB CART (hanya untuk konsumen) ══ --}}
+{{-- ══ FAB CART (untuk konsumen dan lembaga) ══ --}}
 @auth
-    @if(auth()->user()->role === 'konsumen')
+    @if(in_array(auth()->user()->role, ['konsumen', 'lembaga_sosial']))
         <button class="fab-cart" @click="openDrawer = true" x-show="true" :class="{'wiggle': cartAnimation}">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
             </svg>
-            Keranjang
+            {{ auth()->user()->role === 'lembaga_sosial' ? 'Pengambilan' : 'Keranjang' }}
             <span class="fab-count" x-text="getCartCount()"></span>
         </button>
     @endif
@@ -848,19 +848,91 @@ body::before {
 {{-- ══ TOAST ══ --}}
 <div class="toast-wrap" id="toastWrap"></div>
 
-{{-- ══ DRAWER OVERLAY (hanya untuk konsumen) ══ --}}
+{{-- ══ DRAWER OVERLAY (untuk konsumen dan lembaga) ══ --}}
 @auth
-    @if(auth()->user()->role === 'konsumen')
-        <div class="drawer-overlay" x-show="openDrawer" @click="openDrawer = false"
+    @if(in_array(auth()->user()->role, ['konsumen', 'lembaga_sosial']))
+        <div class="drawer-overlay" x-show="openDrawer || showReviewModal" @click="openDrawer = false; showReviewModal = false"
              x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
              x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-             style="display:none;"></div>
+             style="display:none; z-index: 400;"></div>
     @endif
 @endauth
 
-{{-- ══ CART DRAWER (hanya untuk konsumen) ══ --}}
+{{-- ══ REVIEW MODAL ══ --}}
+<div class="fixed inset-0 z-[500] flex items-center justify-center p-4" x-show="showReviewModal" style="display:none; pointer-events: none;">
+    <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col" 
+         style="max-height: 85vh; pointer-events: auto;"
+         @click.stop
+         x-show="showReviewModal"
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95 translate-y-4" x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100 translate-y-0" x-transition:leave-end="opacity-0 transform scale-95 translate-y-4">
+        
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between flex-shrink-0 relative overflow-hidden rounded-t-[2rem]">
+            <div class="absolute inset-0 bg-gradient-to-r from-green-50 to-emerald-50 z-0"></div>
+            <div class="relative z-10">
+                <h3 class="text-xl font-black text-gray-900 tracking-tight" x-text="activeProduct ? 'Ulasan ' + activeProduct.name : 'Ulasan'"></h3>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="text-yellow-400 font-bold text-sm">⭐ <span x-text="activeProduct && activeProduct.reviews_avg_rating > 0 ? parseFloat(activeProduct.reviews_avg_rating).toFixed(1) : '0.0'"></span></span>
+                    <span class="text-xs text-gray-500 font-medium" x-text="'• ' + (activeProduct ? (activeProduct.reviews_count || 0) : 0) + ' Penilaian'"></span>
+                </div>
+            </div>
+            <button @click="showReviewModal = false" class="relative z-10 w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all shadow-sm">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+            <template x-if="activeReviews && activeReviews.length > 0">
+                <div class="space-y-4">
+                    <template x-for="review in activeReviews" :key="review.id">
+                        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center font-bold text-gray-500 text-sm overflow-hidden border border-gray-200">
+                                        <template x-if="review.user && review.user.avatar">
+                                            <img :src="'/storage/' + review.user.avatar" class="w-full h-full object-cover">
+                                        </template>
+                                        <template x-if="!review.user || !review.user.avatar">
+                                            <span x-text="review.user ? review.user.name.substring(0,2).toUpperCase() : '??'"></span>
+                                        </template>
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-gray-900 text-sm" x-text="review.user ? review.user.name : 'Pengguna'"></div>
+                                        <div class="text-[11px] text-gray-400 font-medium" x-text="new Date(review.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})"></div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-0.5">
+                                    <template x-for="i in 5">
+                                        <svg class="w-4 h-4" :class="i <= review.rating ? 'text-yellow-400' : 'text-gray-200'" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                    </template>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 text-sm leading-relaxed mb-3" x-text="review.comment || 'Tidak ada teks ulasan.'"></p>
+                            
+                            <template x-if="review.photo_path">
+                                <div class="mt-3 rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+                                    <img :src="'/storage/' + review.photo_path" class="w-full h-auto max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" @click="window.open('/storage/' + review.photo_path, '_blank')">
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <template x-if="!activeReviews || activeReviews.length === 0">
+                <div class="text-center py-12">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📝</div>
+                    <h4 class="text-gray-900 font-bold mb-1">Belum Ada Ulasan</h4>
+                    <p class="text-gray-500 text-sm max-w-xs mx-auto">Jadilah yang pertama untuk mencoba dan memberikan ulasan pada menu ini!</p>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+
+{{-- ══ CART DRAWER (untuk konsumen dan lembaga) ══ --}}
 @auth
-    @if(auth()->user()->role === 'konsumen')
+    @if(in_array(auth()->user()->role, ['konsumen', 'lembaga_sosial']))
+        @php $isLembaga = auth()->user()->role === 'lembaga_sosial'; @endphp
         <div class="drawer" x-show="openDrawer"
              x-transition:enter="transform transition ease-in-out duration-300" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
              x-transition:leave="transform transition ease-in-out duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
@@ -868,7 +940,7 @@ body::before {
 
             <div class="drawer-hdr">
                 <div>
-                    <div class="drawer-title">🛒 Keranjang Belanja</div>
+                    <div class="drawer-title">{{ $isLembaga ? '📋 Daftar Pengambilan' : '🛒 Keranjang Belanja' }}</div>
                     <div class="drawer-subtitle" x-text="getCartCount() + ' item dari ' + getStoreCount() + ' toko'"></div>
                 </div>
                 <button class="drawer-close" @click="openDrawer = false">
@@ -886,7 +958,11 @@ body::before {
                         </div>
                         <div class="cart-info">
                             <div class="cart-name" x-text="item.name"></div>
-                            <div class="cart-price" x-text="formatRupiah(item.final_price !== undefined ? item.final_price : item.price)"></div>
+                            @if($isLembaga)
+                                <div class="cart-price" style="color: #22c55e; font-weight: 700;">Gratis (Donasi)</div>
+                            @else
+                                <div class="cart-price" x-text="formatRupiah(item.final_price !== undefined ? item.final_price : item.price)"></div>
+                            @endif
                             <div class="cart-qty" x-text="'× ' + item.qty + ' porsi'"></div>
                             {{-- Quantity Adjuster --}}
                             <div class="flex items-center gap-2 mt-2">
@@ -901,43 +977,31 @@ body::before {
 
                 <template x-if="cart.length === 0">
                     <div class="cart-empty">
-                        <div class="cart-empty-ico">🛒</div>
-                        <p>Keranjang masih kosong.<br>Yuk pilih makanan di atas!</p>
+                        <div class="cart-empty-ico">{{ $isLembaga ? '📋' : '🛒' }}</div>
+                        <p>{{ $isLembaga ? 'Belum ada item pengambilan.' : 'Keranjang masih kosong.' }}<br>Yuk pilih makanan di atas!</p>
                     </div>
                 </template>
             </div>
 
             <div class="drawer-footer">
-                <div class="drawer-subtotal">
-                    <span class="subtotal-label">Subtotal</span>
-                    <span class="subtotal-val" x-text="formatRupiah(getCartTotal())"></span>
-                </div>
+                @if(!$isLembaga)
+                    <div class="drawer-subtotal">
+                        <span class="subtotal-label">Subtotal</span>
+                        <span class="subtotal-val" x-text="formatRupiah(getCartTotal())"></span>
+                    </div>
+                @else
+                    <div class="drawer-subtotal">
+                        <span class="subtotal-label">Total Donasi</span>
+                        <span class="subtotal-val" style="color: #22c55e;">Gratis</span>
+                    </div>
+                @endif
                 <button class="checkout-btn" @click="directCheckout()" :disabled="cart.length === 0">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
-                    Checkout Sekarang
+                    {{ $isLembaga ? 'Ajukan Pengambilan' : 'Checkout Sekarang' }}
                 </button>
-
-                <button class="sb-btn-card" 
-                        :disabled="menu.stock <= 0 || (seller && seller.is_open == 0)"
-                        @click="addToCart(menu)">
-                    <svg ...></svg>
-                    <span>Tambah ke Keranjang</span>
-                </button>
-
-                
-
-<button class="sb-btn-card" :disabled="menu.stock <= 0 || (seller && seller.is_open == 0)" @click="addToCart(menu)">
-    </button>
-
-
-
-
-
-
-
-                <p class="checkout-note">Makanan ini membantu mengurangi food waste 🌿</p>
+                <p class="checkout-note">{{ $isLembaga ? 'Lembaga Anda akan dikonfirmasi oleh restoran 🤝' : 'Makanan ini membantu mengurangi food waste 🌿' }}</p>
             </div>
         </div>
     @endif
@@ -1006,9 +1070,13 @@ body::before {
        {{-- Stats card kanan atas --}}
 <div class="sb-stats">
     <div class="sb-stats-grid">
+        @php
+            $totalReviews = $menus->sum('reviews_count');
+            $avgRating = $menus->avg('reviews_avg_rating');
+        @endphp
         <div class="sb-stat-item">
             <div class="sb-stat-num">
-                {{ $menus->avg('reviews_avg_rating') ? number_format($menus->avg('reviews_avg_rating'), 1) : '0.0' }} 
+                {{ $avgRating > 0 ? number_format($avgRating, 1) : '0.0' }} 
                 <span style="font-size:1rem;">⭐</span>
             </div>
             <div class="sb-stat-lbl">Rating</div>
@@ -1025,7 +1093,7 @@ body::before {
         </div>
 
         <div class="sb-stat-item">
-            <div class="sb-stat-num">{{ $menus->sum('reviews_count') }}</div>
+            <div class="sb-stat-num">{{ $totalReviews }}</div>
             <div class="sb-stat-lbl">Penilaian</div>
         </div>
     </div>
@@ -1100,13 +1168,26 @@ body::before {
                 <div class="pcard-body">
                     <div class="pcard-name" x-text="product.name"></div>
 
-                    <div class="pcard-stock-row">
-                        <span class="stock-dot" :class="product.stock === 0 ? 'empty' : product.stock <= 2 ? 'low' : 'ok'"></span>
-                        <span x-text="product.stock === 0 ? 'Stok habis' : 'Tersisa ' + product.stock + ' porsi'"></span>
-                    </div>
+                            <div @click="openReviewModal(product)" class="hover:bg-gray-100 cursor-pointer transition-colors" style="display: flex; align-items: center; gap: 4px; margin: 6px 0; background-color: #f9fafb; padding: 4px 8px; border-radius: 6px; border: 1px solid #f3f4f6; width: fit-content;">
+                                <span style="color: #fbbf24; font-size: 13px;">⭐</span>
+                                <span style="font-size: 12px; font-weight: 700; color: #374151;" x-text="product.reviews_avg_rating > 0 ? parseFloat(product.reviews_avg_rating).toFixed(1) : '0.0'"></span>
+                                <span style="font-size: 11px; color: #6b7280; margin-left: 2px;" x-text="'(' + (product.reviews_count || 0) + ' Ulasan)'"></span>
+                            </div>
+                            <div class="pcard-stock-row">
+                                <span class="stock-dot" :class="product.stock === 0 ? 'empty' : product.stock <= 2 ? 'low' : 'ok'"></span>
+                                <span x-text="product.stock === 0 ? 'Stok habis' : 'Tersisa ' + product.stock + ' porsi'"></span>
+                            </div>
+
+                            {{-- Expiry Date --}}
+                            <div class="flex items-center gap-1.5 mb-2 mt-1" style="font-size: 0.72rem; color: #f97316; font-weight: 600;">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span x-text="product.formatted_expiry_date ? 'Exp: ' + product.formatted_expiry_date : 'Expired: -'"></span>
+                            </div>
 
                     <div class="pcard-footer">
-                        <div class="pcard-price" x-text="formatRupiah(product.final_price)"></div>
+                        <div class="pcard-price" x-text="isLembaga ? 'Rp 0 (Gratis)' : formatRupiah(product.final_price)" :style="isLembaga ? 'color:#22c55e;' : ''"></div>
                         
                         {{-- CEK APAKAH TOKO BUKA ATAU TUTUP --}}
                         @if($seller->is_open)
@@ -1128,15 +1209,34 @@ body::before {
                                         </svg>
                                         <span x-text="product.stock === 0 ? 'Stok Habis' : justAdded === product.id ? 'Ditambahkan!' : 'Masukkan Keranjang'"></span>
                                     </button>
+                                @elseif(auth()->user()->role === 'lembaga_sosial')
+                                    {{-- Lembaga dapat mengajukan pengambilan --}}
+                                    <button class="pcard-btn"
+                                            @click="addToCart(product, $event)"
+                                            :disabled="product.stock === 0"
+                                            :class="{ 'added': justAdded === product.id }"
+                                            style="background: linear-gradient(135deg, #0ea5e9, #0284c7);">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                :d="product.stock === 0
+                                                    ? 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636'
+                                                    : justAdded === product.id
+                                                    ? 'M5 13l4 4L19 7'
+                                                    : 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'">
+                                            </path>
+                                        </svg>
+                                        <span x-text="product.stock === 0 ? 'Stok Habis' : justAdded === product.id ? 'Ditambahkan!' : 'Ajukan Pengambilan'"></span>
+                                    </button>
                                 @else
-                                    {{-- Lembaga tidak bisa add to cart di store page --}}
+                                    {{-- Role lain (seller, admin) tidak dapat memesan --}}
                                     <button class="pcard-btn" disabled style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed; border: none; opacity: 0.8;">
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
                                         </svg>
-                                        <span>Lihat di Dashboard</span>
+                                        <span>Tidak Tersedia</span>
                                     </button>
-                                @endif
+
+                                @endif {{-- end role check --}}
                             @else
                                 {{-- Guest user --}}
                                 <a href="{{ route('login') }}" class="pcard-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
@@ -1186,9 +1286,19 @@ function storePage() {
         products: @json($menus),
         cart: [],
         openDrawer: false,
+        showReviewModal: false,
+        activeProduct: null,
+        activeReviews: [],
         isFollowed: false,
-        justAdded: null,   // id produk yang baru ditambah (untuk feedback visual)
-        cartAnimation: false, // untuk trigger shake animation
+        justAdded: null,
+        cartAnimation: false,
+        isLembaga: {{ (Auth::check() && Auth::user()->role === 'lembaga_sosial') ? 'true' : 'false' }},
+
+        openReviewModal(product) {
+            this.activeProduct = product;
+            this.activeReviews = product.reviews || [];
+            this.showReviewModal = true;
+        },
 
         // ── Init: ambil cart dari localStorage ──
         initCart() {
@@ -1308,25 +1418,70 @@ function storePage() {
         },
 
         // ── Checkout & sinkronisasi ke backend ──
-// ── Checkout & sinkronisasi ke backend ──
         directCheckout() {
-            fetch('{{ route("cart.sync") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ cart: this.cart })
-            })
-            .then(response => response.json())
-            .then(() => {
-                // ✅ SEKARANG DIALIHKAN KE HALAMAN CHECKOUT SUMMARY
-                window.location.href = '{{ route("checkout.summary") }}'; 
-            })
-            .catch(() => {
-                // ✅ JIKA ERROR PUN TETAP DIALIHKAN KE HALAMAN CHECKOUT SUMMARY
-                window.location.href = '{{ route("checkout.summary") }}'; 
-            });
+            if (this.cart.length === 0) return;
+
+            if (this.isLembaga) {
+                // ── LEMBAGA: Kirim klaim donasi ke sosial.claim ──
+                const items = this.cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    store: item.store || '',
+                    stock: item.stock,
+                    qty: item.qty || 1,
+                    price: 'Rp 0',
+                    image: item.image_url || item.image || '',
+                    urgent: 'Donasi Surplus'
+                }));
+
+                this.showToast('Memproses pengajuan...', '⏳');
+
+                fetch('{{ route("sosial.claim") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ items: items })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Kosongkan keranjang dan tutup drawer
+                        this.cart = [];
+                        this.saveCart();
+                        this.openDrawer = false;
+                        this.showToast('Pengajuan berhasil dikirim! ✅', '🤝');
+                        // Redirect ke riwayat setelah 1.5 detik
+                        setTimeout(() => {
+                            window.location.href = '{{ route("transaction.history") }}';
+                        }, 1500);
+                    } else {
+                        this.showToast(data.message || 'Gagal mengirim pengajuan.', '❌');
+                    }
+                })
+                .catch(() => {
+                    this.showToast('Terjadi kesalahan jaringan. Coba lagi.', '❌');
+                });
+
+            } else {
+                // ── KONSUMEN: Sinkron cart lalu ke checkout summary ──
+                fetch('{{ route("cart.sync") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ cart: this.cart })
+                })
+                .then(response => response.json())
+                .then(() => {
+                    window.location.href = '{{ route("checkout.summary") }}';
+                })
+                .catch(() => {
+                    window.location.href = '{{ route("checkout.summary") }}';
+                });
+            }
         },
 
         // ── Format Rupiah ──

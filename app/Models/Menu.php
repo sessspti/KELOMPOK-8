@@ -9,6 +9,13 @@ class Menu extends Model
     protected $fillable = ['user_id', 'name', 'price', 'discount', 'stock', 'image', 'expiry_date'];
     protected $appends = ['final_price', 'image_url', 'formatted_expiry_date', 'store'];
 
+    protected $casts = [
+        'reviews_avg_rating' => 'float',
+        'reviews_count' => 'integer',
+        'price' => 'float',
+        'discount' => 'integer',
+    ];
+
     protected static function booted()
     {
         static::deleting(function ($menu) {
@@ -113,6 +120,8 @@ class Menu extends Model
     // Tambahkan di dalam class Menu
     public function reviews()
     {
-        return $this->hasMany(Review::class);
+        return $this->hasMany(Review::class, 'menu_id', 'id');
     }
+    // Relasi ke tabel reviews
+
 }

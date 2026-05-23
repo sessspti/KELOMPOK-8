@@ -94,7 +94,8 @@ class MenuController extends Controller
 
     // 2. Ambil SEMUA makanan dari tabel menus yang kolom 'user_id'-nya COCOK dengan ID penjual ini
     // Kita juga gunakan 'notExpired()' agar makanan yang sudah kedaluwarsa tidak ikut tampil
-    $menus = \App\Models\Menu::where('user_id', $id)
+    $menus = \App\Models\Menu::with('reviews.user') // Eager load ulasan dan penulisnya
+                            ->where('user_id', $id)
                             ->withAvg('reviews', 'rating') // ✅ TAMBAHKAN BARIS INI
                             ->withCount('reviews')
                             ->notExpired()
@@ -104,6 +105,9 @@ class MenuController extends Controller
     // 3. Tambahkan informasi store status ke setiap menu
     $menus = $menus->map(function ($menu) use ($seller) {
         $menu->store_is_open = $seller->is_open ? 1 : 0;
+        // Pastikan properties ini selalu diset untuk dikonsumsi Alpine.js
+        $menu->reviews_count = $menu->reviews_count ?? 0;
+        $menu->reviews_avg_rating = $menu->reviews_avg_rating ?? 0.0;
         return $menu;
     });
 
@@ -133,8 +137,8 @@ public function toggleStatus()
     {
         $menus = $visibilityService->getVisibleProductsForConsumer();
 
-        //(Karena data dari Service, gunakan loadAvg & loadCount)
-        $menus->loadAvg('reviews', 'rating')->loadCount('reviews');
+        //(Karena data dari Service, gunakan loadAvg & loadCount & load)
+        $menus->loadAvg('reviews', 'rating')->loadCount('reviews')->load('reviews.user');
         
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
@@ -172,7 +176,7 @@ public function toggleStatus()
     {
         $menus = $visibilityService->getVisibleProductsForInstitution();
         
-        $menus->loadAvg('reviews', 'rating')->loadCount('reviews');
+        $menus->loadAvg('reviews', 'rating')->loadCount('reviews')->load('reviews.user');
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
             $menu->store_is_open = $menu->user->is_open ? 1 : 0;
