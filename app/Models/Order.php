@@ -6,7 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    protected $fillable = ['id_user', 'menu_id', 'quantity', 'unit_price', 'status', 'transaction_id', 'payment_method'];
+    // TAMBAHAN AC 4: tambah 'pickup_method' agar data self-pickup tersimpan  
+    // TAMBAHAN AC 5: tambah 'picked_up_at' untuk log pengambilan self-pickup
+    // TAMBAHAN AC 2: tambah 'pickup_schedule' untuk menyimpan jadwal pengambilan self-pickup
+    protected $fillable = ['id_user', 'menu_id', 'quantity', 'unit_price', 'status', 'transaction_id', 'payment_method', 'pickup_method', 'pickup_schedule', 'picked_up_at'];
+
+    // TAMBAHAN AC 5: cast picked_up_at sebagai datetime agar bisa memanggil ->format()
+    protected $casts = [
+        'picked_up_at' => 'datetime',
+    ];
 
     public function getLineTotalAttribute(): int
     {

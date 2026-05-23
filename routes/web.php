@@ -142,7 +142,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/orders/{order}/status', function (\App\Models\Order $order) {
             $status = request('status');
             $order->update(['status' => $status]);
-            
+
             // Kirim notifikasi ke konsumen
             $icon = match($status) {
                 'paid'         => '✅',
