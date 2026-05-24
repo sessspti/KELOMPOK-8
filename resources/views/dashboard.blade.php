@@ -893,14 +893,6 @@ body::after {
                                 <span style="font-size: 11px; color: #6b7280; margin-left: 2px;" x-text="'(' + (product.reviews_count || 0) + ' Ulasan)'"></span>
                             </div>
 
-                            {{-- Status Badge --}}
-                            <div class="bdg-status" :class="product.display_status.toLowerCase()">
-                                <svg fill="currentColor" viewBox="0 0 24 24" width="12" height="12">
-                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                                </svg>
-                                <span x-text="product.display_status"></span>
-                            </div>
-
                             <div class="flex items-center gap-1.5 mb-3" style="font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z"/>

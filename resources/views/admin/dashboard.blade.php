@@ -709,7 +709,7 @@ body.no-scroll { overflow: hidden; }
         <div class="topbar-right">
             <div class="tb-search">
                 <svg class="tb-search-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" placeholder="Cari pengguna, transaksi...">
+                <input type="text" id="globalSearch" placeholder="Cari fitur, data, atau inisial..." autocomplete="off">
             </div>
             <button class="tb-icon-btn" title="Notifikasi">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -1439,4 +1439,129 @@ function confirmAdminLogout() {
         }
     });
 }
+</script>
+
+<style>
+/* ─── SPOTLIGHT EFFECT ─── */
+body.spotlight-active .content > *,
+body.spotlight-active .two-col > *,
+body.spotlight-active .sec,
+body.spotlight-active .stat-card {
+    transition: opacity 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+body.spotlight-active .spotlight-dim {
+    opacity: 0.15 !important;
+    transform: scale(0.98);
+    pointer-events: none;
+    filter: grayscale(100%);
+}
+
+body.spotlight-active .spotlight-focus {
+    opacity: 1 !important;
+    transform: scale(1.02);
+    box-shadow: 0 0 0 2px var(--blue-400), 0 8px 32px rgba(67,97,245,0.25) !important;
+    z-index: 10;
+    position: relative;
+}
+
+mark.spotlight-text {
+    background-color: var(--amber-500);
+    color: white;
+    padding: 0 2px;
+    border-radius: 3px;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('globalSearch');
+    if (!searchInput) return;
+
+    // Elemen-elemen yang ingin disorot
+    const searchableSelectors = [
+        '.stat-card',
+        '.toko-row',
+        '.keluhan-card',
+        '#sec-user tbody tr',
+        '.pending-card',
+        '.artikel-row',
+        '.setting-card'
+    ];
+    
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim().toLowerCase();
+        const items = document.querySelectorAll(searchableSelectors.join(', '));
+        
+        if (query.length === 0) {
+            document.body.classList.remove('spotlight-active');
+            items.forEach(item => {
+                item.classList.remove('spotlight-dim', 'spotlight-focus');
+                unmark(item);
+            });
+            return;
+        }
+        
+        document.body.classList.add('spotlight-active');
+        
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(query)) {
+                item.classList.remove('spotlight-dim');
+                item.classList.add('spotlight-focus');
+                
+                unmark(item);
+                mark(item, query);
+            } else {
+                item.classList.remove('spotlight-focus');
+                item.classList.add('spotlight-dim');
+                unmark(item);
+            }
+        });
+    });
+    
+    function mark(element, keyword) {
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+        const nodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+            if (node.nodeValue.trim() !== '' && 
+                node.nodeValue.toLowerCase().includes(keyword) && 
+                node.parentNode.nodeName !== 'MARK' && 
+                node.parentNode.nodeName !== 'SCRIPT' && 
+                node.parentNode.nodeName !== 'STYLE') {
+                nodes.push(node);
+            }
+        }
+        
+        const escapedKeyword = escapeRegExp(keyword);
+        const regex = new RegExp(`(${escapedKeyword})`, 'gi');
+        
+        nodes.forEach(n => {
+            const tempDiv = document.createElement('div');
+            const safeText = n.nodeValue.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            tempDiv.innerHTML = safeText.replace(regex, '<mark class="spotlight-text">$1</mark>');
+            while (tempDiv.firstChild) {
+                n.parentNode.insertBefore(tempDiv.firstChild, n);
+            }
+            n.parentNode.removeChild(n);
+        });
+    }
+
+    function unmark(element) {
+        const marks = element.querySelectorAll('mark.spotlight-text');
+        marks.forEach(mark => {
+            const parent = mark.parentNode;
+            if (parent) {
+                parent.replaceChild(document.createTextNode(mark.textContent), mark);
+                parent.normalize();
+            }
+        });
+    }
+});
 </script>

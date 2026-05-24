@@ -1009,14 +1009,6 @@ body::after {
                             <span style="font-size: 11px; color: #6b7280; margin-left: 2px;" x-text="'(' + (product.reviews_count || 0) + ' Ulasan)'"></span>
                         </div>
 
-                        {{-- Status Badge untuk Lembaga --}}
-                        <div class="bdg-status" :class="product.display_status.toLowerCase()" style="margin-bottom: 0.75rem;">
-                            <svg fill="currentColor" viewBox="0 0 24 24" width="12" height="12">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                            </svg>
-                            <span x-text="product.display_status"></span>
-                        </div>
-
                         
 
                         <div class="flex items-center gap-1.5 mb-2" style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size: 0.75rem; color: var(--orange-500); font-weight: 600;">
