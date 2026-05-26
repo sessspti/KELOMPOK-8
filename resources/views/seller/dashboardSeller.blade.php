@@ -690,7 +690,7 @@ body::before {
             <div class="profil-hr"></div>
             <div class="profil-stats">
                 <div class="pstat">
-                    <div class="pstat-num">4.8</div>
+                    <div class="pstat-num">{{ $avgRating }}</div>
                     <div class="pstat-lbl">Rating Toko</div>
                 </div>
                 <div class="pstat">
@@ -753,6 +753,17 @@ body::before {
                 <button class="tab-btn" id="btn-riwayat" onclick="switchTab('riwayat')">
                     Riwayat Penjualan
                     <span class="tab-count">{{ $orders->count() }}</span>
+                </button>
+                <button class="tab-btn" id="btn-ulasan" onclick="switchTab('ulasan')">
+                    Ulasan
+                    <span class="tab-count">{{ $allReviews->count() }}</span>
+                </button>
+                <button class="tab-btn" id="btn-chat" onclick="switchTab('chat')">
+                    Pesan
+                    @php $unreadMsgCount = $contacts->sum('unread_count'); @endphp
+                    @if($unreadMsgCount > 0)
+                        <span class="tab-count org">{{ $unreadMsgCount }}</span>
+                    @endif
                 </button>
             </div>
 
@@ -859,6 +870,8 @@ body::before {
                                             Diserahkan: {{ $order->picked_up_at->format('H:i') }} WIB
                                         </div>
                                     @endif
+
+                                    {{-- AREA ULASAN TELAH DIPINDAH KE TAB ULASAN --}}
                                 </td>
                             </tr>
                             @empty
@@ -868,6 +881,103 @@ body::before {
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            {{-- Pane: Ulasan --}}
+            <div class="tab-pane" id="pane-ulasan">
+                <div style="overflow-x:auto;">
+                    <table class="sel-table">
+                        <thead>
+                            <tr>
+                                <th>Produk</th>
+                                <th>Pengulas</th>
+                                <th>Rating & Komentar</th>
+                                <th>Balasan Anda</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($allReviews as $review)
+                            <tr>
+                                <td>
+                                    <strong>{{ $review->menu->name ?? 'Produk dihapus' }}</strong>
+                                </td>
+                                <td>{{ $review->user->name ?? 'Anonim' }}</td>
+                                <td>
+                                    <div style="color: #fbbf24; margin-bottom: 4px;">{{ str_repeat('⭐', $review->rating) }}</div>
+                                    <div style="font-size: 0.8rem; color: var(--ink);">"{{ $review->comment ?? 'Tanpa teks ulasan.' }}"</div>
+                                </td>
+                                <td>
+                                    @if(!$review->merchant_reply)
+                                        <form action="{{ route('seller.reviews.reply', $review->id) }}" method="POST">
+                                            @csrf
+                                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                                <input type="text" name="merchant_reply" placeholder="Tulis balasan..." required 
+                                                       style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-str); border-radius: var(--r-xs); font-size: 0.75rem; font-family: inherit;">
+                                                <button type="submit" style="background-color: var(--mint-500); color: white; padding: 5px 12px; border: none; border-radius: var(--r-xs); font-size: 0.7rem; font-weight: 700; cursor: pointer; width: max-content; transition: background 0.2s;">
+                                                    Balas
+                                                </button>
+                                            </div>
+                                        </form>
+                                    @else
+                                        <div style="background-color: var(--mint-50); padding: 8px 10px; border-radius: var(--r-xs); font-size: 0.7rem; border: 1px solid var(--mint-200);">
+                                            <strong style="color: var(--mint-600);">Dibalas:</strong><br>
+                                            <span style="color: var(--mint-700);">{{ $review->merchant_reply }}</span>
+                                        </div>
+                                    @endif
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--faint); padding: 3rem;">Belum ada ulasan untuk produk Anda.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- Pane: Pesan / Chat --}}
+            <div class="tab-pane" id="pane-chat">
+                <div style="overflow-x:auto;">
+                    <div style="display: flex; flex-direction: column; divide-y: 1px solid var(--border-light);">
+                        @forelse($contacts as $contact)
+                            <a href="{{ route('chat.show', $contact->user->id) }}" style="display: block; padding: 16px; text-decoration: none; color: inherit; transition: background 0.2s; border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 16px;">
+                                    <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--mint-100); color: var(--mint-600); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; flex-shrink: 0; overflow: hidden;">
+                                        @if($contact->user->avatar)
+                                            <img src="{{ asset('storage/' . $contact->user->avatar) }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                                        @else
+                                            {{ strtoupper(substr($contact->user->name, 0, 2)) }}
+                                        @endif
+                                    </div>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                                            <h3 style="font-weight: bold; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 16px;">{{ $contact->user->name }}</h3>
+                                            <span style="font-size: 0.75rem; color: var(--muted); white-space: nowrap;">{{ $contact->last_message->created_at->diffForHumans() }}</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                                            <p style="font-size: 0.875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; {{ $contact->unread_count > 0 ? 'font-weight: bold; color: var(--ink);' : 'color: var(--muted);' }}">
+                                                @if($contact->last_message->sender_id === auth()->id())
+                                                    <span style="color: var(--muted);">Anda:</span> 
+                                                @endif
+                                                {{ $contact->last_message->message }}
+                                            </p>
+                                            @if($contact->unread_count > 0)
+                                                <span style="background: var(--mint-500); color: white; font-size: 0.75rem; font-weight: bold; padding: 2px 8px; border-radius: 999px; flex-shrink: 0;">
+                                                    {{ $contact->unread_count }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        @empty
+                            <div style="padding: 3rem; text-align: center; color: var(--faint);">
+                                Belum ada percakapan dengan pelanggan.
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
             </div>
         </div>
@@ -893,7 +1003,7 @@ function toggleStore(){
 
 /* Tab switch */
 function switchTab(name){
-    ['notif','riwayat'].forEach(n => {
+    ['notif','riwayat','ulasan','chat'].forEach(n => {
         document.getElementById('pane-'+n).classList.toggle('on', n===name);
         document.getElementById('btn-'+n).classList.toggle('on', n===name);
     });

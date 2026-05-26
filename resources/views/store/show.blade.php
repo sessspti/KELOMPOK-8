@@ -914,6 +914,16 @@ body::before {
                                     <img :src="'/storage/' + review.photo_path" class="w-full h-auto max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" @click="window.open('/storage/' + review.photo_path, '_blank')">
                                 </div>
                             </template>
+
+                            {{-- Area Balasan Penjual --}}
+                            <template x-if="review.merchant_reply">
+                                <div style="margin-top: 12px; margin-left: 20px; background-color: #f0fdf6; border-left: 3px solid #22c55e; padding: 12px; border-radius: 0 10px 10px 0;">
+                                    <div style="font-size: 12px; font-weight: 700; color: #16a34a; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                                        🏪 <span>Balasan Penjual</span>
+                                    </div>
+                                    <p style="color: #374151; font-size: 13px; margin: 0; line-height: 1.5;" x-text="review.merchant_reply"></p>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -1058,15 +1068,73 @@ body::before {
             <div class="sb-actions" style="margin-top:1.5rem;">
                 <button class="sb-btn-follow"
                         :class="isFollowed ? 'following' : 'follow'"
-                        @click="isFollowed = !isFollowed"
+                        @click="toggleFollow()"
                         x-text="isFollowed ? '✓ Mengikuti' : '＋ Ikuti'">
                 </button>
-                <button class="sb-btn-chat" @click="alert('Fitur chat dalam pengembangan!')">
+                <button class="sb-btn-chat" @click="window.location.href = '{{ route('chat.show', $seller->id) }}'">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                     </svg>
                     Chat
                 </button>
+
+                    @auth
+                        @if(auth()->user()->role === 'konsumen' || auth()->user()->role === 'lembaga_sosial')
+                            
+                            @if($activeComplaint)
+                                <a href="{{ route('complaints.show', $activeComplaint->id) }}" class="sb-btn-chat" 
+                                style="background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; padding: 0 15px; height: 40px; border-radius: 8px; font-weight: 500; font-size: 14px;">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                    </svg>
+                                    Cek Laporan (Chat Admin)
+                                </a>
+                            @else
+                                <button class="sb-btn-chat" @click="$dispatch('open-report-modal')" 
+                                        style="background: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7;">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    Laporkan Toko
+                                </button>
+                            @endif
+
+                        @endif
+                    @endauth
+
+                <div class="fixed inset-0 z-[600] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" 
+                    x-data="{ showReportModal: false }" 
+                    x-show="showReportModal" 
+                    @open-report-modal.window="showReportModal = true"
+                    style="display: none;">
+                    
+                    <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-gray-100 animate-fade-in" @click.away="showReportModal = false">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-black text-gray-900 flex items-center gap-2">⚠️ Laporkan Akun Seller</h3>
+                            <button @click="showReportModal = false" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+                        </div>
+                        
+                        <form action="{{ route('complaints.store', $seller->id ?? $merchant->id ?? $user->id ?? 0) }}" method="POST">
+                            @csrf
+                            <p class="text-xs text-gray-500 mb-3 leading-relaxed">
+                                Berikan alasan yang jelas dan jujur mengapa Anda melaporkan toko ini. Laporan palsu dapat mengakibatkan akun Anda ditangguhkan oleh Admin.
+                            </p>
+                            
+                            <textarea name="reason" rows="4" required minlength="10"
+                                    class="w-full border border-gray-200 rounded-2xl p-3 text-sm focus:ring-rose-500 focus:border-rose-500 placeholder-gray-400"
+                                    placeholder="Contoh: Toko fiktif, makanan yang dijual basi/tidak layak, atau melakukan penipuan transaksi..."></textarea>
+                            
+                            <div class="mt-4 flex gap-2 justify-end">
+                                <button type="button" @click="showReportModal = false" class="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-200 transition-colors">
+                                    Batal
+                                </button>
+                                <button type="submit" class="px-4 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl hover:bg-rose-700 transition-colors shadow-sm shadow-rose-200">
+                                    Kirim Laporan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1092,7 +1160,7 @@ body::before {
         </div>
 
         <div class="sb-stat-item">
-            <div class="sb-stat-num">1.4k</div>
+            <div class="sb-stat-num" x-text="followersCount"></div>
             <div class="sb-stat-lbl">Pengikut</div>
         </div>
 
@@ -1309,7 +1377,8 @@ function storePage() {
         showReviewModal: false,
         activeProduct: null,
         activeReviews: [],
-        isFollowed: false,
+        isFollowed: {{ $isFollowed ? 'true' : 'false' }},
+        followersCount: {{ $followersCount ?? 0 }},
         justAdded: null,
         cartAnimation: false,
         isLembaga: {{ (Auth::check() && Auth::user()->role === 'lembaga_sosial') ? 'true' : 'false' }},
@@ -1318,6 +1387,30 @@ function storePage() {
             this.activeProduct = product;
             this.activeReviews = product.reviews || [];
             this.showReviewModal = true;
+        },
+
+        toggleFollow() {
+            @auth
+                fetch('{{ route("store.follow", $seller->id) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        this.isFollowed = data.isFollowed;
+                        this.followersCount = data.followersCount;
+                        this.showToast(this.isFollowed ? 'Berhasil mengikuti toko!' : 'Berhenti mengikuti toko.', '✅');
+                    } else {
+                        this.showToast(data.message, '❌');
+                    }
+                });
+            @else
+                window.location.href = '{{ route("login") }}';
+            @endauth
         },
 
         // ── Init: ambil cart dari localStorage ──

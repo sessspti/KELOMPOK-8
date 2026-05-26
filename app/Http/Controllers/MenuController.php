@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\Menu;
+use App\Models\Complaint; // 💡 TAMBAHAN AMAN: Meng-import model Complaint agar bisa digunakan
 use App\Services\ProductVisibilityService;
 
 class MenuController extends Controller
@@ -87,20 +87,18 @@ class MenuController extends Controller
     }
 
     public function showStore($id)
-{
-    // 1. Ambil data profil penjual berdasarkan ID yang diklik
-    // Kita pastikan role pengguna tersebut memang adalah 'seller'
-    $seller = \App\Models\User::where('role', 'seller')->findOrFail($id);
+    {
+        // 1. Ambil data profil penjual berdasarkan ID yang diklik
+        $seller = \App\Models\User::where('role', 'seller')->findOrFail($id);
 
-    // 2. Ambil SEMUA makanan dari tabel menus yang kolom 'user_id'-nya COCOK dengan ID penjual ini
-    // Kita juga gunakan 'notExpired()' agar makanan yang sudah kedaluwarsa tidak ikut tampil
-    $menus = \App\Models\Menu::with('reviews.user') // Eager load ulasan dan penulisnya
-                            ->where('user_id', $id)
-                            ->withAvg('reviews', 'rating') // ✅ TAMBAHKAN BARIS INI
-                            ->withCount('reviews')
-                            ->notExpired()
-                            ->latest()
-                            ->get();
+        // 2. Ambil SEMUA makanan dari tabel menus yang kolom 'user_id'-nya COCOK dengan ID penjual ini
+        $menus = \App\Models\Menu::with('reviews.user')
+                                ->where('user_id', $id)
+                                ->withAvg('reviews', 'rating')
+                                ->withCount('reviews')
+                                ->notExpired()
+                                ->latest()
+                                ->get();
 
     // 3. Tambahkan informasi store status ke setiap menu
     $menus = $menus->map(function ($menu) use ($seller) {
@@ -111,25 +109,45 @@ class MenuController extends Controller
         $menu->reviews_avg_rating = $menu->reviews_avg_rating ?? 0.0;
         return $menu;
     });
+        // 3. Tambahkan informasi store status ke setiap menu
+        $menus = $menus->map(function ($menu) use ($seller) {
+            $menu->store_is_open = $seller->is_open ? 1 : 0;
+            $menu->reviews_count = $menu->reviews_count ?? 0;
+            $menu->reviews_avg_rating = $menu->reviews_avg_rating ?? 0.0;
+            return $menu;
+        });
 
-    // 4. Kirim data penjual ($seller) dan daftar makanannya ($menus) ke file tampilan baru
-    return view('store.show', compact('seller', 'menus'));
-}
+        // 4. Data Follow
+        $followersCount = \App\Models\Follow::where('followed_id', $id)->count();
+        $isFollowed = auth()->check() ? \App\Models\Follow::where('follower_id', auth()->id())->where('followed_id', $id)->exists() : false;
 
-public function toggleStatus()
-{
-    // 1. Ambil data seller yang sedang login
-    $user = auth()->user();
+        // ──💡 DI SINI PERUBAHANNYA: Ambil keluhan aktif milik pengguna terhadap toko ini ──
+        $activeComplaint = null;
+        if (auth()->check()) {
+            $activeComplaint = Complaint::where('user_id', auth()->id())
+                ->where('seller_id', $id)
+                ->whereIn('status', ['pending', 'ditinjau']) // Mengunci tombol jika laporan belum berstatus selesai/ditolak
+                ->first();
+        }
 
-    // 2. Balikkan statusnya: jika 1 (buka) jadi 0 (tutup), jika 0 jadi 1
-    $user->is_open = !$user->is_open;
-    
-    // 3. Simpan perubahan ke database
-    $user->save();
+        // 5. Kirim data penjual ($seller), daftar makanan ($menus), dan $activeComplaint ke file tampilan
+        return view('store.show', compact('seller', 'menus', 'followersCount', 'isFollowed', 'activeComplaint'));
+    }
 
-    // 4. Kembalikan ke halaman dashboard dengan pesan sukses
-    return back()->with('success', 'Status toko berhasil diperbarui!');
-}
+    public function toggleStatus()
+    {
+        // 1. Ambil data seller yang sedang login
+        $user = auth()->user();
+
+        // 2. Balikkan statusnya: jika 1 (buka) jadi 0 (tutup), jika 0 jadi 1
+        $user->is_open = !$user->is_open;
+        
+        // 3. Simpan perubahan ke database
+        $user->save();
+
+        // 4. Kembalikan ke halaman dashboard dengan pesan sukses
+        return back()->with('success', 'Status toko berhasil diperbarui!');
+    }
 
     /**
      * Display consumer dashboard with visible products only.

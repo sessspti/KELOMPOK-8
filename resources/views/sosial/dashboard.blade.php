@@ -1171,6 +1171,17 @@ body::after {
                                         <img :src="'/storage/' + review.photo_path" class="w-full h-auto max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" @click="window.open('/storage/' + review.photo_path, '_blank')">
                                     </div>
                                 </template>
+
+                                {{-- Menampilkan balasan seller jika ada --}}
+                                <template x-if="review.merchant_reply">
+                                    <div class="mt-4 bg-green-50 rounded-lg p-3 border-l-4 border-green-500 text-sm">
+                                        <div class="font-bold text-green-700 mb-1">Balasan Seller:</div>
+                                        <div class="text-green-800" x-text="review.merchant_reply"></div>
+                                        <template x-if="review.replied_at">
+                                            <div class="text-xs text-green-600 mt-1" x-text="new Date(review.replied_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})"></div>
+                                        </template>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>

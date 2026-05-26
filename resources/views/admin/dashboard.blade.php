@@ -827,49 +827,112 @@ body.no-scroll { overflow: hidden; }
         </div>
 
         {{-- KANAN: LAPORAN KELUHAN PENGGUNA --}}
-        <div class="sec">
+    <div class="sec">
             <div class="sec-hdr">
                 <div class="sec-hdr-left">
                     <div class="sec-kicker">LAPORAN</div>
                     <div class="sec-title">Keluhan Pengguna</div>
                 </div>
                 <div class="sec-hdr-right">
-                    <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; border-radius:var(--r-pill); font-size:0.6rem; padding:2px 8px;">2 BARU</span>
+                    <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; border-radius:var(--r-pill); font-size:0.6rem; padding:2px 8px;">
+                        {{ $totalComplaints }} Keluhan Baru
+                    </span>
                 </div>
             </div>
             <div style="height: 500px; overflow-y: auto; overflow-x: hidden;">
-                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
-                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
-                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Makanan Tidak Layak Konsumsi</div>
-                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
+                {{-- 💡 LOOPING DINAMIS MENGGUNAKAN DATA COMPLAINTS --}}
+                @forelse($complaintsList as $complaint)
+                    <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
+                        <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                            <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">
+                                Aduan Keluhan #{{ $complaint->id }}
+                            </div>
+                            
+                            {{-- Status Pill (Pembeda Baru vs Ditangani) --}}
+                            @if($complaint->status === 'pending')
+                                {{-- Merah untuk Tertunda / Baru --}}
+                                <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">TERTUNDA</span>
+                            @elseif($complaint->status === 'ditinjau')
+                                {{-- Biru untuk Ditinjau / Sedang Diproses --}}
+                                <span class="pill ditinjau" style="background:#e0f2fe; color:#0369a1; font-size:0.55rem; padding:2px 6px;">DITINJAU</span>
+                            @elseif($complaint->status === 'selesai')
+                                {{-- Hijau Mint bawaan untuk Selesai --}}
+                                <span class="pill selesai" style="background:var(--mint-100); color:var(--mint-600); font-size:0.55rem; padding:2px 6px;">SELESAI</span>
+                            @elseif($complaint->status === 'ditolak')
+                                {{-- Abu-abu gelap untuk Ditolak --}}
+                                <span class="pill ditolak" style="background:#f3f4f6; color:#374151; font-size:0.55rem; padding:2px 6px;">DITOLAK</span>
+                            @else
+                                {{-- Jaga-jaga jika ada status yang tidak terdaftar --}}
+                                <span class="pill lainnya" style="background:#f3f4f6; color:#4b5563; font-size:0.55rem; padding:2px 6px;">{{ strtoupper($complaint->status) }}</span>
+                            @endif
+                        </div>
+                        
+                        {{-- Meta info (Nama Pelapor, Nama Seller, & Kapan Laporan Masuk) --}}
+                        <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">
+                            {{ $complaint->reporter->name ?? 'User Terhapus' }} · 
+                            <span style="color:#dc2626; font-weight:600;">{{ $complaint->seller->name ?? 'Seller Terhapus' }}</span> · 
+                            {{ $complaint->created_at->diffForHumans() }}
+                        </div>
+                        
+                        {{-- Isi Keluhan & Catatan Balasan Admin --}}
+                        <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">
+                            "{{ $complaint->reason }}"
+                            
+                            @if($complaint->status === 'selesai' && $complaint->admin_reply)
+                                <div style="margin-top: 0.4rem; padding: 0.4rem 0.6rem; background: var(--mint-50); border-left: 3px solid var(--mint-500); color: var(--mint-700); font-size: 0.75rem; border-radius: 4px;">
+                                    <strong>Catatan Tindakan Admin:</strong> {{ $complaint->admin_reply }}
+                                </div>
+                            @endif
+                        </div>
+                        
+                        {{-- Aksi Penanganan oleh Admin --}}
+                      
+                        <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem; align-items: center; position: relative; z-index: 10;">
+                            
+                            @if($complaint->status === 'pending')
+                                {{-- Form untuk Menyelesaikan Laporan Keluhan --}}
+                                <form action="{{ route('admin.complaints.reply', $complaint->id) }}" method="POST" style="display:flex; gap:0.35rem; margin:0; position: relative; z-index: 20;">
+                                    @csrf
+                                    <input type="hidden" name="status" value="selesai">
+                                    <input type="text" name="admin_reply" placeholder="Tulis tindakan/catatan..." required 
+                                           style="font-size:0.75rem; padding:0.25rem 0.5rem; border:1px solid var(--border); border-radius:6px; width:160px; outline:none; height:28px; background: #fff; color: var(--ink);">
+                                    <button type="submit" class="btn btn-primary btn-xs" 
+                                            style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; display:flex; align-items:center; background: var(--primary); color: #fff; border: none;">
+                                        Tangani
+                                    </button>
+                                </form>
+                            @endif
+
+                        {{-- Pembungkus agar tombol Chat dan Suspend sejajar horizontal --}}
+                        <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px;">
+                            
+                            {{-- Tombol Buka Ruang Chat Dua Arah --}}
+                            <a href="{{ route('complaints.show', $complaint->id) }}" 
+                            class="btn" 
+                            style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-pill); padding: 0.35rem 0.75rem; cursor: pointer; height: 28px; font-size: 0.7rem; border: 1px solid #2563eb; color: #2563eb; background: transparent; font-weight: 600;">
+                                💬 Buka Chat
+                            </a>
+
+                            {{-- Tombol Integrasi Pembekuan (Suspend) Akun Seller bawaanmu --}}
+                            @if($complaint->seller)
+                                <form action="{{ route('admin.users.toggle-status', $complaint->seller_id) }}" method="POST" style="margin:0; display: inline-block; position: relative; z-index: 20;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline btn-xs" 
+                                            style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; border:1px solid #dc2626; color:#dc2626; background:transparent;">
+                                        {{ $complaint->seller->account_status === 'suspend' ? '✓ Aktifkan Akun' : '⚠️ Suspend Seller' }}
+                                    </button>
+                                </form>
+                            @endif
+
+                        </div>
+                        </div>
                     </div>
-                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Andi Pratama · Katering Berkah · 30 menit lalu</div>
-                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Nasi box yang diterima sudah basi dan berbau. Perlu tindakan segera dari pihak Admin untuk menangguhkan listing ini.</div>
-                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
-                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
+                @empty
+                    {{-- Tampilan jika tidak ada laporan keluhan di database --}}
+                    <div style="padding:4rem 2rem; text-align:center; color:var(--muted); font-size:0.85rem; font-style:italic;">
+                        🎉 Belum ada keluhan atau laporan pengguna yang masuk. Aman!
                     </div>
-                </div>
-                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
-                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
-                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Stok Tidak Sesuai</div>
-                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
-                    </div>
-                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Rumah Yatim Al-Ikhlas · Warung Bu Yanti · 3 jam lalu</div>
-                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Kami memesan 20 porsi namun saat pengambilan hanya tersedia 8 porsi. Mohon seller dikonfirmasi ulang sebelum publish listing.</div>
-                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
-                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
-                    </div>
-                </div>
-                <div class="keluhan-card" style="padding:1.25rem 1.75rem;">
-                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
-                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Waktu Pickup Tidak Akurat</div>
-                        <span class="pill ditangani" style="background:var(--mint-100); color:var(--mint-600); font-size:0.55rem; padding:2px 6px;">DITANGANI</span>
-                    </div>
-                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Bank Makanan Komunitas · Bakery Sari Rasa · Kemarin</div>
-                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Jadwal pickup tertulis pukul 18.00 namun restoran sudah tutup sejak 17.00. Telah dikonfirmasi dan seller sudah update jam operasional.</div>
-                </div>
+                @endforelse
             </div>
         </div>
         </div>
