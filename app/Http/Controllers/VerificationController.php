@@ -12,8 +12,48 @@ class VerificationController extends Controller
     {
         $user = auth()->user();
         $verification = $user->verification;
+        $messages = collect();
+        if (!is_null($user->suspension_reason)) {
+            $messages = \App\Models\SuspensionMessage::where('user_id', $user->id)->oldest()->get();
+        }
 
-        return view('verification.notice', compact('user', 'verification'));
+        return view('verification.notice', compact('user', 'verification', 'messages'));
+    }
+
+    public function sendMessage(Request $request)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000'
+        ]);
+
+        $user = auth()->user();
+
+        if (is_null($user->suspension_reason)) {
+            return response()->json(['error' => 'Akses ditolak.'], 403);
+        }
+
+        $message = \App\Models\SuspensionMessage::create([
+            'user_id' => $user->id,
+            'message' => $request->message,
+            'sender' => 'user'
+        ]);
+
+        if ($request->ajax()) {
+            return response()->json($message);
+        }
+
+        return back()->with('success', 'Pesan berhasil dikirim.');
+    }
+
+    public function getMessages()
+    {
+        $user = auth()->user();
+        if (is_null($user->suspension_reason)) {
+            return response()->json(['error' => 'Akses ditolak.'], 403);
+        }
+
+        $messages = \App\Models\SuspensionMessage::where('user_id', $user->id)->oldest()->get();
+        return response()->json($messages);
     }
 
     public function upload(Request $request)

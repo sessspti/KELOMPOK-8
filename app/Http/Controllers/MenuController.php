@@ -94,14 +94,21 @@ class MenuController extends Controller
 
     // 2. Ambil SEMUA makanan dari tabel menus yang kolom 'user_id'-nya COCOK dengan ID penjual ini
     // Kita juga gunakan 'notExpired()' agar makanan yang sudah kedaluwarsa tidak ikut tampil
-    $menus = \App\Models\Menu::where('user_id', $id)
+    $menus = \App\Models\Menu::with('reviews.user') // Eager load ulasan dan penulisnya
+                            ->where('user_id', $id)
+                            ->withAvg('reviews', 'rating') // ✅ TAMBAHKAN BARIS INI
+                            ->withCount('reviews')
                             ->notExpired()
                             ->latest()
                             ->get();
 
     // 3. Tambahkan informasi store status ke setiap menu
     $menus = $menus->map(function ($menu) use ($seller) {
-        $menu->store_is_open = $seller->is_open ? 1 : 0;
+        $menu->store_is_open = ($seller->is_open && $seller->account_status !== 'rejected') ? 1 : 0;
+        $menu->store_is_suspended = ($seller->account_status === 'rejected') ? 1 : 0;
+        // Pastikan properties ini selalu diset untuk dikonsumsi Alpine.js
+        $menu->reviews_count = $menu->reviews_count ?? 0;
+        $menu->reviews_avg_rating = $menu->reviews_avg_rating ?? 0.0;
         return $menu;
     });
 
@@ -130,10 +137,14 @@ public function toggleStatus()
     public function consumerDashboard(ProductVisibilityService $visibilityService)
     {
         $menus = $visibilityService->getVisibleProductsForConsumer();
+
+        //(Karena data dari Service, gunakan loadAvg & loadCount & load)
+        $menus->loadAvg('reviews', 'rating')->loadCount('reviews')->load('reviews.user');
         
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
-            $menu->store_is_open = $menu->user->is_open ? 1 : 0;
+            $menu->store_is_open = ($menu->user && $menu->user->is_open && $menu->user->account_status !== 'rejected') ? 1 : 0;
+            $menu->store_is_suspended = ($menu->user && $menu->user->account_status === 'rejected') ? 1 : 0;
             return $menu;
         });
         
@@ -143,7 +154,21 @@ public function toggleStatus()
             ->latest()
             ->get();
 
-        return view('dashboard', compact('menus', 'orders'));
+        // ── Dampak Lingkungan: hitung dari riwayat pembelian konsumen ──
+        $completedOrders = $orders->whereIn('status', ['selesai', 'siap_diambil', 'paid', 'proses']);
+        $totalPortionsBought = $completedOrders->sum('quantity');
+        // Konversi: 1 porsi ≈ 0.3 kg makanan diselamatkan
+        $foodSavedKg = round($totalPortionsBought * 0.3, 1);
+        // Konversi: 1 kg makanan diselamatkan ≈ 2.5 kg CO₂ dikurangi
+        $co2ReducedKg = round($foodSavedKg * 2.5, 1);
+
+        $impact = [
+            'total_portions' => $totalPortionsBought,
+            'food_saved_kg'  => $foodSavedKg,
+            'co2_reduced_kg' => $co2ReducedKg,
+        ];
+
+        return view('dashboard', compact('menus', 'orders', 'impact'));
     }
 
     /**
@@ -153,18 +178,35 @@ public function toggleStatus()
     {
         $menus = $visibilityService->getVisibleProductsForInstitution();
         
+        $menus->loadAvg('reviews', 'rating')->loadCount('reviews')->load('reviews.user');
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
-            $menu->store_is_open = $menu->user->is_open ? 1 : 0;
+            $menu->store_is_open = ($menu->user && $menu->user->is_open && $menu->user->account_status !== 'rejected') ? 1 : 0;
+            $menu->store_is_suspended = ($menu->user && $menu->user->account_status === 'rejected') ? 1 : 0;
             return $menu;
         });
         
-        // Get orders for authenticated user
+        // Get orders for authenticated user (klaim donasi)
         $orders = \App\Models\Order::where('id_user', auth()->id())
             ->with('menu.user')
             ->latest()
             ->get();
 
-        return view('sosial.dashboard', compact('menus', 'orders'));
+        // ── Kontribusi Sosial & Lingkungan: hitung dari klaim donasi ──
+        $claimedOrders = $orders->whereIn('status', ['selesai', 'siap_diambil', 'paid', 'proses']);
+        $totalClaimedPortions = $claimedOrders->sum('quantity');
+        // Konversi: 1 porsi ≈ 0.3 kg makanan tersalurkan
+        $foodDistributedKg = round($totalClaimedPortions * 0.3, 1);
+        // Konversi: 1 kg makanan diselamatkan ≈ 2.5 kg CO₂ dikurangi
+        $co2ReducedKg = round($foodDistributedKg * 2.5, 1);
+
+        $contribution = [
+            'total_claims'       => $claimedOrders->count(),
+            'total_portions'     => $totalClaimedPortions,
+            'food_distributed_kg'=> $foodDistributedKg,
+            'co2_reduced_kg'     => $co2ReducedKg,
+        ];
+
+        return view('sosial.dashboard', compact('menus', 'orders', 'contribution'));
     }
 }

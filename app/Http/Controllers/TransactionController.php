@@ -19,13 +19,16 @@ class TransactionController extends Controller
         
         // Group orders by transaction_id untuk ditampilkan sebagai satu entri invoice
         // Hanya menampilkan order yang bukan 'pending' (termasuk paid, proses, selesai, dll)
-        $transactions = Order::where('id_user', $userId)
+        $transactions = Order::with('menu')
+            ->where('id_user', $userId)
             ->whereNotNull('transaction_id')
             ->where('status', '!=', 'pending')
             ->select(
                 'transaction_id', 
                 'payment_method', 
                 'status', 
+                DB::raw('MIN(id) as id'),
+                DB::raw('MIN(menu_id) as menu_id'),
                 DB::raw('MAX(created_at) as date'), 
                 DB::raw('SUM(quantity * COALESCE(unit_price, (select ROUND(price - (price * discount / 100)) from menus where menus.id = orders.menu_id))) as total_price')
             )

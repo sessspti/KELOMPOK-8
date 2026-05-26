@@ -89,4 +89,29 @@ class VerificationController extends Controller
 
         return back()->with('success', "Akun {$userName} berhasil dihapus.");
     }
+
+    public function getMessages(User $user)
+    {
+        $messages = \App\Models\SuspensionMessage::where('user_id', $user->id)->oldest()->get();
+        return response()->json($messages);
+    }
+
+    public function sendMessage(Request $request, User $user)
+    {
+        $request->validate([
+            'message' => 'required|string|max:1000'
+        ]);
+
+        $message = \App\Models\SuspensionMessage::create([
+            'user_id' => $user->id,
+            'message' => $request->message,
+            'sender' => 'admin'
+        ]);
+
+        if ($request->ajax()) {
+            return response()->json($message);
+        }
+
+        return back()->with('success', 'Respon berhasil dikirim.');
+    }
 }

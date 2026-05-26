@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Auth;
 Route::get('/', function () {
     if (Auth::check()) {
         $role = Auth::user()->role;
+        
+        // Arahkan ke dashboard masing-masing sesuai role
         return match ($role) {
             'admin'           => redirect()->route('admin.dashboard'),
             'seller'          => redirect()->route('seller.dashboard'),
@@ -24,31 +26,35 @@ Route::get('/', function () {
             default           => redirect()->route('dashboard'), // Role konsumen
         };
     }
-    // Guest yang belum login → halaman publik
+    // Guest yang belum login → halaman publik (dashboard/home)
     return redirect()->route('guest.dashboard');
 });
 
-// ─── ROUTE PUBLIK: Dashboard Guest/Konsumen ───
-// Alias /home → sama dengan /dashboard (friendly URL)
+// ─── ROUTE PUBLIK: Dashboard Guest ───
 Route::get('/home', function () {
     // 1. Ambil data menu agar Guest tetap bisa melihat produk/makanan yang tersedia
     $menus = \App\Models\Menu::with('user')
+        ->withAvg('reviews', 'rating') 
+        ->withCount('reviews')        
         ->where('stock', '>', 0)
-        ->whereHas('user', fn($q) => $q->where('is_open', 1))
+        ->whereHas('user', fn($q) => $q->where('role', 'seller'))
         ->notExpired()->latest()->get();
     
-    // Mapping data is_open milik user ke dalam setiap item menu
+    // Mapping data is_open dan status penangguhan milik user ke dalam setiap item menu
     $menus->map(function ($menu) {
-        $menu->store_is_open = $menu->user ? $menu->user->is_open : 0;
+        $menu->store_is_open = ($menu->user && $menu->user->is_open && $menu->user->account_status !== 'rejected') ? 1 : 0;
+        $menu->store_is_suspended = ($menu->user && $menu->user->account_status === 'rejected') ? 1 : 0;
         return $menu;
     });
 
     // 2. Karena guest belum login, buatlah $orders kosong (menggunakan collect())
-    // Ini penting agar file Blade tidak memunculkan error "Undefined variable $orders" nantinya
     $orders = collect(); 
 
     return view('dashboard', compact('menus', 'orders'));
 })->name('guest.dashboard');
+
+// Halaman Detail Toko (Public)
+Route::get('/store/{id}', [MenuController::class, 'showStore'])->name('store.show');
 
 // --- Group Route untuk User yang Sudah Login ---
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -58,32 +64,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:konsumen')
         ->name('dashboard');
 
-    // Store / Seller Profile
-    Route::get('/store/{id}', [MenuController::class, 'showStore'])->name('store.show');
-
-    // 2. Verification System (KTP, NIB, dll)
-    Route::controller(VerificationController::class)->group(function () {
-        Route::get('/verify/notice', 'notice')->name('verification.notice');
-        Route::post('/verify/store', 'upload')->name('verification.upload');
-    });
-
-    // 3. Transaction Management
-    Route::controller(TransactionController::class)->group(function () {
-        Route::get('/transaction/history', 'history')->name('transaction.history');
-        Route::get('/transaction/invoice/{id}', 'invoice')->name('transaction.invoice');
-        Route::post('/transaction/store', 'store')->name('transaction.store');
-    });
-
-    // 4. Notification Management
-    Route::controller(NotificationController::class)->group(function () {
-        Route::post('/notifications/{id}/mark-as-read', 'markAsRead')->name('notifications.markAsRead');
-        Route::post('/notifications/mark-all-as-read', 'markAllAsRead')->name('notifications.markAllAsRead');
-    });
-    
-    // 5. Profile Management Umum (bisa diakses semua role yang login)
+    // 2. Profile Management Umum (bisa diakses semua role yang login)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // 3. Notifikasi
+    Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+
+    // 4. Verifikasi Akun/Dokumen (KTP, NIB, dll)
+    Route::get('/verify/notice', [VerificationController::class, 'notice'])->name('verification.notice');
+    Route::post('/verify/store', [VerificationController::class, 'upload'])->name('verification.upload');
+    Route::get('/verify/notice/messages', [VerificationController::class, 'getMessages'])->name('verification.messages.get');
+    Route::post('/verify/notice/messages', [VerificationController::class, 'sendMessage'])->name('verification.messages.send');
+
+    // 5. Riwayat Transaksi & Invoice
+    Route::get('/transaction/history', [TransactionController::class, 'history'])->name('transaction.history');
+    Route::get('/transaction/invoice/{transactionId}', [TransactionController::class, 'invoice'])->name('transaction.invoice');
+    Route::post('/transaction/store', [TransactionController::class, 'store'])->name('transaction.store');
 
     // 6. Fitur Seller (Dibagi menjadi Home & Manajemen)
     Route::prefix('seller')->middleware(['role:seller', 'approved'])->group(function () {
@@ -109,14 +108,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             $totalClaimsCount = $orders->count();
 
-            return view('seller.dashboardSeller', compact('menus', 'orders', 'activeMenusCount', 'lowStockMenusCount', 'totalClaimsCount'));
+            // ── Performa Bulan Ini: hitung dari riwayat pesanan bulan ini ──
+            $thisMonthOrders = $orders->filter(function ($order) {
+                return $order->created_at->month === now()->month
+                    && $order->created_at->year === now()->year;
+            });
+
+            // Total porsi terjual (dari konsumen biasa)
+            $soldThisMonth = $thisMonthOrders->filter(function ($order) {
+                return $order->user && $order->user->role === 'konsumen';
+            })->sum('quantity');
+
+            // Total porsi terklaim/donasi (dari lembaga sosial)
+            $claimedThisMonth = $thisMonthOrders->filter(function ($order) {
+                return $order->user && $order->user->role === 'lembaga_sosial';
+            })->sum('quantity');
+
+            // Total porsi diselamatkan & konversi ke kg (1 porsi ≈ 0.3 kg)
+            $totalPortionsThisMonth = $soldThisMonth + $claimedThisMonth;
+            $foodSavedKg = round($totalPortionsThisMonth * 0.3, 1);
+
+            $performance = [
+                'sold'       => $soldThisMonth,
+                'claimed'    => $claimedThisMonth,
+                'total'      => $totalPortionsThisMonth,
+                'food_saved' => $foodSavedKg,
+            ];
+
+            return view('seller.dashboardSeller', compact('menus', 'orders', 'activeMenusCount', 'lowStockMenusCount', 'totalClaimsCount', 'performance'));
         })->name('seller.dashboard');
 
         // Route untuk update status pesanan
         Route::patch('/orders/{order}/status', function (\App\Models\Order $order) {
             $status = request('status');
             $order->update(['status' => $status]);
-
+            
             // Kirim notifikasi ke konsumen
             $icon = match($status) {
                 'paid'         => '✅',
@@ -138,9 +164,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             if ($order->user) {
                 $order->user->notify(new \App\Notifications\GeneralNotification(
-                     "Status Pesanan Diperbarui",
-                     "Pesanan Anda #{$order->transaction_id} {$statusText}.",
-                     $icon
+                    "Status Pesanan Diperbarui",
+                    "Pesanan Anda #{$order->transaction_id} {$statusText}.",
+                    $icon
                 ));
             }
 
@@ -167,20 +193,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // D. Rute Alias untuk Profil Seller (Agar tidak error di Dashboard Bento)
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('seller.profile.edit');
-
+        
         // Order Management for Seller
         Route::post('/orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus.alt');
         Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
-
+        
         Route::post('/toggle-status', [MenuController::class, 'toggleStatus'])->name('seller.toggle-status');
     });
 
     // 7. Fitur Lembaga Sosial
     Route::prefix('sosial')->middleware(['role:lembaga_sosial', 'approved'])->group(function () {
         Route::get('/dashboard', [MenuController::class, 'institutionDashboard'])->name('sosial.dashboard');
-
         Route::post('/claim', [TransactionController::class, 'claimDonation'])->name('sosial.claim');
-
+        
         // Profil untuk Lembaga Sosial
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('sosial.profile.edit');
     });
@@ -193,8 +218,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('transaction.checkout');
     })->middleware('role:konsumen')->name('checkout.summary');
 
+    // 9b. Fitur Ulasan / Review Makanan (Konsumen dan Lembaga Sosial)
+    Route::post('/reviews/store', [\App\Http\Controllers\ReviewController::class, 'store'])
+        ->name('reviews.store');
+
     // 10. Fitur Admin (Pusat Kendali Platform)
     Route::prefix('admin')->middleware('role:admin')->group(function () {
+        
         // Dashboard Utama Admin
         Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
             $orders = \App\Models\Order::with(['menu.user', 'user'])->latest()->get();
@@ -231,6 +261,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/verifications/{user}/reject', [AdminVerificationController::class, 'reject'])->name('admin.verifications.reject');
         Route::post('/users/{user}/toggle-status', [AdminVerificationController::class, 'toggleStatus'])->name('admin.users.toggle-status');
         Route::delete('/users/{user}', [AdminVerificationController::class, 'destroy'])->name('admin.users.destroy');
+        Route::get('/users/{user}/messages', [AdminVerificationController::class, 'getMessages'])->name('admin.users.messages.get');
+        Route::post('/users/{user}/messages', [AdminVerificationController::class, 'sendMessage'])->name('admin.users.messages.send');
 
         Route::get('/users', fn() => view('admin.users.index'))->name('admin.users.index');
         Route::get('/verifikasi', fn() => view('admin.verifikasi'))->name('admin.verifikasi');
