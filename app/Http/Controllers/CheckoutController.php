@@ -10,6 +10,44 @@ use Exception;
 
 class CheckoutController extends Controller
 {
+    public function capturePickupMethod(Request $request)
+    {
+        $pickupMethod = $request->input('pickup_method', 'antri');
+        $pickupTime = $request->input('pickup_time');
+        
+        // Simpan ke session agar bisa diakses di alur transaksi selanjutnya
+        session(['pickup_method' => $pickupMethod]);
+
+        if ($pickupMethod === 'self-pickup' && $pickupTime) {
+            session(['pickup_time' => $pickupTime]);
+        } else {
+            session()->forget('pickup_time');
+        }
+
+        return response()->json([
+            'success' => true,
+            'pickup_method' => $pickupMethod,
+            'pickup_time' => $pickupTime
+        ]);
+    }
+
+    /**
+     * Menangkap data slot waktu pengambilan (pickup time) secara terpisah saat checkout disubmit.
+     * Sifatnya menyisip (incremental / add-on) tanpa mengubah logika yang ada.
+     */
+    public function capturePickupTime(Request $request)
+    {
+        $pickupTime = $request->input('pickup_time');
+        
+        // Simpan ke session agar bisa diakses di alur transaksi selanjutnya
+        session(['pickup_time' => $pickupTime]);
+
+        return response()->json([
+            'success' => true,
+            'pickup_time' => $pickupTime
+        ]);
+    }
+
     // Simulasi saat pesanan berhasil dibayar (Requirement 4)
     public function processPayment(Request $request, Order $order)
     {

@@ -9,11 +9,21 @@ class OrderController extends Controller
 {
     public function updateStatus(Request $request, Order $order)
     {
+        // TAMBAHAN AC 4: tambah 'siap_diambil' ke daftar status yang valid
         $request->validate([
-            'status' => 'required|in:Proses,Selesai',
+            'status' => 'required|in:paid,proses,siap_diambil,selesai,dibatalkan',
         ]);
 
         $order->update(['status' => $request->status]);
+
+        // TAMBAHAN AC 4: kirim notifikasi ke pembeli jika status diubah menjadi 'siap_diambil'
+        if ($request->status === 'siap_diambil' && $order->user) {
+            $order->user->notify(new \App\Notifications\GeneralNotification(
+                "Pesanan Siap Diambil!",
+                "Pesanan Anda sudah siap untuk diambil.",
+                "🛍️"
+            ));
+        }
 
         return back()->with('success', 'Status pesanan berhasil diperbarui.');
     }

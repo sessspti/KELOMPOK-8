@@ -19,6 +19,9 @@
         $payment_method = $order->payment_method ?? 'Transfer';
         $status = $order->status;
     }
+    // TAMBAHAN AC 2: ambil data jadwal & metode pengambilan dari order pertama
+    $pickup_method   = isset($order) ? ($order->pickup_method ?? null) : (isset($headerOrder) ? ($headerOrder->pickup_method ?? null) : null);
+    $pickup_schedule = isset($order) ? ($order->pickup_schedule ?? null) : (isset($headerOrder) ? ($headerOrder->pickup_schedule ?? null) : null);
 @endphp
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,6 +72,14 @@
     }
     .pickup-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mint-700); margin-bottom: 0.5rem; }
     .pickup-code { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 2.5rem; letter-spacing: 0.1em; color: var(--ink); line-height: 1; }
+    /* TAMBAHAN AC 2: styling baris jadwal pengambilan */
+    .pickup-schedule {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: var(--mint-100); border: 1px solid var(--mint-200);
+        border-radius: 99px; padding: 0.35rem 1rem;
+        font-size: 0.8125rem; font-weight: 600; color: var(--mint-600);
+        margin-top: 0.875rem;
+    }
     
     .footer { text-align: center; margin-top: 3rem; font-size: 0.8125rem; color: var(--muted); }
     .btn-print {
@@ -149,11 +160,21 @@
         </div>
     </div>
 
+    {{-- TAMBAHAN AC 2: tampilkan kotak pickup hanya jika metode adalah self-pickup --}}
+    @if($pickup_method === 'self-pickup')
     <div class="pickup-box">
         <div class="pickup-label">Kode Self-Pickup</div>
         <div class="pickup-code">{{ strtoupper(substr(md5($display_id), 0, 6)) }}</div>
+        {{-- TAMBAHAN AC 2: tampilkan jadwal pengambilan jika ada --}}
+        @if($pickup_schedule)
+        <div class="pickup-schedule">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Jadwal Pengambilan: <strong>{{ $pickup_schedule }}</strong>
+        </div>
+        @endif
         <p style="font-size: 0.75rem; color: var(--muted); margin-top: 1rem;">Tunjukkan kode ini kepada seller saat pengambilan makanan.</p>
     </div>
+    @endif
 
     <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
         <a href="{{ route('dashboard') }}" class="btn-back hide-on-print">

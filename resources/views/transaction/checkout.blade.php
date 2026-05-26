@@ -49,6 +49,108 @@
                     </div>
                 </div>
 
+                <!-- Metode Pengambilan (AC 1) -->
+                <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Metode Pengambilan
+                    </h2>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Opsi 1: Ambil di Tempat (Antre) -->
+                        <label 
+                            :class="pickupMethod === 'antri' ? 'border-green-500 bg-green-50/30' : 'border-gray-100 hover:border-gray-200'"
+                            class="flex items-center p-4 rounded-2xl border-2 cursor-pointer transition-all group"
+                        >
+                            <input type="radio" x-model="pickupMethod" value="antri" class="hidden">
+                            <div 
+                                class="h-10 w-10 rounded-xl flex items-center justify-center mr-4"
+                                :class="pickupMethod === 'antri' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-gray-200'"
+                            >
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </div>
+                            <div class="flex-grow">
+                                <p class="font-bold text-gray-900 text-sm">Ambil di Tempat (Antre)</p>
+                                <p class="text-xs text-gray-500">Datang & ambil di antrean biasa</p>
+                            </div>
+                            <div 
+                                class="h-6 w-6 rounded-full border-2 flex items-center justify-center"
+                                :class="pickupMethod === 'antri' ? 'border-green-600 bg-green-600' : 'border-gray-200'"
+                            >
+                                <svg x-show="pickupMethod === 'antri'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </label>
+
+                        <!-- Opsi 2: Self-Pickup -->
+                        <label 
+                            :class="pickupMethod === 'self-pickup' ? 'border-green-500 bg-green-50/30' : 'border-gray-100 hover:border-gray-200'"
+                            class="flex items-center p-4 rounded-2xl border-2 cursor-pointer transition-all group"
+                        >
+                            <input type="radio" x-model="pickupMethod" value="self-pickup" class="hidden">
+                            <div 
+                                class="h-10 w-10 rounded-xl flex items-center justify-center mr-4"
+                                :class="pickupMethod === 'self-pickup' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-gray-200'"
+                            >
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                            </div>
+                            <div class="flex-grow">
+                                <p class="font-bold text-gray-900 text-sm">Self-Pickup</p>
+                                <p class="text-xs text-gray-500">Ambil cepat tanpa antre</p>
+                            </div>
+                            <div 
+                                class="h-6 w-6 rounded-full border-2 flex items-center justify-center"
+                                :class="pickupMethod === 'self-pickup' ? 'border-green-600 bg-green-600' : 'border-gray-200'"
+                            >
+                                <svg x-show="pickupMethod === 'self-pickup'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Slot Waktu Pengambilan (AC 2) -->
+                    <div 
+                        x-show="pickupMethod === 'self-pickup'"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform scale-95"
+                        x-transition:enter-end="opacity-100 transform scale-100"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 transform scale-100"
+                        x-transition:leave-end="opacity-0 transform scale-95"
+                        class="mt-6 p-6 bg-green-50/20 border border-green-100 rounded-2xl"
+                    >
+                        <label class="block text-sm font-bold text-gray-800 mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Pilih Slot Waktu Pengambilan
+                        </label>
+                        <p class="text-xs text-gray-500 mb-4">Pilih waktu pengambilan yang sesuai dengan jam operasional toko untuk menghindari antrean.</p>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <template x-for="slot in pickupTimeSlots" :key="slot">
+                                <button 
+                                    type="button"
+                                    @click="pickupTime = slot"
+                                    :class="pickupTime === slot ? 'bg-green-600 text-white border-green-600 shadow-md shadow-green-600/20' : 'bg-white text-gray-700 border-gray-200 hover:border-green-500 hover:bg-green-50/30'"
+                                    class="py-2.5 px-3 rounded-xl border text-xs font-bold transition-all text-center"
+                                    x-text="'Pukul ' + slot"
+                                >
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Payment Method Selection -->
                 <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
                     <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
@@ -114,9 +216,9 @@
 
                     <button 
                         @click="processPayment"
-                        :disabled="isProcessing || !selectedMethod"
+                        :disabled="isProcessing || !selectedMethod || (pickupMethod === 'self-pickup' && !pickupTime)"
                         class="w-full py-5 rounded-2xl font-black text-lg transition-all duration-300 flex items-center justify-center gap-3 relative z-10"
-                        :class="isProcessing ? 'bg-gray-700 cursor-not-allowed' : (selectedMethod ? 'bg-green-600 hover:bg-green-500 shadow-xl shadow-green-600/30' : 'bg-gray-800 text-gray-500 cursor-not-allowed')"
+                        :class="isProcessing ? 'bg-gray-700 cursor-not-allowed' : (selectedMethod && (pickupMethod !== 'self-pickup' || pickupTime) ? 'bg-green-600 hover:bg-green-500 shadow-xl shadow-green-600/30' : 'bg-gray-800 text-gray-500 cursor-not-allowed')"
                     >
                         <template x-if="!isProcessing">
                             <span>Bayar Sekarang</span>
@@ -152,6 +254,22 @@
             return {
                 cart: JSON.parse(localStorage.getItem('foodsave_cart')) || [],
                 selectedMethod: '',
+                pickupMethod: 'antri',
+                pickupTime: '14:00 - 14:30',
+                pickupTimeSlots: [
+                    '09:00 - 09:30',
+                    '10:00 - 10:30',
+                    '11:00 - 11:30',
+                    '12:00 - 12:30',
+                    '13:00 - 13:30',
+                    '14:00 - 14:30',
+                    '15:00 - 15:30',
+                    '16:00 - 16:30',
+                    '17:00 - 17:30',
+                    '18:00 - 18:30',
+                    '19:00 - 19:30',
+                    '20:00 - 20:30'
+                ],
                 isProcessing: false,
                 invoiceNumber: '',
                 serviceFee: 0,
@@ -228,6 +346,8 @@
                         body: JSON.stringify({
                             cart: this.cart,
                             payment_method: this.paymentMethods.find(m => m.id === this.selectedMethod).name,
+                            pickup_method: this.pickupMethod,
+                            pickup_time: this.pickupMethod === 'self-pickup' ? this.pickupTime : null,
                             subtotal: this.cartTotal,
                             service_fee: this.serviceFee,
                             grand_total: this.grandTotal

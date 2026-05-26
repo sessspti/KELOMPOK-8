@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Review; // Pastikan memanggil model Review kamu
+use App\Models\Review; 
 
 class ReviewController extends Controller
 {
@@ -56,5 +56,37 @@ class ReviewController extends Controller
 
         // 5. Kembalikan konsumen ke halaman sebelumnya dengan pesan sukses
         return redirect()->back()->with('success', 'Terima kasih! Ulasan Anda berhasil disimpan.');
+    }
+
+    public function reply(Request $request, Review $review)
+    {
+        // 1. Validasi input: Balasan wajib diisi dan maksimal 500 karakter
+        $request->validate([
+            'merchant_reply' => 'required|string|max:500',
+        ]);
+
+        // 2. KEAMANAN: Pastikan yang balas adalah SELLER yang memiliki menu/makanan ini
+        if ($review->menu->user_id !== auth()->id()) {
+            abort(403, 'Anda tidak memiliki hak untuk membalas ulasan pada produk ini.');
+        }
+
+        // 3. Simpan balasan ke database
+        $review->update([
+            'merchant_reply' => $request->merchant_reply,
+            'replied_at'     => now()
+        ]);
+
+        // 4. Kirim notifikasi ke reviewer
+        if ($review->user) {
+            $storeName = auth()->user()->name;
+            $review->user->notify(new \App\Notifications\GeneralNotification(
+                "Balasan dari {$storeName}",
+                "Seller telah membalas ulasan Anda untuk produk {$review->menu->name}.",
+                "💬"
+            ));
+        }
+
+        // 5. Kembali ke halaman sebelumnya dengan pesan sukses
+        return redirect()->back()->with('success', 'Balasan ulasan berhasil dikirim!');
     }
 }
