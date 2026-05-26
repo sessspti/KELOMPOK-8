@@ -77,7 +77,7 @@ class ComplaintController extends Controller
     /**
      * Kirim pesan/balasan dalam chat keluhan (digunakan oleh Pelapor & Admin).
      */
-    public function sendMessage(Request $request, Complaint $complaint)
+public function sendMessage(Request $request, Complaint $complaint)
     {
         $user = auth()->user();
 
@@ -105,7 +105,8 @@ class ComplaintController extends Controller
             $complaint->update(['status' => 'ditinjau']);
         }
 
-        return back()->with('success', 'Pesan berhasil dikirim!');
+        // HILANGKAN ->with('success', ...) AGAR TIDAK ADA ALERT
+        return back();
     }
 
     /**
