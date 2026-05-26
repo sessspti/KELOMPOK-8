@@ -37,12 +37,13 @@ Route::get('/home', function () {
         ->withAvg('reviews', 'rating') 
         ->withCount('reviews')        
         ->where('stock', '>', 0)
-        ->whereHas('user', fn($q) => $q->where('is_open', 1))
+        ->whereHas('user', fn($q) => $q->where('role', 'seller'))
         ->notExpired()->latest()->get();
     
-    // Mapping data is_open milik user ke dalam setiap item menu
+    // Mapping data is_open dan status penangguhan milik user ke dalam setiap item menu
     $menus->map(function ($menu) {
-        $menu->store_is_open = $menu->user ? $menu->user->is_open : 0;
+        $menu->store_is_open = ($menu->user && $menu->user->is_open && $menu->user->account_status !== 'rejected') ? 1 : 0;
+        $menu->store_is_suspended = ($menu->user && $menu->user->account_status === 'rejected') ? 1 : 0;
         return $menu;
     });
 
@@ -75,6 +76,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 4. Verifikasi Akun/Dokumen (KTP, NIB, dll)
     Route::get('/verify/notice', [VerificationController::class, 'notice'])->name('verification.notice');
     Route::post('/verify/store', [VerificationController::class, 'upload'])->name('verification.upload');
+    Route::get('/verify/notice/messages', [VerificationController::class, 'getMessages'])->name('verification.messages.get');
+    Route::post('/verify/notice/messages', [VerificationController::class, 'sendMessage'])->name('verification.messages.send');
 
     // 5. Riwayat Transaksi & Invoice
     Route::get('/transaction/history', [TransactionController::class, 'history'])->name('transaction.history');
@@ -258,6 +261,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/verifications/{user}/reject', [AdminVerificationController::class, 'reject'])->name('admin.verifications.reject');
         Route::post('/users/{user}/toggle-status', [AdminVerificationController::class, 'toggleStatus'])->name('admin.users.toggle-status');
         Route::delete('/users/{user}', [AdminVerificationController::class, 'destroy'])->name('admin.users.destroy');
+        Route::get('/users/{user}/messages', [AdminVerificationController::class, 'getMessages'])->name('admin.users.messages.get');
+        Route::post('/users/{user}/messages', [AdminVerificationController::class, 'sendMessage'])->name('admin.users.messages.send');
 
         Route::get('/users', fn() => view('admin.users.index'))->name('admin.users.index');
         Route::get('/verifikasi', fn() => view('admin.verifikasi'))->name('admin.verifikasi');

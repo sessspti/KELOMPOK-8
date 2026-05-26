@@ -104,7 +104,8 @@ class MenuController extends Controller
 
     // 3. Tambahkan informasi store status ke setiap menu
     $menus = $menus->map(function ($menu) use ($seller) {
-        $menu->store_is_open = $seller->is_open ? 1 : 0;
+        $menu->store_is_open = ($seller->is_open && $seller->account_status !== 'rejected') ? 1 : 0;
+        $menu->store_is_suspended = ($seller->account_status === 'rejected') ? 1 : 0;
         // Pastikan properties ini selalu diset untuk dikonsumsi Alpine.js
         $menu->reviews_count = $menu->reviews_count ?? 0;
         $menu->reviews_avg_rating = $menu->reviews_avg_rating ?? 0.0;
@@ -142,7 +143,8 @@ public function toggleStatus()
         
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
-            $menu->store_is_open = $menu->user->is_open ? 1 : 0;
+            $menu->store_is_open = ($menu->user && $menu->user->is_open && $menu->user->account_status !== 'rejected') ? 1 : 0;
+            $menu->store_is_suspended = ($menu->user && $menu->user->account_status === 'rejected') ? 1 : 0;
             return $menu;
         });
         
@@ -179,7 +181,8 @@ public function toggleStatus()
         $menus->loadAvg('reviews', 'rating')->loadCount('reviews')->load('reviews.user');
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
-            $menu->store_is_open = $menu->user->is_open ? 1 : 0;
+            $menu->store_is_open = ($menu->user && $menu->user->is_open && $menu->user->account_status !== 'rejected') ? 1 : 0;
+            $menu->store_is_suspended = ($menu->user && $menu->user->account_status === 'rejected') ? 1 : 0;
             return $menu;
         });
         

@@ -92,12 +92,181 @@
                                 <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0 animate-bounce-short">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                                 </div>
-                                <div>
+                                <div class="flex-1">
                                     <h4 class="text-base font-bold text-red-800 custom-font-space">Akun Ditangguhkan</h4>
                                     <p class="text-sm text-red-700 mt-1">
                                         <span class="font-bold">Alasan Penangguhan:</span> {{ $user->suspension_reason }}
                                     </p>
                                     <p class="text-sm text-red-650 mt-2 font-medium">Akun Anda telah ditangguhkan oleh administrator. Silakan hubungi kami untuk informasi lebih lanjut.</p>
+                                    
+                                    <!-- Jalur Komunikasi dengan Admin (Chat In-App) -->
+                                    <div class="mt-6 border-t border-red-200/50 pt-5">
+                                        <h5 class="text-xs font-bold text-red-800 uppercase tracking-wider mb-2 custom-font-space">Banding & Komunikasi dengan Admin</h5>
+                                        <p class="text-xs text-red-700 mb-4 leading-relaxed">
+                                            Kirimkan pesan pembelaan atau ajukan pertanyaan langsung kepada administrator melalui obrolan di bawah ini:
+                                        </p>
+                                        
+                                        <!-- Box Chat -->
+                                        <div class="bg-white border border-gray-150 rounded-2xl overflow-hidden shadow-sm flex flex-col max-w-full">
+                                            <!-- Chat Header -->
+                                            <div class="bg-gray-50/70 border-b border-gray-150 px-4 py-3 flex items-center justify-between">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
+                                                    <span class="text-xs font-bold text-gray-700">Hubungi Administrator</span>
+                                                </div>
+                                                <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">In-App Chat</span>
+                                            </div>
+
+                                            <!-- Chat Messages Area -->
+                                            <div id="chatMessages" class="p-4 space-y-3 overflow-y-auto max-h-[250px] bg-gray-50/30 flex flex-col">
+                                                @forelse($messages as $msg)
+                                                    @if($msg->sender === 'user')
+                                                        <div class="flex flex-col items-end max-w-[85%] self-end">
+                                                            <div class="bg-green-600 text-white text-xs px-3.5 py-2.5 rounded-2xl rounded-tr-none font-medium shadow-sm leading-relaxed">
+                                                                {{ $msg->message }}
+                                                            </div>
+                                                            <span class="text-[9px] text-gray-400 mt-1 font-semibold">{{ $msg->created_at->diffForHumans() }}</span>
+                                                        </div>
+                                                    @else
+                                                        <div class="flex flex-col items-start max-w-[85%] self-start">
+                                                            <div class="bg-white border border-gray-200 text-gray-800 text-xs px-3.5 py-2.5 rounded-2xl rounded-tl-none font-medium shadow-sm leading-relaxed">
+                                                                {{ $msg->message }}
+                                                            </div>
+                                                            <span class="text-[9px] text-gray-400 mt-1 font-semibold">Admin • {{ $msg->created_at->diffForHumans() }}</span>
+                                                        </div>
+                                                    @endif
+                                                @empty
+                                                    <div id="noMessagesPlaceholder" class="text-center py-6 text-gray-400 flex flex-col items-center justify-center gap-2">
+                                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-8 h-8 text-gray-300">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                                        </svg>
+                                                        <span class="text-xs font-semibold">Belum ada obrolan. Mulai kirim pesan banding Anda.</span>
+                                                    </div>
+                                                @endforelse
+                                            </div>
+
+                                            <!-- Chat Input Form -->
+                                            <form id="chatForm" class="border-t border-gray-150 p-2 bg-white flex gap-2 items-center">
+                                                @csrf
+                                                <input type="text" id="chatInput" placeholder="Ketik pesan banding Anda di sini..." autocomplete="off" required
+                                                       class="flex-1 text-xs border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-150 focus:border-green-500 px-3.5 py-2.5 outline-none transition-all">
+                                                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-2.5 text-xs font-bold transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
+                                                    <span>Kirim</span>
+                                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-3.5 h-3.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <script>
+                                        document.addEventListener("DOMContentLoaded", function() {
+                                            const chatMessages = document.getElementById("chatMessages");
+                                            const chatForm = document.getElementById("chatForm");
+                                            const chatInput = document.getElementById("chatInput");
+                                            const noMessagesPlaceholder = document.getElementById("noMessagesPlaceholder");
+
+                                            // Auto scroll to bottom
+                                            function scrollToBottom() {
+                                                if (chatMessages) {
+                                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                                }
+                                            }
+                                            scrollToBottom();
+
+                                            // Send Message via AJAX
+                                            if (chatForm) {
+                                                chatForm.addEventListener("submit", function(e) {
+                                                    e.preventDefault();
+                                                    const messageText = chatInput.value.trim();
+                                                    if (!messageText) return;
+
+                                                    fetch("{{ route('verification.messages.send') }}", {
+                                                        method: "POST",
+                                                        headers: {
+                                                            "Content-Type": "application/json",
+                                                            "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                                                            "X-Requested-With": "XMLHttpRequest"
+                                                        },
+                                                        body: JSON.stringify({ message: messageText })
+                                                    })
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        if (data.id) {
+                                                            chatInput.value = "";
+                                                            if (noMessagesPlaceholder) {
+                                                                noMessagesPlaceholder.remove();
+                                                            }
+                                                            
+                                                            // Append message bubble
+                                                            const bubble = document.createElement("div");
+                                                            bubble.className = "flex flex-col items-end max-w-[85%] self-end";
+                                                            bubble.innerHTML = `
+                                                                <div class="bg-green-600 text-white text-xs px-3.5 py-2.5 rounded-2xl rounded-tr-none font-medium shadow-sm leading-relaxed">
+                                                                    ${escapeHTML(data.message)}
+                                                                </div>
+                                                                <span class="text-[9px] text-gray-400 mt-1 font-semibold">baru saja</span>
+                                                            `;
+                                                            chatMessages.appendChild(bubble);
+                                                            scrollToBottom();
+                                                        }
+                                                    })
+                                                    .catch(err => console.error("Error sending message:", err));
+                                                });
+                                            }
+
+                                            function escapeHTML(str) {
+                                                return str.replace(/[&<>'"]/g, 
+                                                    tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+                                                );
+                                            }
+
+                                            // Poll messages every 4 seconds
+                                            setInterval(() => {
+                                                if (!chatMessages) return;
+                                                fetch("{{ route('verification.messages.get') }}", {
+                                                    headers: {
+                                                        "X-Requested-With": "XMLHttpRequest"
+                                                    }
+                                                })
+                                                .then(response => response.json())
+                                                .then(data => {
+                                                    if (Array.isArray(data)) {
+                                                        const placeholder = document.getElementById("noMessagesPlaceholder");
+                                                        if (data.length > 0 && placeholder) {
+                                                            placeholder.remove();
+                                                        }
+                                                        
+                                                        // Keep track of current count
+                                                        const currentBubbleCount = chatMessages.querySelectorAll('.flex-col').length;
+                                                        if (data.length > currentBubbleCount) {
+                                                            chatMessages.innerHTML = "";
+                                                            data.forEach(msg => {
+                                                                const isUser = msg.sender === 'user';
+                                                                const bubble = document.createElement("div");
+                                                                bubble.className = isUser 
+                                                                    ? "flex flex-col items-end max-w-[85%] self-end"
+                                                                    : "flex flex-col items-start max-w-[85%] self-start";
+                                                                
+                                                                // Simple time format (HH:MM)
+                                                                const timeString = new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                                                                bubble.innerHTML = `
+                                                                    <div class="${isUser ? 'bg-green-600 text-white' : 'bg-white border border-gray-200 text-gray-800'} text-xs px-3.5 py-2.5 rounded-2xl ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} font-medium shadow-sm leading-relaxed">
+                                                                        ${escapeHTML(msg.message)}
+                                                                    </div>
+                                                                    <span class="text-[9px] text-gray-400 mt-1 font-semibold">${isUser ? '' : 'Admin • '}${timeString}</span>
+                                                                `;
+                                                                chatMessages.appendChild(bubble);
+                                                            });
+                                                            scrollToBottom();
+                                                        }
+                                                    }
+                                                })
+                                                .catch(err => console.error("Error fetching messages:", err));
+                                            }, 4000);
+                                        });
+                                    </script>
                                 </div>
                             </div>
                         @else

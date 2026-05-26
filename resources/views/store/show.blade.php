@@ -1018,13 +1018,17 @@ body::before {
        {{-- Identity — big card kiri --}}
         <div class="sb-identity">
             <div>
-                <div class="sb-status">
+                    @if($seller->account_status === 'rejected')
+                    <div class="sb-status" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);">
+                        <span class="sb-status-dot" style="background-color: #ef4444;"></span>
+                        Toko Tutup
+                    </div>
+                    @else
                     <div class="sb-status" style="background-color: {{ $seller->is_open ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}; color: {{ $seller->is_open ? '#22c55e' : '#ef4444' }}; border: 1px solid {{ $seller->is_open ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)' }};">
                         <span class="sb-status-dot" style="background-color: {{ $seller->is_open ? '#22c55e' : '#ef4444' }};"></span>
                         {{ $seller->is_open ? 'Toko Buka' : 'Toko Tutup' }}
                     </div>
-
-                    </div>
+                    @endif
                         <div class="sb-avatar-wrap">
                             <div class="sb-avatar" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
                                 @if($seller->avatar)
@@ -1150,6 +1154,22 @@ body::before {
                     <img :src="product.image_url" :alt="product.name" loading="lazy">
                     <div class="pcard-img-gradient"></div>
 
+                    {{-- OVERLAY TOKO TUTUP / DITANGGUHKAN --}}
+                    <template x-if="product.store_is_suspended == 1">
+                        <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.55); backdrop-filter: blur(1px); position: absolute;">
+                            <div style="background: #dc2626; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); text-align: center;">
+                                Toko Tutup
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="product.store_is_open == 0 && !product.store_is_suspended">
+                        <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.4); backdrop-filter: blur(1px); position: absolute;">
+                            <div style="background: #ef4444; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+                                Toko Tutup
+                            </div>
+                        </div>
+                    </template>
+
                     {{-- Distance badge --}}
                     <div class="bdg-dist">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1190,7 +1210,7 @@ body::before {
                         <div class="pcard-price" x-text="isLembaga ? 'Rp 0 (Gratis)' : formatRupiah(product.final_price)" :style="isLembaga ? 'color:#22c55e;' : ''"></div>
                         
                         {{-- CEK APAKAH TOKO BUKA ATAU TUTUP --}}
-                        @if($seller->is_open)
+                        @if($seller->is_open && $seller->account_status !== 'rejected')
                             {{-- Hanya konsumen yang bisa add to cart di store page --}}
                             @auth
                                 @if(auth()->user()->role === 'konsumen')
@@ -1247,7 +1267,7 @@ body::before {
                                 </a>
                             @endauth
                         @else
-                            {{-- Toko tutup --}}
+                            {{-- Toko ditangguhkan atau tutup --}}
                             <button class="pcard-btn" disabled style="background-color: #e2e8f0; color: #94a3b8; cursor: not-allowed; border: none; opacity: 0.8;">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
@@ -1307,6 +1327,12 @@ function storePage() {
 
         // ── Tambah ke keranjang ──
         addToCart(product, event) {
+            // Validasi: Cek apakah toko ditangguhkan
+            if (product.store_is_suspended == 1) {
+                this.showToast('Toko sedang ditangguhkan. Tidak bisa memesan dari toko ini.', '🔒');
+                return;
+            }
+
             // Validasi: Cek apakah toko buka
             if (!product.store_is_open || product.store_is_open == 0) {
                 this.showToast('Toko sedang tutup. Tidak bisa menambahkan produk ke keranjang.', '🔒');

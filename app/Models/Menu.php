@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Menu extends Model
 {
     protected $fillable = ['user_id', 'name', 'price', 'discount', 'stock', 'image', 'expiry_date'];
-    protected $appends = ['final_price', 'image_url', 'formatted_expiry_date', 'store'];
+    protected $appends = ['final_price', 'image_url', 'formatted_expiry_date', 'store', 'store_is_open', 'store_is_suspended'];
 
     protected $casts = [
         'reviews_avg_rating' => 'float',
@@ -28,6 +28,18 @@ class Menu extends Model
     public function getStoreAttribute()
     {
         return $this->user ? $this->user->name : 'Toko FoodSave';
+    }
+
+    // Accessor untuk store_is_open
+    public function getStoreIsOpenAttribute()
+    {
+        return ($this->user && $this->user->is_open && $this->user->account_status !== 'rejected') ? 1 : 0;
+    }
+
+    // Accessor untuk store_is_suspended
+    public function getStoreIsSuspendedAttribute()
+    {
+        return ($this->user && $this->user->account_status === 'rejected') ? 1 : 0;
     }
 
     // Accessor untuk URL foto
@@ -53,6 +65,10 @@ class Menu extends Model
     {
         if ($this->stock <= 0) {
             return 'Habis';
+        }
+
+        if ($this->user && $this->user->account_status === 'rejected') {
+            return 'Ditangguhkan';
         }
 
         if ($this->user && $this->user->is_open == 0) {

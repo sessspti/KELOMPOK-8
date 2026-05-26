@@ -939,16 +939,23 @@ body.no-scroll { overflow: hidden; }
                                     <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" style="margin:0;" id="toggleForm_{{ $user->id }}">
                                         @csrf
                                         <button type="button" class="btn btn-amber btn-xs btn-icon" title="Tangguhkan Akun" onclick="confirmToggleStatus('{{ $user->id }}', '{{ $user->name }}', 'tangguhkan')">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                                         </button>
                                     </form>
                                     @elseif($user->account_status === 'rejected')
-                                    <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" style="margin:0;" id="toggleForm_{{ $user->id }}">
-                                        @csrf
-                                        <button type="button" class="btn btn-amber btn-xs btn-icon" style="background-color: #f59e0b; color: #fff;" title="Aktifkan Akun" onclick="confirmToggleStatus('{{ $user->id }}', '{{ $user->name }}', 'aktifkan')">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                    <div style="display: flex; gap: 0.375rem;">
+                                        <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" style="margin:0;" id="toggleForm_{{ $user->id }}">
+                                            @csrf
+                                            <button type="button" class="btn btn-amber btn-xs btn-icon" style="background-color: #f59e0b; color: #fff;" title="Aktifkan Akun" onclick="confirmToggleStatus('{{ $user->id }}', '{{ $user->name }}', 'aktifkan')">
+                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                            </button>
+                                        </form>
+                                        @if(!is_null($user->suspension_reason))
+                                        <button type="button" class="btn btn-success btn-xs btn-icon" style="background-color: #10b981; color: #fff; border: none;" title="Chat Banding" onclick="openChatModal('{{ $user->id }}', '{{ $user->name }}')">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                                         </button>
-                                    </form>
+                                        @endif
+                                    </div>
                                     @endif
 
                                     <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="margin:0;" id="deleteUserForm_{{ $user->id }}">
@@ -1269,6 +1276,29 @@ body.no-scroll { overflow: hidden; }
     </div>
 </div>
 
+{{-- MODAL CHAT BANDING --}}
+<div class="modal-overlay" id="modal-chatUser">
+    <div class="modal" style="width: min(600px, 95vw); display: flex; flex-direction: column;">
+        <div class="modal-hdr">
+            <div class="modal-title">Obrolan Banding — <span id="chatTargetName" style="color: var(--blue-600); font-weight: bold;"></span></div>
+            <button class="modal-close" onclick="closeChatModal()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <div class="modal-body" style="padding: 0; background: var(--blue-25); display: flex; flex-direction: column; gap: 0;">
+            <!-- Messages container -->
+            <div id="adminChatMessages" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; height: 350px; overflow-y: auto;">
+                <!-- Filled dynamically -->
+            </div>
+            <!-- Input Form -->
+            <form id="adminChatForm" style="border-top: 1.5px solid var(--border); padding: 0.75rem 1.25rem; background: var(--surface); display: flex; gap: 0.625rem; align-items: center; margin: 0;">
+                @csrf
+                <input type="hidden" id="chatUserId" value="">
+                <input type="text" id="adminChatInput" placeholder="Tulis tanggapan Anda di sini..." autocomplete="off" required style="flex: 1; font-family: inherit; font-size: 0.8125rem; padding: 0.625rem 0.875rem; border: 1.5px solid var(--border-md); border-radius: var(--r-sm); outline: none; background: var(--bg);">
+                <button type="submit" class="btn btn-primary" style="padding: 0.625rem 1.25rem; font-weight: bold;">Kirim</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function openModal(id){
@@ -1438,6 +1468,128 @@ function confirmAdminLogout() {
             document.getElementById('logoutForm').submit();
         }
     });
+}
+
+let adminChatInterval = null;
+let currentChatUserId = null;
+
+function openChatModal(userId, userName) {
+    currentChatUserId = userId;
+    document.getElementById('chatUserId').value = userId;
+    document.getElementById('chatTargetName').innerText = userName;
+    document.getElementById('modal-chatUser').classList.add('open');
+    document.body.classList.add('no-scroll');
+    
+    // Clear old messages
+    const container = document.getElementById('adminChatMessages');
+    container.innerHTML = '<div style="text-align:center; color:var(--faint); font-size:0.8125rem; padding-top:2rem;">Memuat pesan...</div>';
+    
+    // Load messages immediately
+    fetchAdminMessages(userId);
+    
+    // Start polling every 3 seconds
+    if (adminChatInterval) clearInterval(adminChatInterval);
+    adminChatInterval = setInterval(() => fetchAdminMessages(userId), 3000);
+}
+
+function closeChatModal() {
+    document.getElementById('modal-chatUser').classList.remove('open');
+    document.body.classList.remove('no-scroll');
+    if (adminChatInterval) {
+        clearInterval(adminChatInterval);
+        adminChatInterval = null;
+    }
+    currentChatUserId = null;
+}
+
+function fetchAdminMessages(userId) {
+    if (currentChatUserId !== userId) return;
+    const url = `/admin/users/${userId}/messages`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (currentChatUserId !== userId) return;
+        const container = document.getElementById('adminChatMessages');
+        if (Array.isArray(data)) {
+            if (data.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:var(--faint); font-size:0.8125rem; padding-top:2rem;">Belum ada obrolan dengan pengguna ini.</div>';
+                return;
+            }
+            
+            const currentBubbleCount = container.querySelectorAll('.chat-bubble-wrap').length;
+            if (data.length > currentBubbleCount || container.innerText.includes('Memuat')) {
+                container.innerHTML = "";
+                data.forEach(msg => {
+                    const isAdmin = msg.sender === 'admin';
+                    const wrap = document.createElement('div');
+                    wrap.className = 'chat-bubble-wrap';
+                    wrap.style.display = 'flex';
+                    wrap.style.flexDirection = 'column';
+                    wrap.style.alignItems = isAdmin ? 'flex-end' : 'flex-start';
+                    wrap.style.width = '100%';
+                    wrap.style.marginBottom = '0.5rem';
+                    
+                    const timeString = new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    wrap.innerHTML = `
+                        <div style="max-width: 80%; background: ${isAdmin ? 'var(--blue-500)' : 'var(--white)'}; color: ${isAdmin ? 'var(--white)' : 'var(--ink)'}; font-size: 0.8125rem; padding: 0.625rem 0.875rem; border-radius: 12px; border-bottom-${isAdmin ? 'right' : 'left'}-radius: 2px; border: ${isAdmin ? 'none' : '1px solid var(--border-md)'}; box-shadow: var(--shadow-sm); line-height: 1.4; word-break: break-word;">
+                            ${escapeHTML(msg.message)}
+                        </div>
+                        <span style="font-size: 10px; color: var(--faint); margin-top: 4px; font-weight: 500;">
+                            ${isAdmin ? 'Anda' : 'Pengguna'} • ${timeString}
+                        </span>
+                    `;
+                    container.appendChild(wrap);
+                });
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+    })
+    .catch(err => console.error("Error fetching messages:", err));
+}
+
+// Send admin message
+document.addEventListener('DOMContentLoaded', () => {
+    const adminChatForm = document.getElementById('adminChatForm');
+    if (adminChatForm) {
+        adminChatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('chatUserId').value;
+            const messageInput = document.getElementById('adminChatInput');
+            const messageText = messageInput.value.trim();
+            if (!messageText || !userId) return;
+            
+            const url = `/admin/users/${userId}/messages`;
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ message: messageText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    messageInput.value = "";
+                    fetchAdminMessages(userId);
+                }
+            })
+            .catch(err => console.error("Error sending admin message:", err));
+        });
+    }
+});
+
+function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+    );
 }
 </script>
 

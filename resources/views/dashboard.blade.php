@@ -874,8 +874,15 @@ body::after {
 
                             <div class="bdg-urgent" x-text="product.urgent"></div>
 
-                        {{-- OVERLAY TOKO TUTUP --}}
-                            <template x-if="product.store_is_open == 0">
+                        {{-- OVERLAY TOKO TUTUP / DITANGGUHKAN --}}
+                            <template x-if="product.store_is_suspended == 1">
+                                <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.55); backdrop-filter: blur(1px);">
+                                    <div style="background: #dc2626; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); text-align: center;">
+                                        Toko Tutup
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="product.store_is_open == 0 && !product.store_is_suspended">
                                 <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.4); backdrop-filter: blur(1px);">
                                     <div style="background: #ef4444; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
                                         Toko Tutup
@@ -936,7 +943,7 @@ body::after {
                                 {{-- CTA Masuk untuk guest / role bukan konsumen --}}
                                 <a x-show="!isKonsumen" href="{{ route('login') }}"
                                    class="add-btn" aria-label="Masuk untuk membeli"
-                                   style="background:var(--ink); text-decoration:none; width:auto; padding: 0 12px; font-family:'Space Grotesk',sans-serif; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; gap:5px; white-space:nowrap;">
+                                   style="background: var(--mint-600); color: var(--white); text-decoration: none; width: auto; padding: 0 12px; font-family: 'Space Grotesk', sans-serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.03em; gap: 5px; white-space: nowrap; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3 3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
                                     </svg>
@@ -1122,6 +1129,18 @@ body::after {
             },
 
             addToCart(product, event) {
+                // Validasi: Cek apakah toko ditangguhkan / tutup
+                if (product.store_is_suspended == 1) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Toko Tutup',
+                        text: 'Toko ini sedang tutup. Tidak bisa memesan produk dari toko ini.',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                    return;
+                }
+
                 // Validasi: Cek apakah toko buka
                 if (!product.store_is_open || product.store_is_open == 0) {
                     Swal.fire({

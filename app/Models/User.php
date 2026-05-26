@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->hasOne(UserVerification::class);
     }
 
+    public function suspensionMessages()
+    {
+        return $this->hasMany(SuspensionMessage::class);
+    }
+
     /**
      * Get the readable store status.
      *

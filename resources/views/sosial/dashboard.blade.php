@@ -980,8 +980,15 @@ body::after {
                                 </svg>
                             </div>
                         </template>
-                        {{-- OVERLAY TOKO TUTUP --}}
-                            <template x-if="product.store_is_open == 0">
+                        {{-- OVERLAY TOKO TUTUP / DITANGGUHKAN --}}
+                            <template x-if="product.store_is_suspended == 1">
+                                <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.55); backdrop-filter: blur(1px);">
+                                    <div style="background: #dc2626; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); text-align: center;">
+                                        Toko Tutup
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="product.store_is_open == 0 && !product.store_is_suspended">
                                 <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.4); backdrop-filter: blur(1px);">
                                     <div style="background: #ef4444; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
                                         Toko Tutup
@@ -1025,14 +1032,15 @@ body::after {
                             </div>
                             {{-- Button untuk Lembaga (disabled jika toko tutup) --}}
                             <template x-if="product.store_is_open == 1">
-                                <button class="req-btn" @click="openCart(); addItemToPickup({
+                                <button class="req-btn" @click="if (product.store_is_suspended == 1) { Swal.fire({ icon: 'warning', title: 'Toko Tutup', text: 'Toko ini sedang tutup. Tidak bisa mengajukan pengambilan dari toko ini.', confirmButtonColor: '#f59e0b' }); return; } openCart(); addItemToPickup({
                                     id: product.id,
                                     name: product.name,
                                     store: product.store,
                                     stock: product.stock,
                                     price: 'Rp 0',
                                     image: product.image_url,
-                                    urgent: product.discount > 50 ? 'Sangat Murah!' : 'Hari Ini'
+                                    urgent: product.discount > 50 ? 'Sangat Murah!' : 'Hari Ini',
+                                    store_is_suspended: product.store_is_suspended
                                 })" aria-label="Ajukan pengambilan">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
@@ -1316,6 +1324,18 @@ function updateCount(){
 
     // 3. Fungsi Utama: Tambah ke Daftar Pengambilan
     window.addItemToPickup = function(product) {
+        // Cek batasan: toko tutup (penangguhan disembunyikan dari konsumen)
+        if (product.store_is_suspended == 1) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Toko Tutup',
+                text: 'Toko ini sedang tutup. Tidak bisa mengajukan pengambilan dari toko ini.',
+                confirmButtonColor: '#f59e0b',
+                confirmButtonText: 'Kembali'
+            });
+            return;
+        }
+
         const today = getToday();
         
         // Cek batasan: satu produk hanya boleh satu kali per hari
