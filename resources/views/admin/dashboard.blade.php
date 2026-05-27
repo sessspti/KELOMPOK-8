@@ -688,15 +688,7 @@ body.no-scroll { overflow: hidden; }
         </a>
     </nav>
 
-    <div class="sb-footer">
-        <div class="sb-user">
-            <div class="sb-avatar">SA</div>
-            <div>
-                <div class="sb-user-name">Super Admin</div>
-                <div class="sb-user-role">admin@foodsave.id</div>
-            </div>
-        </div>
-    </div>
+
 </aside>
 
 {{-- ════════════ MAIN ════════════ --}}
@@ -722,9 +714,7 @@ body.no-scroll { overflow: hidden; }
                     <span style="font-weight: 700;">Keluar</span>
                 </button>
             </form>
-            <button class="tb-icon-btn" title="Ekspor Data">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            </button>
+
         </div>
     </div>
 
@@ -897,7 +887,7 @@ body.no-scroll { overflow: hidden; }
                                     <input type="text" name="admin_reply" placeholder="Tulis tindakan/catatan..." required 
                                            style="font-size:0.75rem; padding:0.25rem 0.5rem; border:1px solid var(--border); border-radius:6px; width:160px; outline:none; height:28px; background: #fff; color: var(--ink);">
                                     <button type="submit" class="btn btn-primary btn-xs" 
-                                            style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; display:flex; align-items:center; background: var(--primary); color: #fff; border: none;">
+                                            style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; display:flex; align-items:center; background: var(--primary); color: #0ea5e9; border: none;">
                                         Tangani
                                     </button>
                                 </form>
