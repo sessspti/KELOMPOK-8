@@ -70,6 +70,11 @@ class User extends Authenticatable
         return $this->hasMany(Follow::class, 'follower_id');
     }
 
+    public function environmentalImpact()
+    {
+        return $this->hasOne(EnvironmentalImpact::class);
+    }
+
     /**
      * Get the readable store status.
      *

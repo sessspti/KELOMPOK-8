@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Menu;
 use App\Models\Complaint; // 💡 TAMBAHAN AMAN: Meng-import model Complaint agar bisa digunakan
+use App\Services\ImpactCalculatorService;
 use App\Services\ProductVisibilityService;
 
 class MenuController extends Controller
@@ -166,25 +167,12 @@ class MenuController extends Controller
             return $menu;
         });
         
-        // Get orders for authenticated user
         $orders = \App\Models\Order::where('id_user', auth()->id())
             ->with('menu.user')
             ->latest()
             ->get();
 
-        // ── Dampak Lingkungan: hitung dari riwayat pembelian konsumen ──
-        $completedOrders = $orders->whereIn('status', ['selesai', 'siap_diambil', 'paid', 'proses']);
-        $totalPortionsBought = $completedOrders->sum('quantity');
-        // Konversi: 1 porsi ≈ 0.3 kg makanan diselamatkan
-        $foodSavedKg = round($totalPortionsBought * 0.3, 1);
-        // Konversi: 1 kg makanan diselamatkan ≈ 2.5 kg CO₂ dikurangi
-        $co2ReducedKg = round($foodSavedKg * 2.5, 1);
-
-        $impact = [
-            'total_portions' => $totalPortionsBought,
-            'food_saved_kg'  => $foodSavedKg,
-            'co2_reduced_kg' => $co2ReducedKg,
-        ];
+        $impact = app(ImpactCalculatorService::class)->syncForUser(auth()->id());
 
         return view('dashboard', compact('menus', 'orders', 'impact'));
     }
@@ -204,27 +192,13 @@ class MenuController extends Controller
             return $menu;
         });
         
-        // Get orders for authenticated user (klaim donasi)
         $orders = \App\Models\Order::where('id_user', auth()->id())
             ->with('menu.user')
             ->latest()
             ->get();
 
-        // ── Kontribusi Sosial & Lingkungan: hitung dari klaim donasi ──
-        $claimedOrders = $orders->whereIn('status', ['selesai', 'siap_diambil', 'paid', 'proses']);
-        $totalClaimedPortions = $claimedOrders->sum('quantity');
-        // Konversi: 1 porsi ≈ 0.3 kg makanan tersalurkan
-        $foodDistributedKg = round($totalClaimedPortions * 0.3, 1);
-        // Konversi: 1 kg makanan diselamatkan ≈ 2.5 kg CO₂ dikurangi
-        $co2ReducedKg = round($foodDistributedKg * 2.5, 1);
+        $impact = app(ImpactCalculatorService::class)->syncForUser(auth()->id());
 
-        $contribution = [
-            'total_claims'       => $claimedOrders->count(),
-            'total_portions'     => $totalClaimedPortions,
-            'food_distributed_kg'=> $foodDistributedKg,
-            'co2_reduced_kg'     => $co2ReducedKg,
-        ];
-
-        return view('sosial.dashboard', compact('menus', 'orders', 'contribution'));
+        return view('sosial.dashboard', compact('menus', 'orders', 'impact'));
     }
 }

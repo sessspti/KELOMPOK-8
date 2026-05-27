@@ -295,29 +295,80 @@ body::after {
 .bento-img-card:hover img { transform: scale(1.04); }
 
 .bento-tracker {
-    background: var(--lime-300);
+    background: linear-gradient(135deg, var(--lime-300) 0%, var(--mint-300) 100%);
     border-radius: var(--r-xl);
-    border: 2px dashed rgba(22,101,52,0.3);
+    border: 2px solid rgba(22,163,74,0.25);
+    padding: 1.5rem;
+    min-height: 140px;
+    position: relative;
+    overflow: hidden;
+}
+.bento-tracker::before {
+    content: '';
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 100px; height: 100px;
+    background: var(--yellow-300);
+    border-radius: 50%;
+    opacity: 0.2;
+}
+.bento-tracker-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    position: relative;
+    z-index: 1;
+}
+@media(max-width:600px){.bento-tracker-grid{grid-template-columns:1fr}}
+.tracker-item {
+    background: rgba(255,255,255,0.75);
+    border-radius: var(--r-md);
+    padding: 0.875rem 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 1.5rem;
     text-align: center;
-    min-height: 140px;
+    gap: 0.5rem;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.9);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
-.bento-tracker-label {
+.tracker-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(22,163,74,0.15);
+}
+.tracker-label {
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
-    font-size: 0.8125rem;
+    font-size: 0.6875rem;
     color: var(--green-800);
-    letter-spacing: 0.03em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
-.bento-tracker-sub {
-    font-size: 0.75rem;
-    color: var(--green-900);
-    opacity: 0.6;
+.tracker-icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+.tracker-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 1.125rem;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+}
+.tracker-unit {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-left: 2px;
 }
 
 /* ══════════════════════════════════
@@ -883,7 +934,6 @@ body::after {
 
 
 <div class="page">
-
     {{-- ── HERO BENTO ── --}}
     <section class="hero-bento">
         <div class="bento-main">
@@ -896,16 +946,6 @@ body::after {
                     "Bersama<br><em>salurkan</em><br>kebaikan<br>lewat makan."
                 </h1>
             </div>
-            <div class="bento-stats">
-                <div class="stat-chip">
-                    <div class="stat-num">248 <span class="stat-unit">Kg</span></div>
-                    <div class="stat-lbl">Makanan Tersalurkan</div>
-                </div>
-                <div class="stat-chip">
-                    <div class="stat-num">3.2 <span class="stat-unit">Kg</span></div>
-                    <div class="stat-lbl">CO₂ Dikurangi</div>
-                </div>
-            </div>
         </div>
 
         <div class="bento-img-card">
@@ -913,9 +953,26 @@ body::after {
         </div>
 
         <div class="bento-tracker">
-            <div class="bento-tracker-label">📊 Visual Impact Tracker</div>
-            <div class="bento-tracker-sub">Laporan transparansi untuk donatur</div>
-            <div style="margin-top:6px;background:rgba(22,101,52,0.12);border:1px solid rgba(22,101,52,0.2);border-radius:999px;padding:3px 10px;font-size:0.5625rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#166534;">Coming Soon ✦</div>
+            <div class="bento-tracker-grid">
+                <div class="tracker-item">
+                    <div class="tracker-label">
+                        <span class="tracker-icon">🍽️</span>
+                        Food Saved
+                    </div>
+                    <div class="tracker-value">
+                        {{ number_format((float) ($impact->food_saved_kg ?? 0), 1) }} <span class="tracker-unit">Kg</span>
+                    </div>
+                </div>
+                <div class="tracker-item">
+                    <div class="tracker-label">
+                        <span class="tracker-icon">🌱</span>
+                        CO₂ Dikurangi
+                    </div>
+                    <div class="tracker-value">
+                        {{ number_format((float) ($impact->co2_reduced_kg ?? 0), 1) }} <span class="tracker-unit">Kg</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 

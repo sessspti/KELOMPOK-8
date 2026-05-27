@@ -15,6 +15,31 @@
             </a>
         </div>
 
+        @if(isset($impact))
+            <div class="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-green-50 border border-green-100 rounded-2xl p-5">
+                    <p class="text-xs font-bold text-green-700 uppercase tracking-wider">Makanan Diselamatkan</p>
+                    <p class="text-2xl font-black text-green-800 mt-1">{{ number_format((float) ($impact->food_saved_kg ?? 0), 1) }} kg</p>
+                    <p class="text-xs text-green-600 mt-1">Dari transaksi berstatus <strong>selesai</strong></p>
+                </div>
+                <div class="bg-sky-50 border border-sky-100 rounded-2xl p-5">
+                    <p class="text-xs font-bold text-sky-700 uppercase tracking-wider">CO₂ Dikurangi</p>
+                    <p class="text-2xl font-black text-sky-800 mt-1">{{ number_format((float) ($impact->co2_reduced_kg ?? 0), 1) }} kg</p>
+                </div>
+                @if(($user->role ?? '') === 'konsumen')
+                    <div class="bg-amber-50 border border-amber-100 rounded-2xl p-5">
+                        <p class="text-xs font-bold text-amber-700 uppercase tracking-wider">Uang Dihemat</p>
+                        <p class="text-2xl font-black text-amber-800 mt-1">Rp {{ number_format((float) ($impact->money_saved ?? 0), 0, ',', '.') }}</p>
+                    </div>
+                @else
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-5">
+                        <p class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Klaim Selesai</p>
+                        <p class="text-2xl font-black text-emerald-800 mt-1">{{ (int) ($impact->total_rescues ?? 0) }} transaksi</p>
+                    </div>
+                @endif
+            </div>
+        @endif
+
         @if($transactions->isEmpty())
             <div class="bg-white rounded-[2.5rem] p-16 text-center border border-dashed border-gray-200">
                 <div class="inline-flex items-center justify-center w-20 h-20 bg-green-50 rounded-3xl mb-6">
@@ -46,7 +71,18 @@
                                             {{ $trx->status }}
                                         </span>
                                     </div>
-                                    <div class="flex items-center gap-4 text-sm text-gray-500 font-medium">
+                                    @if(strtolower($trx->status) === 'selesai' && !empty($trx->impact['counts']))
+                                        <div class="flex flex-wrap gap-2 mt-2">
+                                            <span class="px-2.5 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded-lg">🌿 {{ number_format($trx->impact['food_kg'], 1) }} kg makanan</span>
+                                            <span class="px-2.5 py-1 bg-sky-50 text-sky-700 text-[10px] font-bold rounded-lg">💨 {{ number_format($trx->impact['co2_kg'], 1) }} kg CO₂</span>
+                                            @if(($user->role ?? '') === 'konsumen' && $trx->impact['money_saved'] > 0)
+                                                <span class="px-2.5 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold rounded-lg">💰 Hemat Rp {{ number_format($trx->impact['money_saved'], 0, ',', '.') }}</span>
+                                            @endif
+                                        </div>
+                                    @elseif(!in_array(strtolower($trx->status), ['selesai', 'success']))
+                                        <p class="text-[10px] text-gray-400 font-semibold mt-2">Dampak lingkungan dihitung setelah pesanan <strong>selesai</strong></p>
+                                    @endif
+                                    <div class="flex items-center gap-4 text-sm text-gray-500 font-medium mt-2">
                                         <span class="flex items-center gap-1.5">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 00-2 2z" />
