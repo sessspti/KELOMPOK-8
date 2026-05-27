@@ -1032,7 +1032,7 @@ body::after {
                             </div>
                             {{-- Button untuk Lembaga (disabled jika toko tutup) --}}
                             <template x-if="product.store_is_open == 1">
-                                <button class="req-btn" @click="if (product.store_is_suspended == 1) { Swal.fire({ icon: 'warning', title: 'Toko Tutup', text: 'Toko ini sedang tutup. Tidak bisa mengajukan pengambilan dari toko ini.', confirmButtonColor: '#f59e0b' }); return; } openCart(); addItemToPickup({
+                                <button class="req-btn" @click="if (product.store_is_suspended == 1) { Swal.fire({ icon: 'error', title: 'Toko Ditangguhkan', text: 'Toko ini sedang Tutup. Tidak bisa mengajukan pengambilan dari toko ini.', confirmButtonColor: '#ef4444' }); return; } openCart(); addItemToPickup({
                                     id: product.id,
                                     name: product.name,
                                     store: product.store,
@@ -1335,13 +1335,13 @@ function updateCount(){
 
     // 3. Fungsi Utama: Tambah ke Daftar Pengambilan
     window.addItemToPickup = function(product) {
-        // Cek batasan: toko tutup (penangguhan disembunyikan dari konsumen)
+        // Cek batasan: toko ditangguhkan
         if (product.store_is_suspended == 1) {
             Swal.fire({
-                icon: 'warning',
+                icon: 'error',
                 title: 'Toko Tutup',
-                text: 'Toko ini sedang tutup. Tidak bisa mengajukan pengambilan dari toko ini.',
-                confirmButtonColor: '#f59e0b',
+                text: 'Toko ini sedang Tutup. Tidak bisa mengajukan pengambilan dari toko ini.',
+                confirmButtonColor: '#ef4444',
                 confirmButtonText: 'Kembali'
             });
             return;

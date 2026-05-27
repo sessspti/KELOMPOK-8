@@ -68,7 +68,7 @@ class Menu extends Model
         }
 
         if ($this->user && $this->user->account_status === 'rejected') {
-            return 'Ditangguhkan';
+            return 'Tutup.';
         }
 
         if ($this->user && $this->user->is_open == 0) {

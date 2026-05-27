@@ -1340,7 +1340,7 @@ body::before {
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                 </svg>
-                                <span>Toko Tutup</span>
+                                <span>{{ $seller->account_status === 'rejected' ? 'Toko Ditangguhkan' : 'Toko Tutup' }}</span>
                             </button>
                         @endif
                     </div>
@@ -1422,7 +1422,7 @@ function storePage() {
         addToCart(product, event) {
             // Validasi: Cek apakah toko ditangguhkan
             if (product.store_is_suspended == 1) {
-                this.showToast('Toko sedang ditangguhkan. Tidak bisa memesan dari toko ini.', '🔒');
+                this.showToast('Toko sedang Tutup. Tidak bisa memesan dari toko ini.', '🔒');
                 return;
             }
 
