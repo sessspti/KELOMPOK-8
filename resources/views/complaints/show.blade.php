@@ -456,13 +456,13 @@
                 <p style="font-size: 0.75rem; color: #7f1d1d; margin: 0 0 1rem 0; line-height: 1.4;">
                     Jika terbukti menipu atau melanggar, Anda dapat menonaktifkan seluruh aktivitas toko ini.
                 </p>
-                <form action="{{ route('admin.users.toggle-status', $complaint->seller_id) }}" method="POST">
+                <form action="{{ route('admin.users.toggle-status', $complaint->seller_id) }}" method="POST" id="toggleSuspendForm">
                     @csrf
-                    <button type="submit" class="update-status-btn" 
+                    <button type="button" class="update-status-btn" id="suspendBtn"
                             style="width: 100%; transition: all 0.2s;
-                                   background: {{ $complaint->seller->account_status === 'suspend' ? '#dc2626' : 'linear-gradient(135deg, #dc2626, #b91c1c)' }};
-                                   box-shadow: 0 4px 12px rgba(220,38,38,0.2);">
-                        {{ $complaint->seller->account_status === 'suspend' ? '✓ Lepas Suspend Toko' : '🚨 Suspend Akun Seller' }}
+                                   background: {{ $complaint->seller->account_status === 'rejected' ? '#16a34a' : 'linear-gradient(135deg, #dc2626, #b91c1c)' }};
+                                   box-shadow: 0 4px 12px {{ $complaint->seller->account_status === 'rejected' ? 'rgba(22,163,74,0.2)' : 'rgba(220,38,38,0.2)' }};">
+                        {{ $complaint->seller->account_status === 'rejected' ? '✓ Lepas Suspend Toko' : '🚨 Suspend Akun Seller' }}
                     </button>
                 </form>
             </div>
@@ -585,6 +585,61 @@ if (ta) {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
             e.preventDefault();
             document.getElementById('msgForm').submit();
+        }
+    });
+}
+
+// Suspend button handling with SweetAlert2
+const suspendBtn = document.getElementById('suspendBtn');
+if (suspendBtn) {
+    suspendBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const isSuspended = "{{ $complaint->seller->account_status ?? '' }}" === 'rejected';
+        const sellerName = "{{ $complaint->seller->name ?? '' }}";
+        
+        if (!isSuspended) {
+            Swal.fire({
+                title: 'Tangguhkan Akun?',
+                text: "Masukkan alasan penangguhan untuk akun " + sellerName,
+                input: 'textarea',
+                inputPlaceholder: 'Contoh: Melanggar ketentuan layanan, terindikasi penipuan...',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Tangguhkan',
+                cancelButtonText: 'Batal',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Alasan penangguhan harus diisi!'
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('toggleSuspendForm');
+                    const reasonInput = document.createElement('input');
+                    reasonInput.type = 'hidden';
+                    reasonInput.name = 'suspension_reason';
+                    reasonInput.value = result.value;
+                    form.appendChild(reasonInput);
+                    form.submit();
+                }
+            });
+        } else {
+            Swal.fire({
+                title: 'Aktifkan Kembali Akun?',
+                text: "Apakah Anda yakin mengaktifkan kembali akun " + sellerName + "?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#22c55e',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Ya, Aktifkan',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('toggleSuspendForm').submit();
+                }
+            });
         }
     });
 }

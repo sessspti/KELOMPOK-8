@@ -913,15 +913,13 @@ body.no-scroll { overflow: hidden; }
                                 💬 Buka Chat
                             </a>
 
-                            {{-- Tombol Integrasi Pembekuan (Suspend) Akun Seller bawaanmu --}}
+                            {{-- Tombol Integrasi Pembekuan (Suspend) Akun Seller --}}
                             @if($complaint->seller)
-                                <form action="{{ route('admin.users.toggle-status', $complaint->seller_id) }}" method="POST" style="margin:0; display: inline-block; position: relative; z-index: 20;">
-                                    @csrf
-                                    <button type="submit" class="btn btn-outline btn-xs" 
-                                            style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; border:1px solid #dc2626; color:#dc2626; background:transparent;">
-                                        {{ $complaint->seller->account_status === 'suspend' ? '✓ Aktifkan Akun' : '⚠️ Suspend Seller' }}
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-outline btn-xs" 
+                                        onclick="confirmToggleStatus('{{ $complaint->seller_id }}', '{{ $complaint->seller->name }}', '{{ $complaint->seller->account_status === 'rejected' ? 'aktifkan' : 'tangguhkan' }}')"
+                                        style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; border:1px solid #dc2626; color:#dc2626; background:transparent;">
+                                    {{ $complaint->seller->account_status === 'rejected' ? '✓ Aktifkan Akun' : '⚠️ Suspend Seller' }}
+                                </button>
                             @endif
 
                         </div>
@@ -1472,7 +1470,19 @@ function confirmToggleStatus(userId, userName, action) {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                const form = document.getElementById('toggleForm_' + userId);
+                let form = document.getElementById('toggleForm_' + userId);
+                if (!form) {
+                    form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/admin/users/' + userId + '/toggle-status';
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+                    document.body.appendChild(form);
+                }
                 const reasonInput = document.createElement('input');
                 reasonInput.type = 'hidden';
                 reasonInput.name = 'suspension_reason';
@@ -1493,7 +1503,20 @@ function confirmToggleStatus(userId, userName, action) {
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById('toggleForm_' + userId).submit();
+                let form = document.getElementById('toggleForm_' + userId);
+                if (!form) {
+                    form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/admin/users/' + userId + '/toggle-status';
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+                    document.body.appendChild(form);
+                }
+                form.submit();
             }
         });
     }
