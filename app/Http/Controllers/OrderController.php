@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Services\ImpactCalculatorService;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -14,7 +15,12 @@ class OrderController extends Controller
             'status' => 'required|in:paid,proses,siap_diambil,selesai,dibatalkan',
         ]);
 
+        $previousStatus = $order->status;
         $order->update(['status' => $request->status]);
+
+        if ($request->status === 'selesai' && $previousStatus !== 'selesai') {
+            app(ImpactCalculatorService::class)->calculateFromOrder($order->fresh(['menu', 'user']));
+        }
 
         // TAMBAHAN AC 4: kirim notifikasi ke pembeli jika status diubah menjadi 'siap_diambil'
         if ($request->status === 'siap_diambil' && $order->user) {

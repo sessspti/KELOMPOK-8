@@ -10,7 +10,9 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\ComplaintController;
+use App\Http\Controllers\Admin\ImpactDashboardController as AdminImpactController;
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
+use App\Services\ImpactCalculatorService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -61,6 +63,16 @@ Route::get('/store/{id}', [MenuController::class, 'showStore'])->name('store.sho
 // ─── GROUP ROUTE KHUSUS USER YANG LOGGED IN ───
 // ==============================================================================
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/impact/me', function (ImpactCalculatorService $calculator) {
+        $impact = $calculator->syncForUser(auth()->id());
+
+        return response()->json([
+            'food_saved_kg' => (float) $impact->food_saved_kg,
+            'co2_reduced_kg' => (float) $impact->co2_reduced_kg,
+            'money_saved' => (float) $impact->money_saved,
+            'total_rescues' => (int) $impact->total_rescues,
+        ]);
+    })->name('impact.me');
 
     // 1. Dashboard Konsumen
     Route::get('/dashboard', [MenuController::class, 'consumerDashboard'])
@@ -98,7 +110,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 6. Fitur Seller (Dibagi menjadi Home & Manajemen)
     Route::prefix('seller')->middleware(['role:seller', 'approved'])->group(function () {
-        Route::get('/dashboard', function () {
+        Route::get('/dashboard', function (ImpactCalculatorService $impactCalculator) {
             $menus = \App\Models\Menu::where('user_id', auth()->id())->get();
             $orders = \App\Models\Order::whereHas('menu', function ($query) {
                 $query->where('user_id', auth()->id());
@@ -180,13 +192,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 }
             }
 
-            return view('seller.dashboardSeller', compact('menus', 'orders', 'activeMenusCount', 'lowStockMenusCount', 'totalClaimsCount', 'performance', 'avgRating', 'allReviews', 'contacts'));
+            $impact = $impactCalculator->syncForUser(auth()->id());
+
+            return view('seller.dashboardSeller', compact('menus', 'orders', 'activeMenusCount', 'lowStockMenusCount', 'totalClaimsCount', 'performance', 'avgRating', 'allReviews', 'contacts', 'impact'));
         })->name('seller.dashboard');
 
         // Route untuk update status pesanan
         Route::patch('/orders/{order}/status', function (\App\Models\Order $order) {
             $status = request('status');
+            $previousStatus = $order->status;
             $order->update(['status' => $status]);
+
+            if ($status === 'selesai' && $previousStatus !== 'selesai') {
+                app(ImpactCalculatorService::class)->calculateFromOrder($order->fresh(['menu', 'user']));
+            }
 
             // Kirim notifikasi ke konsumen
             $updateData = ['status' => $status];
@@ -283,7 +302,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ==============================================================================
     Route::prefix('admin')->middleware('role:admin')->group(function () {
         
-        Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
+        Route::get('/dashboard', function (\Illuminate\Http\Request $request, ImpactCalculatorService $impactCalculator) {
+            $impactCalculator->recalculateAll();
+
             $orders = \App\Models\Order::with(['menu.user', 'user'])->latest()->get();
             $ordersGrouped = $orders->groupBy(fn($order) => $order->menu->user->name ?? 'Unknown Store');
             $pendingVerifications = \App\Models\UserVerification::with('user')->where('status', 'pending')->latest()->get();
@@ -303,10 +324,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $totalUsers = \App\Models\User::count();
             $activeSellers = \App\Models\User::where('role', 'seller')->where('account_status', 'approved')->count();
 
+            // Hitung global impact dari semua transaksi selesai
+            $completedOrders = \App\Models\Order::where('status', 'selesai')->get();
+            
+            $globalFoodSaved = 0;
+            $globalTransactions = $completedOrders->count();
+            
+            // Hitung total makanan diselamatkan (asumsi 0.5kg per item)
+            foreach ($completedOrders as $order) {
+                $averageWeight = 0.5; // 500 gram per item makanan
+                $globalFoodSaved += $order->quantity * $averageWeight;
+            }
+            
+            // Tambahkan donasi yang sudah diterima jika ada
+            $completedDonations = \App\Models\Donation::count(); // Hitung total donasi sebagai transaksi
+            $globalTransactions += $completedDonations;
+            
+            // Buat object global impact
+            $globalImpact = (object) [
+                'food_saved_kg' => $globalFoodSaved,
+                'total_rescues' => $globalTransactions
+            ];
+
             $complaintsList = \App\Models\Complaint::with(['reporter', 'seller'])->latest()->get();
             $totalComplaints = \App\Models\Complaint::where('status', 'pending')->count();
 
-            return view('admin.dashboard', compact('ordersGrouped', 'pendingVerifications', 'usersList', 'totalUsers', 'activeSellers', 'complaintsList', 'totalComplaints'));
+            return view('admin.dashboard', compact('ordersGrouped', 'pendingVerifications', 'usersList', 'totalUsers', 'activeSellers', 'complaintsList', 'totalComplaints', 'globalImpact'));
         })->name('admin.dashboard');
 
         Route::post('/verifications/{user}/approve', [AdminVerificationController::class, 'approve'])->name('admin.verifications.approve');
@@ -319,6 +362,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/users', fn() => view('admin.users.index'))->name('admin.users.index');
         Route::get('/verifikasi', fn() => view('admin.verifikasi'))->name('admin.verifikasi');
         Route::get('/edukasi', fn() => view('admin.edukasi.index'))->name('admin.edukasi');
+        Route::get('/impact/stats', [AdminImpactController::class, 'globalStats'])->name('admin.impact.stats');
 
         // Jalur Khusus Admin untuk melihat & merespon Tiket Keluhan
         Route::get('/complaints/{complaint}', [ComplaintController::class, 'adminShow'])->name('admin.complaints.show');

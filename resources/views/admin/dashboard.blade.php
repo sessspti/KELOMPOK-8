@@ -719,7 +719,6 @@ body.no-scroll { overflow: hidden; }
     </div>
 
     <div class="content">
-
         {{-- ══ 1. STATISTIK UTAMA ══ --}}
         <div class="stat-grid">
             <div class="stat-card blue">
@@ -741,10 +740,10 @@ body.no-scroll { overflow: hidden; }
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
                 </div>
                 <div class="stat-label">Volume Penyelamatan</div>
-                <div class="stat-num">18.4<span style="font-size:1.25rem;"> ton</span></div>
+                <div class="stat-num">{{ number_format((float) ($globalImpact->food_saved_kg ?? 0), 1) }}<span style="font-size:1.25rem;"> Kg</span></div>
                 <div class="stat-delta up">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                    +2.1 ton bulan ini
+                    Total makanan diselamatkan
                 </div>
             </div>
             <div class="stat-card amber">
@@ -752,10 +751,10 @@ body.no-scroll { overflow: hidden; }
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                 </div>
                 <div class="stat-label">Total Transaksi & Donasi</div>
-                <div class="stat-num">9.307</div>
+                <div class="stat-num">{{ number_format((int) ($globalImpact->total_rescues ?? 0), 0, ',', '.') }}</div>
                 <div class="stat-delta up">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
-                    +341 minggu ini
+                    Total transaksi sukses
                 </div>
             </div>
         </div>

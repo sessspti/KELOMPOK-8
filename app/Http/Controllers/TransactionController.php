@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\Menu;
+use App\Services\ImpactCalculatorService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -13,10 +14,13 @@ class TransactionController extends Controller
     /**
      * Menampilkan riwayat pesanan untuk konsumen.
      */
-    public function history()
+    public function history(ImpactCalculatorService $impactCalculator)
     {
         $userId = Auth::id();
-        
+        $user = Auth::user();
+
+        $impact = $impactCalculator->syncForUser($userId);
+
         // Group orders by transaction_id untuk ditampilkan sebagai satu entri invoice
         // Hanya menampilkan order yang bukan 'pending' (termasuk paid, proses, selesai, dll)
         $transactions = Order::with('menu')
@@ -36,14 +40,17 @@ class TransactionController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        if (Auth::user()->role === 'lembaga_sosial') {
-            $transactions->transform(function ($trx) {
+        $transactions->transform(function ($trx) use ($impactCalculator, $userId, $user) {
+            if ($user->role === 'lembaga_sosial') {
                 $trx->total_price = 0;
-                return $trx;
-            });
-        }
+            }
 
-        return view('transaction.history', compact('transactions'));
+            $trx->impact = $impactCalculator->metricsForTransaction($trx->transaction_id, $userId);
+
+            return $trx;
+        });
+
+        return view('transaction.history', compact('transactions', 'impact', 'user'));
     }
 
     /**

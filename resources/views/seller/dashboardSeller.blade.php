@@ -150,8 +150,14 @@ body::before {
 /* ─── GREETING ─── */
 .greet-wrap {
     padding: 2.5rem 0 2rem;
-    display: flex; align-items: flex-end;
+    display: flex; align-items: center;
     justify-content: space-between; gap: 2rem; flex-wrap: wrap;
+}
+.greet-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .greet-kicker {
     font-size: 0.6875rem; font-weight: 700;
@@ -168,30 +174,74 @@ body::before {
 .greet-title em { font-style: normal; color: var(--mint-600); }
 .greet-sub { font-size: 0.9375rem; color: var(--muted); margin-top: 0.5rem; }
 
+/* ─── PERF CHIP ─── */
 .perf-chip {
-    background: var(--mint-400); border-radius: var(--r-xl);
-    padding: 1.375rem 1.875rem; min-width: 230px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--mint-400) 0%, var(--lime-300) 100%);
+    border-radius: var(--r-xl);
+    padding: 1.5rem 1.875rem; min-width: 280px; flex-shrink: 0;
     position: relative; overflow: hidden;
 }
 .perf-chip::before {
     content:''; position:absolute; top:-35px; right:-35px;
     width:110px; height:110px;
-    background:var(--lime-300); border-radius:50%; opacity:0.45;
+    background:var(--yellow-300); border-radius:50%; opacity:0.3;
 }
 .perf-kicker {
     font-size: 0.625rem; font-weight: 700;
     letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--green-800); margin-bottom: 4px;
+    color: var(--green-800); margin-bottom: 1rem;
     position: relative; z-index: 1;
 }
-.perf-num {
-    font-family: 'Sora', sans-serif; font-weight: 800;
-    font-size: 2.25rem; letter-spacing: -0.05em;
-    color: var(--ink); line-height: 1;
-    position: relative; z-index: 1;
+.perf-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
 }
-.perf-num small { font-size: 0.875rem; font-weight: 600; }
-.perf-desc { font-size: 0.8125rem; color: var(--green-800); font-weight: 500; margin-top: 3px; position: relative; z-index: 1; }
+.perf-item {
+    background: rgba(255,255,255,0.75);
+    border-radius: var(--r-md);
+    padding: 0.875rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.375rem;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.9);
+    transition: transform 0.2s;
+}
+.perf-item:hover {
+    transform: translateY(-2px);
+}
+.perf-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--green-800);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.perf-icon {
+    font-size: 12px;
+}
+.perf-value {
+    font-family: 'Sora', sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1;
+}
+.perf-unit {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-left: 2px;
+}
 
 /* ─── BENTO ─── */
 .bento {
@@ -608,18 +658,35 @@ body::before {
 </header>
 
 <div class="page">
-
     {{-- ── GREETING ── --}}
     <div class="greet-wrap">
-        <div>
+        <div class="greet-content">
             <p class="greet-kicker" id="greetKicker">Selamat Pagi</p>
             <h1 class="greet-title">Halo, <em>{{ Auth::user()->name ?? 'Seller' }}!</em></h1>
             <p class="greet-sub">Pantau aktivitas tokomu hari ini dari sini.</p>
         </div>
         <div class="perf-chip">
-            <div class="perf-kicker">🌿 Performa Bulan Ini</div>
-            <div class="perf-num">50 <small>kg</small></div>
-            <div class="perf-desc">makanan berhasil diselamatkan</div>
+            <div class="perf-kicker">🌿 Dampak Total Toko</div>
+            <div class="perf-grid">
+                <div class="perf-item">
+                    <div class="perf-label">
+                        <span class="perf-icon">🍽️</span>
+                        Food Saved
+                    </div>
+                    <div class="perf-value">
+                        {{ number_format((float) ($impact->food_saved_kg ?? 0), 1) }} <span class="perf-unit">Kg</span>
+                    </div>
+                </div>
+                <div class="perf-item">
+                    <div class="perf-label">
+                        <span class="perf-icon">🌱</span>
+                        CO₂ Dikurangi
+                    </div>
+                    <div class="perf-value">
+                        {{ number_format((float) ($impact->co2_reduced_kg ?? 0), 1) }} <span class="perf-unit">Kg</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
