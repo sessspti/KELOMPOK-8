@@ -108,6 +108,18 @@
         <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('address')" />
     </div>
 
+    <div>
+        <label for="city" class="block text-sm font-medium text-gray-700 mb-1">Kota</label>
+        <select id="city" name="city" required
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm">
+            <option value="" disabled {{ old('city', $user->city) == '' ? 'selected' : '' }}>Pilih Kota</option>
+            <option value="jakarta" {{ old('city', $user->city) == 'jakarta' ? 'selected' : '' }}>Jakarta</option>
+            <option value="tangerang" {{ old('city', $user->city) == 'tangerang' ? 'selected' : '' }}>Tangerang</option>
+            <option value="purwakarta" {{ old('city', $user->city) == 'purwakarta' ? 'selected' : '' }}>Purwakarta</option>
+        </select>
+        <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('city')" />
+    </div>
+
         <div class="flex items-center gap-4 pt-4">
             <button type="submit" class="inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-xl shadow-md text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 transform hover:-translate-y-0.5">
                 {{ __('Simpan Perubahan') }}

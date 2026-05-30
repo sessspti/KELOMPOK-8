@@ -186,7 +186,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Route untuk update status pesanan
         Route::patch('/orders/{order}/status', function (\App\Models\Order $order) {
             $status = request('status');
-            $order->update(['status' => $status]);
+
+            // AC 5 — Log Pengambilan: catat waktu penyerahan self-pickup
+            $updateData = ['status' => $status];
+            if ($status === 'selesai' && $order->pickup_method === 'self-pickup' && is_null($order->picked_up_at)) {
+                $updateData['picked_up_at'] = now();
+            }
+
+            $order->update($updateData);
+
 
             // Kirim notifikasi ke konsumen
             $updateData = ['status' => $status];

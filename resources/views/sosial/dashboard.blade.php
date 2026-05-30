@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout> 
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -718,6 +718,42 @@ body::after {
             <input type="text" placeholder="Cari donasi surplus tersedia..." x-model="searchQuery">
         </div>
         <div class="hdr-right">
+            {{-- Map Dropdown Filter --}}
+            <div class="relative flex items-center mr-2" x-data="{ openMap: false }" @click.outside="openMap = false">
+                <button @click="openMap = !openMap" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all focus:outline-none shadow-sm text-sm font-semibold text-gray-700">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>{{ request('kota') ? ucfirst(request('kota')) : 'Semua Kota' }}</span>
+                    <svg class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" :class="{'rotate-180': openMap}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+
+                <div x-show="openMap" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="transform opacity-0 scale-95 translate-y-2"
+                     x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="transform opacity-100 scale-100 translate-y-0"
+                     x-transition:leave-end="transform opacity-0 scale-95 translate-y-2"
+                     class="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-100 rounded-lg shadow-lg z-[130] py-1 overflow-hidden"
+                     style="display: none;">
+                    
+                    <a href="{{ url()->current() }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        🌍 Semua Kota
+                    </a>
+                    <a href="{{ url()->current() }}?kota=jakarta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        🏢 Jakarta
+                    </a>
+                    <a href="{{ url()->current() }}?kota=purwakarta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        🏭 Purwakarta
+                    </a>
+                    <a href="{{ url()->current() }}?kota=tangerang" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        🌆 Tangerang
+                    </a>
+                </div>
+            </div>
+
         <!-- NOTIF -->
          @auth
             <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false">
@@ -1258,7 +1294,7 @@ body::after {
                 <div style="width:52px;height:52px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--mint-100);"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=200" style="width:100%;height:100%;object-fit:cover;"></div>
                 <div>
                     <div style="font-size:.5625rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--mint-600);margin-bottom:3px;">Bakery Sari Rasa</div>
-                    <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.9375rem;letter-spacing:-.03em;color:var(--ink);">Roti & Kue Sisa Hari Ini</div>
+                    <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.9375rem;letter-spacing:-.03em;color:var(--ink);">Roti &amp; Kue Sisa Hari Ini</div>
                     <div style="font-size:.8125rem;color:var(--muted);margin-top:3px;">35 pcs · Gratis</div>
                 </div>
             </div>
@@ -1271,19 +1307,57 @@ body::after {
                 </div>
             </div>
         </div>
-    </div>
-    <div style="padding:1.25rem 1.75rem;border-top:1.5px solid var(--border);flex-shrink:0;">
+    </div>{{-- /sidebarBody --}}
+
+    {{-- ══ SIDEBAR FOOTER ══ --}}
+    <div style="padding:1.25rem 1.75rem 1.5rem;border-top:1.5px solid var(--border);flex-shrink:0;">
+
+        {{-- ── JADWAL PENGAMBILAN (di atas total porsi agar dropdown membuka ke bawah) ── --}}
+        <div style="background:#ffffff;border:1.5px solid #e2e8f0;border-radius:14px;padding:1rem 1rem 0.875rem;margin-bottom:1rem;">
+            <label for="pickupScheduleSelect" style="display:flex;align-items:center;gap:7px;font-family:'Space Grotesk',sans-serif;font-size:.6875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mint-700);margin-bottom:.625rem;">
+                <span style="width:22px;height:22px;border-radius:6px;background:var(--mint-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--mint-600);">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </span>
+                Jadwal Pengambilan&nbsp;<span style="color:#ef4444;">*</span>
+            </label>
+            <div style="position:relative;">
+                <span style="position:absolute;left:.875rem;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none;line-height:1;">⏰</span>
+                <select id="pickupScheduleSelect"
+                    style="width:100%;padding:.7rem .875rem .7rem 2.5rem;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:.875rem;color:var(--ink);background:#ffffff;outline:none;cursor:pointer;transition:border-color .2s,box-shadow .2s;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2316a34a%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 9l6 6 6-6%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right .875rem center;background-size:15px;"
+                    onfocus="this.style.borderColor='var(--mint-400)';this.style.boxShadow='0 0 0 3px rgba(74,222,128,0.18)'"
+                    onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                    <option value="">— Pilih jam pengambilan —</option>
+                    <option value="09:00-09:30">09:00 – 09:30</option>
+                    <option value="10:00-10:30">10:00 – 10:30</option>
+                    <option value="11:00-11:30">11:00 – 11:30</option>
+                    <option value="12:00-12:30">12:00 – 12:30</option>
+                    <option value="13:00-13:30">13:00 – 13:30</option>
+                    <option value="14:00-14:30">14:00 – 14:30</option>
+                    <option value="15:00-15:30">15:00 – 15:30</option>
+                    <option value="16:00-16:30">16:00 – 16:30</option>
+                    <option value="17:00-17:30">17:00 – 17:30</option>
+                    <option value="18:00-18:30">18:00 – 18:30</option>
+                    <option value="19:00-19:30">19:00 – 19:30</option>
+                    <option value="20:00-20:30">20:00 – 20:30</option>
+                </select>
+            </div>
+        </div>
+        {{-- ── /JADWAL PENGAMBILAN ── --}}
+
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
             <span style="font-size:.875rem;color:var(--muted);">Total pengambilan</span>
             <span id="itemCount" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem;letter-spacing:-.03em;color:var(--ink);">3 lokasi · 67 porsi</span>
         </div>
+
         <button style="width:100%;background:var(--mint-500);color:#fff;border:none;border-radius:var(--r-xl);padding:.9rem;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem;letter-spacing:-.02em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(34,197,94,.3);transition:all .2s;">
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             Konfirmasi Pengambilan
         </button>
         <p style="text-align:center;font-size:.75rem;color:var(--faint);margin-top:.625rem;line-height:1.5;">Lembaga Anda akan dikonfirmasi oleh masing-masing restoran dalam 15 menit.</p>
-    </div>
-</div>
+    </div>{{-- /sidebar footer --}}
+</div>{{-- /sidebar --}}
 
 <script>
 function openCart(){
@@ -1485,9 +1559,39 @@ function updateCount(){
     window.confirmPickup = function() {
         if (pickupItems.length === 0) return;
 
+        // [BARU] Validasi: Jadwal Pengambilan wajib dipilih
+        const scheduleSelect = document.getElementById('pickupScheduleSelect');
+        const selectedSchedule = scheduleSelect ? scheduleSelect.value : '';
+
+        if (!selectedSchedule) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Jadwal Belum Dipilih!',
+                text: 'Harap pilih jadwal pengambilan terlebih dahulu sebelum mengajukan klaim donasi.',
+                confirmButtonColor: '#22c55e',
+                confirmButtonText: 'OK, Pilih Jadwal'
+            }).then(() => {
+                if (scheduleSelect) {
+                    scheduleSelect.focus();
+                    scheduleSelect.style.borderColor = '#ef4444';
+                    scheduleSelect.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.2)';
+                    setTimeout(() => {
+                        scheduleSelect.style.borderColor = 'var(--border-strong)';
+                        scheduleSelect.style.boxShadow = 'none';
+                    }, 2500);
+                }
+            });
+            return; // Hentikan proses jika jadwal belum dipilih
+        }
+        // [/BARU]
+
         Swal.fire({
             title: 'Konfirmasi Pengambilan',
-            text: "Apakah Anda yakin ingin mengajukan pengambilan donasi ini?",
+            html: `<p style="margin-bottom:8px;">Apakah Anda yakin ingin mengajukan pengambilan donasi ini?</p>
+                   <div style="display:inline-flex;align-items:center;gap:6px;background:#f0fdf6;border:1.5px solid #86efb0;border-radius:999px;padding:5px 14px;font-size:0.8125rem;font-weight:700;color:#15803d;">
+                       <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                       Jadwal: ${selectedSchedule} WIB
+                   </div>`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#22c55e',
@@ -1508,7 +1612,8 @@ function updateCount(){
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: JSON.stringify({ items: pickupItems })
+                    // [BARU] Sertakan pickup_schedule dalam payload ke backend
+                    body: JSON.stringify({ items: pickupItems, pickup_schedule: selectedSchedule })
                 })
                 .then(response => response.json())
                 .then(data => {
