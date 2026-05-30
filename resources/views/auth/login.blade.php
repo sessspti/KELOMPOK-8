@@ -140,14 +140,7 @@
                         <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500 text-xs" />
                     </div>
 
-                    <!-- Remember Me -->
-                    <div class="flex items-center">
-                        <input id="remember_me" type="checkbox" name="remember"
-                            class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
-                        <label for="remember_me" class="ml-2 block text-sm text-gray-600">
-                            Ingat saya
-                        </label>
-                    </div>
+
 
                     <div>
                         <button type="submit"

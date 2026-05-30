@@ -33,7 +33,7 @@
                 </div>
             </div>
             <div>
-            <input type="file" name="avatar" id="avatar" class="hidden" accept="image/jpeg,image/png,image/jpg" onchange="previewImage(event)" {{ !Auth::user()->avatar ? 'required' : '' }}>
+            <input type="file" name="avatar" id="avatar" class="hidden" accept="image/jpeg,image/png,image/jpg" onchange="previewImage(event)">
             <button type="button" onclick="document.getElementById('avatar').click()" class="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1">
                 Ubah Foto Profil
             </button>
@@ -106,6 +106,18 @@
         <textarea id="address" name="address" rows="3" required
             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm">{{ old('address', $user->address) }}</textarea>
         <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('address')" />
+    </div>
+
+    <div>
+        <label for="city" class="block text-sm font-medium text-gray-700 mb-1">Kota</label>
+        <select id="city" name="city" required
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring focus:ring-green-500/20 transition-all duration-200 outline-none bg-white shadow-sm">
+            <option value="" disabled {{ old('city', $user->city) == '' ? 'selected' : '' }}>Pilih Kota</option>
+            @foreach(\App\Models\User::getCities() as $key => $city)
+                <option value="{{ $key }}" {{ old('city', $user->city) == $key ? 'selected' : '' }}>{{ $city['emoji'] }} {{ $city['name'] }}</option>
+            @endforeach
+        </select>
+        <x-input-error class="mt-2 text-red-500 text-xs" :messages="$errors->get('city')" />
     </div>
 
         <div class="flex items-center gap-4 pt-4">

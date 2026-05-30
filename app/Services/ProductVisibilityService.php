@@ -12,7 +12,7 @@ class ProductVisibilityService
     public function getVisibleProductsForConsumer()
     {
         return Menu::visibleForPublic()
-            ->with('user:id,name,is_open,account_status')
+            ->with('user:id,name,is_open,account_status,city')
             ->latest()
             ->get();
     }
@@ -23,7 +23,7 @@ class ProductVisibilityService
     public function getVisibleProductsForInstitution()
     {
         return Menu::visibleForPublic()
-            ->with('user:id,name,is_open,account_status')
+            ->with('user:id,name,is_open,account_status,city')
             ->latest()
             ->get();
     }
@@ -34,7 +34,7 @@ class ProductVisibilityService
     public function getAllProductsForSeller($sellerId)
     {
         return Menu::where('user_id', $sellerId)
-            ->with('user:id,name,is_open,account_status')
+            ->with('user:id,name,is_open,account_status,city')
             ->latest()
             ->get();
     }

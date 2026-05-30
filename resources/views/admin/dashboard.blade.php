@@ -688,15 +688,7 @@ body.no-scroll { overflow: hidden; }
         </a>
     </nav>
 
-    <div class="sb-footer">
-        <div class="sb-user">
-            <div class="sb-avatar">SA</div>
-            <div>
-                <div class="sb-user-name">Super Admin</div>
-                <div class="sb-user-role">admin@foodsave.id</div>
-            </div>
-        </div>
-    </div>
+
 </aside>
 
 {{-- ════════════ MAIN ════════════ --}}
@@ -709,8 +701,8 @@ body.no-scroll { overflow: hidden; }
         <div class="topbar-right">
             <div class="tb-search">
                 <svg class="tb-search-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input type="text" id="globalSearch" placeholder="Cari fitur, data, atau inisial..." autocomplete="off">
-            </div>
+                <input type="text" placeholder="Cari pengguna, transaksi...">
+            </div>        
             <button class="tb-icon-btn" title="Notifikasi">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                 <span class="tb-notif-dot"></span>
@@ -722,9 +714,7 @@ body.no-scroll { overflow: hidden; }
                     <span style="font-weight: 700;">Keluar</span>
                 </button>
             </form>
-            <button class="tb-icon-btn" title="Ekspor Data">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            </button>
+
         </div>
     </div>
 
@@ -897,7 +887,7 @@ body.no-scroll { overflow: hidden; }
                                     <input type="text" name="admin_reply" placeholder="Tulis tindakan/catatan..." required 
                                            style="font-size:0.75rem; padding:0.25rem 0.5rem; border:1px solid var(--border); border-radius:6px; width:160px; outline:none; height:28px; background: #fff; color: var(--ink);">
                                     <button type="submit" class="btn btn-primary btn-xs" 
-                                            style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; display:flex; align-items:center; background: var(--primary); color: #fff; border: none;">
+                                            style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; display:flex; align-items:center; background: var(--primary); color: #0ea5e9; border: none;">
                                         Tangani
                                     </button>
                                 </form>
@@ -913,15 +903,13 @@ body.no-scroll { overflow: hidden; }
                                 💬 Buka Chat
                             </a>
 
-                            {{-- Tombol Integrasi Pembekuan (Suspend) Akun Seller bawaanmu --}}
+                            {{-- Tombol Integrasi Pembekuan (Suspend) Akun Seller --}}
                             @if($complaint->seller)
-                                <form action="{{ route('admin.users.toggle-status', $complaint->seller_id) }}" method="POST" style="margin:0; display: inline-block; position: relative; z-index: 20;">
-                                    @csrf
-                                    <button type="submit" class="btn btn-outline btn-xs" 
-                                            style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; border:1px solid #dc2626; color:#dc2626; background:transparent;">
-                                        {{ $complaint->seller->account_status === 'suspend' ? '✓ Aktifkan Akun' : '⚠️ Suspend Seller' }}
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-outline btn-xs" 
+                                        onclick="confirmToggleStatus('{{ $complaint->seller_id }}', '{{ $complaint->seller->name }}', '{{ $complaint->seller->account_status === 'rejected' ? 'aktifkan' : 'tangguhkan' }}')"
+                                        style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; border:1px solid #dc2626; color:#dc2626; background:transparent;">
+                                    {{ $complaint->seller->account_status === 'rejected' ? '✓ Aktifkan Akun' : '⚠️ Suspend Seller' }}
+                                </button>
                             @endif
 
                         </div>
@@ -1472,7 +1460,19 @@ function confirmToggleStatus(userId, userName, action) {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                const form = document.getElementById('toggleForm_' + userId);
+                let form = document.getElementById('toggleForm_' + userId);
+                if (!form) {
+                    form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/admin/users/' + userId + '/toggle-status';
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+                    document.body.appendChild(form);
+                }
                 const reasonInput = document.createElement('input');
                 reasonInput.type = 'hidden';
                 reasonInput.name = 'suspension_reason';
@@ -1493,7 +1493,20 @@ function confirmToggleStatus(userId, userName, action) {
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById('toggleForm_' + userId).submit();
+                let form = document.getElementById('toggleForm_' + userId);
+                if (!form) {
+                    form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/admin/users/' + userId + '/toggle-status';
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+                    document.body.appendChild(form);
+                }
+                form.submit();
             }
         });
     }
