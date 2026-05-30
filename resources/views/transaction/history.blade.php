@@ -64,11 +64,67 @@
                                 </div>
                             </div>
                             
-                            <div class="flex items-center justify-between md:justify-end gap-8 border-t md:border-t-0 pt-6 md:pt-0">
+                            <div class="flex flex-wrap items-center justify-between md:justify-end gap-4 border-t md:border-t-0 pt-6 md:pt-0">
                                 <div class="text-right">
                                     <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Total Pembayaran</p>
                                     <p class="text-2xl font-black text-green-600">Rp {{ number_format($trx->total_price, 0, ',', '.') }}</p>
                                 </div>
+
+                                {{-- ── TAMPILKAN TOMBOL ULASAN JIKA STATUS ADALAH SELESAI ── --}}
+{{-- ── TAMPILKAN TOMBOL ULASAN JIKA STATUS ADALAH SELESAI ── --}}
+{{-- ── TAMPILKAN TOMBOL ULASAN JIKA STATUS ADALAH SELESAI ── --}}
+{{-- ── TAMPILKAN TOMBOL ULASAN JIKA STATUS ADALAH SELESAI ── --}}
+@if(strtolower($trx->status) === 'selesai' || strtolower($trx->status) === 'success')
+    
+    <button type="button" onclick="toggleReviewModal('{{ $trx->id }}')" class="px-5 py-3 bg-green-500 text-white text-sm font-bold rounded-xl hover:bg-green-600 transition-all shadow-lg shadow-green-500/10 flex items-center gap-2 mt-4 md:mt-0">
+        ⭐ Ulas {{ $trx->menu->name ?? 'Makanan' }}
+    </button>
+
+    <div id="modal-review-{{ $trx->id }}" class="fixed inset-0 bg-black/50 z-[9999] hidden justify-center items-center p-4 text-left">
+        <div class="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl transform transition-all animate-in fade-in zoom-in-95 duration-200">
+            <h3 class="text-xl font-black text-gray-900 tracking-tight">Beri Ulasan</h3>
+            <p class="text-sm text-gray-500 mt-1 mb-6">Bagikan penilaian jujurmu untuk menu <span class="font-bold text-green-600">{{ $trx->menu->name ?? 'makanan ini' }}</span>.</p>
+
+            <form action="{{ route('reviews.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                @csrf
+                <input type="hidden" name="menu_id" value="{{ $trx->menu_id }}">
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Rating Kepuasan</label>
+                    <select name="rating" required class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl font-semibold text-gray-800 focus:outline-none focus:border-green-500 focus:bg-white transition-all">
+                        <option value="5">⭐⭐⭐⭐⭐ Sangat Enak & Puas</option>
+                        <option value="4">⭐⭐⭐⭐ Enak / Sesuai</option>
+                        <option value="3">⭐⭐⭐ Biasa Saja</option>
+                        <option value="2">⭐⭐ Kurang Cocok</option>
+                        <option value="1">⭐ Tidak Layak</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Ulasan / Komentar</label>
+                    <textarea name="comment" rows="3" placeholder="Gimana rasa makanannya? Porsinya pas? Yuk ceritakan di sini..." class="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-medium placeholder-gray-400 focus:outline-none focus:border-green-500 focus:bg-white transition-all resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Foto Hidangan (Opsional)</label>
+                    <div class="relative w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl flex items-center">
+                        <input type="file" name="photo" accept="image/*" class="text-xs font-bold text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-all cursor-pointer w-full">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-50">
+                    <button type="button" onclick="toggleReviewModal('{{ $trx->id }}')" class="px-5 py-3 bg-gray-100 text-gray-600 text-sm font-bold rounded-xl hover:bg-gray-200 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-5 py-3 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-all shadow-lg shadow-green-600/20">
+                        Kirim Ulasan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endif
+
                                 <a href="{{ route('transaction.invoice', $trx->transaction_id) }}" class="px-6 py-3 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-black transition-all shadow-lg shadow-gray-900/10 flex items-center gap-2">
                                     Lihat Invoice
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,4 +138,22 @@
             </div>
         @endif
     </div>
+
+    {{-- ── SCRIPT JAVASCRIPT UNTUK MODAL POP-UP ── --}}
+    <script>
+        function toggleReviewModal(modalId) {
+            const modal = document.getElementById('modal-review-' + modalId);
+            if (modal) {
+                if (modal.classList.contains('hidden')) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.style.overflow = 'hidden'; // Kunci scroll layar utama
+                } else {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = ''; // Aktifkan scroll lagi
+                }
+            }
+        }
+    </script>
 </x-app-layout>

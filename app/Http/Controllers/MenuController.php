@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\Menu;
+use App\Models\Complaint; // 💡 TAMBAHAN AMAN: Meng-import model Complaint agar bisa digunakan
 use App\Services\ProductVisibilityService;
 
 class MenuController extends Controller
@@ -87,42 +87,67 @@ class MenuController extends Controller
     }
 
     public function showStore($id)
-{
-    // 1. Ambil data profil penjual berdasarkan ID yang diklik
-    // Kita pastikan role pengguna tersebut memang adalah 'seller'
-    $seller = \App\Models\User::where('role', 'seller')->findOrFail($id);
+    {
+        // 1. Ambil data profil penjual berdasarkan ID yang diklik
+        $seller = \App\Models\User::where('role', 'seller')->findOrFail($id);
 
-    // 2. Ambil SEMUA makanan dari tabel menus yang kolom 'user_id'-nya COCOK dengan ID penjual ini
-    // Kita juga gunakan 'notExpired()' agar makanan yang sudah kedaluwarsa tidak ikut tampil
-    $menus = \App\Models\Menu::where('user_id', $id)
-                            ->notExpired()
-                            ->latest()
-                            ->get();
+        // 2. Ambil SEMUA makanan dari tabel menus yang kolom 'user_id'-nya COCOK dengan ID penjual ini
+        $menus = \App\Models\Menu::with('reviews.user')
+                                ->where('user_id', $id)
+                                ->withAvg('reviews', 'rating')
+                                ->withCount('reviews')
+                                ->notExpired()
+                                ->latest()
+                                ->get();
 
     // 3. Tambahkan informasi store status ke setiap menu
     $menus = $menus->map(function ($menu) use ($seller) {
-        $menu->store_is_open = $seller->is_open ? 1 : 0;
+        $menu->store_is_open = ($seller->is_open && $seller->account_status !== 'rejected') ? 1 : 0;
+        $menu->store_is_suspended = ($seller->account_status === 'rejected') ? 1 : 0;
+        // Pastikan properties ini selalu diset untuk dikonsumsi Alpine.js
+        $menu->reviews_count = $menu->reviews_count ?? 0;
+        $menu->reviews_avg_rating = $menu->reviews_avg_rating ?? 0.0;
         return $menu;
     });
+        // 3. Tambahkan informasi store status ke setiap menu
+        $menus = $menus->map(function ($menu) use ($seller) {
+            $menu->store_is_open = $seller->is_open ? 1 : 0;
+            $menu->reviews_count = $menu->reviews_count ?? 0;
+            $menu->reviews_avg_rating = $menu->reviews_avg_rating ?? 0.0;
+            return $menu;
+        });
 
-    // 4. Kirim data penjual ($seller) dan daftar makanannya ($menus) ke file tampilan baru
-    return view('store.show', compact('seller', 'menus'));
-}
+        // 4. Data Follow
+        $followersCount = \App\Models\Follow::where('followed_id', $id)->count();
+        $isFollowed = auth()->check() ? \App\Models\Follow::where('follower_id', auth()->id())->where('followed_id', $id)->exists() : false;
 
-public function toggleStatus()
-{
-    // 1. Ambil data seller yang sedang login
-    $user = auth()->user();
+        // ──💡 DI SINI PERUBAHANNYA: Ambil keluhan aktif milik pengguna terhadap toko ini ──
+        $activeComplaint = null;
+        if (auth()->check()) {
+            $activeComplaint = Complaint::where('user_id', auth()->id())
+                ->where('seller_id', $id)
+                ->whereIn('status', ['pending', 'ditinjau']) // Mengunci tombol jika laporan belum berstatus selesai/ditolak
+                ->first();
+        }
 
-    // 2. Balikkan statusnya: jika 1 (buka) jadi 0 (tutup), jika 0 jadi 1
-    $user->is_open = !$user->is_open;
-    
-    // 3. Simpan perubahan ke database
-    $user->save();
+        // 5. Kirim data penjual ($seller), daftar makanan ($menus), dan $activeComplaint ke file tampilan
+        return view('store.show', compact('seller', 'menus', 'followersCount', 'isFollowed', 'activeComplaint'));
+    }
 
-    // 4. Kembalikan ke halaman dashboard dengan pesan sukses
-    return back()->with('success', 'Status toko berhasil diperbarui!');
-}
+    public function toggleStatus()
+    {
+        // 1. Ambil data seller yang sedang login
+        $user = auth()->user();
+
+        // 2. Balikkan statusnya: jika 1 (buka) jadi 0 (tutup), jika 0 jadi 1
+        $user->is_open = !$user->is_open;
+        
+        // 3. Simpan perubahan ke database
+        $user->save();
+
+        // 4. Kembalikan ke halaman dashboard dengan pesan sukses
+        return back()->with('success', 'Status toko berhasil diperbarui!');
+    }
 
     /**
      * Display consumer dashboard with visible products only.
@@ -131,6 +156,9 @@ public function toggleStatus()
     {
         $kota = request('kota');
         $menus = $visibilityService->getVisibleProductsForConsumer();
+
+        //(Karena data dari Service, gunakan loadAvg & loadCount & load)
+        $menus->loadAvg('reviews', 'rating')->loadCount('reviews')->load('reviews.user');
         
         // Terapkan filter kota secara case-insensitive
         if ($kota) {
@@ -141,7 +169,8 @@ public function toggleStatus()
         
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
-            $menu->store_is_open = $menu->user->is_open ? 1 : 0;
+            $menu->store_is_open = ($menu->user && $menu->user->is_open && $menu->user->account_status !== 'rejected') ? 1 : 0;
+            $menu->store_is_suspended = ($menu->user && $menu->user->account_status === 'rejected') ? 1 : 0;
             return $menu;
         });
         
@@ -151,7 +180,21 @@ public function toggleStatus()
             ->latest()
             ->get();
 
-        return view('dashboard', compact('menus', 'orders'));
+        // ── Dampak Lingkungan: hitung dari riwayat pembelian konsumen ──
+        $completedOrders = $orders->whereIn('status', ['selesai', 'siap_diambil', 'paid', 'proses']);
+        $totalPortionsBought = $completedOrders->sum('quantity');
+        // Konversi: 1 porsi ≈ 0.3 kg makanan diselamatkan
+        $foodSavedKg = round($totalPortionsBought * 0.3, 1);
+        // Konversi: 1 kg makanan diselamatkan ≈ 2.5 kg CO₂ dikurangi
+        $co2ReducedKg = round($foodSavedKg * 2.5, 1);
+
+        $impact = [
+            'total_portions' => $totalPortionsBought,
+            'food_saved_kg'  => $foodSavedKg,
+            'co2_reduced_kg' => $co2ReducedKg,
+        ];
+
+        return view('dashboard', compact('menus', 'orders', 'impact'));
     }
 
     /**
@@ -171,16 +214,32 @@ public function toggleStatus()
         
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
-            $menu->store_is_open = $menu->user->is_open ? 1 : 0;
+            $menu->store_is_open = ($menu->user && $menu->user->is_open && $menu->user->account_status !== 'rejected') ? 1 : 0;
+            $menu->store_is_suspended = ($menu->user && $menu->user->account_status === 'rejected') ? 1 : 0;
             return $menu;
         });
         
-        // Get orders for authenticated user
+        // Get orders for authenticated user (klaim donasi)
         $orders = \App\Models\Order::where('id_user', auth()->id())
             ->with('menu.user')
             ->latest()
             ->get();
 
-        return view('sosial.dashboard', compact('menus', 'orders'));
+        // ── Kontribusi Sosial & Lingkungan: hitung dari klaim donasi ──
+        $claimedOrders = $orders->whereIn('status', ['selesai', 'siap_diambil', 'paid', 'proses']);
+        $totalClaimedPortions = $claimedOrders->sum('quantity');
+        // Konversi: 1 porsi ≈ 0.3 kg makanan tersalurkan
+        $foodDistributedKg = round($totalClaimedPortions * 0.3, 1);
+        // Konversi: 1 kg makanan diselamatkan ≈ 2.5 kg CO₂ dikurangi
+        $co2ReducedKg = round($foodDistributedKg * 2.5, 1);
+
+        $contribution = [
+            'total_claims'       => $claimedOrders->count(),
+            'total_portions'     => $totalClaimedPortions,
+            'food_distributed_kg'=> $foodDistributedKg,
+            'co2_reduced_kg'     => $co2ReducedKg,
+        ];
+
+        return view('sosial.dashboard', compact('menus', 'orders', 'contribution'));
     }
 }

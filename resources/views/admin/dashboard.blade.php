@@ -688,15 +688,7 @@ body.no-scroll { overflow: hidden; }
         </a>
     </nav>
 
-    <div class="sb-footer">
-        <div class="sb-user">
-            <div class="sb-avatar">SA</div>
-            <div>
-                <div class="sb-user-name">Super Admin</div>
-                <div class="sb-user-role">admin@foodsave.id</div>
-            </div>
-        </div>
-    </div>
+
 </aside>
 
 {{-- ════════════ MAIN ════════════ --}}
@@ -722,9 +714,7 @@ body.no-scroll { overflow: hidden; }
                     <span style="font-weight: 700;">Keluar</span>
                 </button>
             </form>
-            <button class="tb-icon-btn" title="Ekspor Data">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            </button>
+
         </div>
     </div>
 
@@ -827,49 +817,110 @@ body.no-scroll { overflow: hidden; }
         </div>
 
         {{-- KANAN: LAPORAN KELUHAN PENGGUNA --}}
-        <div class="sec">
+    <div class="sec">
             <div class="sec-hdr">
                 <div class="sec-hdr-left">
                     <div class="sec-kicker">LAPORAN</div>
                     <div class="sec-title">Keluhan Pengguna</div>
                 </div>
                 <div class="sec-hdr-right">
-                    <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; border-radius:var(--r-pill); font-size:0.6rem; padding:2px 8px;">2 BARU</span>
+                    <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; border-radius:var(--r-pill); font-size:0.6rem; padding:2px 8px;">
+                        {{ $totalComplaints }} Keluhan Baru
+                    </span>
                 </div>
             </div>
             <div style="height: 500px; overflow-y: auto; overflow-x: hidden;">
-                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
-                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
-                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Makanan Tidak Layak Konsumsi</div>
-                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
+                {{-- 💡 LOOPING DINAMIS MENGGUNAKAN DATA COMPLAINTS --}}
+                @forelse($complaintsList as $complaint)
+                    <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
+                        <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
+                            <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">
+                                Aduan Keluhan #{{ $complaint->id }}
+                            </div>
+                            
+                            {{-- Status Pill (Pembeda Baru vs Ditangani) --}}
+                            @if($complaint->status === 'pending')
+                                {{-- Merah untuk Tertunda / Baru --}}
+                                <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">TERTUNDA</span>
+                            @elseif($complaint->status === 'ditinjau')
+                                {{-- Biru untuk Ditinjau / Sedang Diproses --}}
+                                <span class="pill ditinjau" style="background:#e0f2fe; color:#0369a1; font-size:0.55rem; padding:2px 6px;">DITINJAU</span>
+                            @elseif($complaint->status === 'selesai')
+                                {{-- Hijau Mint bawaan untuk Selesai --}}
+                                <span class="pill selesai" style="background:var(--mint-100); color:var(--mint-600); font-size:0.55rem; padding:2px 6px;">SELESAI</span>
+                            @elseif($complaint->status === 'ditolak')
+                                {{-- Abu-abu gelap untuk Ditolak --}}
+                                <span class="pill ditolak" style="background:#f3f4f6; color:#374151; font-size:0.55rem; padding:2px 6px;">DITOLAK</span>
+                            @else
+                                {{-- Jaga-jaga jika ada status yang tidak terdaftar --}}
+                                <span class="pill lainnya" style="background:#f3f4f6; color:#4b5563; font-size:0.55rem; padding:2px 6px;">{{ strtoupper($complaint->status) }}</span>
+                            @endif
+                        </div>
+                        
+                        {{-- Meta info (Nama Pelapor, Nama Seller, & Kapan Laporan Masuk) --}}
+                        <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">
+                            {{ $complaint->reporter->name ?? 'User Terhapus' }} · 
+                            <span style="color:#dc2626; font-weight:600;">{{ $complaint->seller->name ?? 'Seller Terhapus' }}</span> · 
+                            {{ $complaint->created_at->diffForHumans() }}
+                        </div>
+                        
+                        {{-- Isi Keluhan & Catatan Balasan Admin --}}
+                        <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">
+                            "{{ $complaint->reason }}"
+                            
+                            @if($complaint->status === 'selesai' && $complaint->admin_reply)
+                                <div style="margin-top: 0.4rem; padding: 0.4rem 0.6rem; background: var(--mint-50); border-left: 3px solid var(--mint-500); color: var(--mint-700); font-size: 0.75rem; border-radius: 4px;">
+                                    <strong>Catatan Tindakan Admin:</strong> {{ $complaint->admin_reply }}
+                                </div>
+                            @endif
+                        </div>
+                        
+                        {{-- Aksi Penanganan oleh Admin --}}
+                      
+                        <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem; align-items: center; position: relative; z-index: 10;">
+                            
+                            @if($complaint->status === 'pending')
+                                {{-- Form untuk Menyelesaikan Laporan Keluhan --}}
+                                <form action="{{ route('admin.complaints.reply', $complaint->id) }}" method="POST" style="display:flex; gap:0.35rem; margin:0; position: relative; z-index: 20;">
+                                    @csrf
+                                    <input type="hidden" name="status" value="selesai">
+                                    <input type="text" name="admin_reply" placeholder="Tulis tindakan/catatan..." required 
+                                           style="font-size:0.75rem; padding:0.25rem 0.5rem; border:1px solid var(--border); border-radius:6px; width:160px; outline:none; height:28px; background: #fff; color: var(--ink);">
+                                    <button type="submit" class="btn btn-primary btn-xs" 
+                                            style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; display:flex; align-items:center; background: var(--primary); color: #0ea5e9; border: none;">
+                                        Tangani
+                                    </button>
+                                </form>
+                            @endif
+
+                        {{-- Pembungkus agar tombol Chat dan Suspend sejajar horizontal --}}
+                        <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px;">
+                            
+                            {{-- Tombol Buka Ruang Chat Dua Arah --}}
+                            <a href="{{ route('complaints.show', $complaint->id) }}" 
+                            class="btn" 
+                            style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r-pill); padding: 0.35rem 0.75rem; cursor: pointer; height: 28px; font-size: 0.7rem; border: 1px solid #2563eb; color: #2563eb; background: transparent; font-weight: 600;">
+                                💬 Buka Chat
+                            </a>
+
+                            {{-- Tombol Integrasi Pembekuan (Suspend) Akun Seller --}}
+                            @if($complaint->seller)
+                                <button type="button" class="btn btn-outline btn-xs" 
+                                        onclick="confirmToggleStatus('{{ $complaint->seller_id }}', '{{ $complaint->seller->name }}', '{{ $complaint->seller->account_status === 'rejected' ? 'aktifkan' : 'tangguhkan' }}')"
+                                        style="border-radius: var(--r-pill); padding:0.35rem 0.75rem; cursor:pointer; height:28px; font-size:0.7rem; border:1px solid #dc2626; color:#dc2626; background:transparent;">
+                                    {{ $complaint->seller->account_status === 'rejected' ? '✓ Aktifkan Akun' : '⚠️ Suspend Seller' }}
+                                </button>
+                            @endif
+
+                        </div>
+                        </div>
                     </div>
-                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Andi Pratama · Katering Berkah · 30 menit lalu</div>
-                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Nasi box yang diterima sudah basi dan berbau. Perlu tindakan segera dari pihak Admin untuk menangguhkan listing ini.</div>
-                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
-                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
+                @empty
+                    {{-- Tampilan jika tidak ada laporan keluhan di database --}}
+                    <div style="padding:4rem 2rem; text-align:center; color:var(--muted); font-size:0.85rem; font-style:italic;">
+                        🎉 Belum ada keluhan atau laporan pengguna yang masuk. Aman!
                     </div>
-                </div>
-                <div class="keluhan-card" style="padding:1.25rem 1.75rem; border-bottom:1px solid var(--border);">
-                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
-                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Stok Tidak Sesuai</div>
-                        <span class="pill keluhan" style="background:#fee2e2; color:#dc2626; font-size:0.55rem; padding:2px 6px;">BARU</span>
-                    </div>
-                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Rumah Yatim Al-Ikhlas · Warung Bu Yanti · 3 jam lalu</div>
-                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Kami memesan 20 porsi namun saat pengambilan hanya tersedia 8 porsi. Mohon seller dikonfirmasi ulang sebelum publish listing.</div>
-                    <div class="actions" style="margin-top:0.875rem; display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Tangani</button>
-                        <button class="btn btn-outline btn-xs" style="border-radius: var(--r-pill); padding:0.35rem 0.75rem;">Detail</button>
-                    </div>
-                </div>
-                <div class="keluhan-card" style="padding:1.25rem 1.75rem;">
-                    <div class="keluhan-top" style="margin-bottom:0.25rem; display:flex; align-items:center; justify-content:space-between;">
-                        <div class="keluhan-title" style="font-size:0.95rem; font-weight:700; color:var(--ink);">Waktu Pickup Tidak Akurat</div>
-                        <span class="pill ditangani" style="background:var(--mint-100); color:var(--mint-600); font-size:0.55rem; padding:2px 6px;">DITANGANI</span>
-                    </div>
-                    <div class="keluhan-meta" style="margin-bottom:0.5rem; font-size:0.75rem; color:var(--muted);">Bank Makanan Komunitas · Bakery Sari Rasa · Kemarin</div>
-                    <div class="keluhan-desc" style="font-size:0.8125rem; color:var(--muted); line-height:1.4;">Jadwal pickup tertulis pukul 18.00 namun restoran sudah tutup sejak 17.00. Telah dikonfirmasi dan seller sudah update jam operasional.</div>
-                </div>
+                @endforelse
             </div>
         </div>
         </div>
@@ -939,16 +990,23 @@ body.no-scroll { overflow: hidden; }
                                     <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" style="margin:0;" id="toggleForm_{{ $user->id }}">
                                         @csrf
                                         <button type="button" class="btn btn-amber btn-xs btn-icon" title="Tangguhkan Akun" onclick="confirmToggleStatus('{{ $user->id }}', '{{ $user->name }}', 'tangguhkan')">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                                         </button>
                                     </form>
                                     @elseif($user->account_status === 'rejected')
-                                    <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" style="margin:0;" id="toggleForm_{{ $user->id }}">
-                                        @csrf
-                                        <button type="button" class="btn btn-amber btn-xs btn-icon" style="background-color: #f59e0b; color: #fff;" title="Aktifkan Akun" onclick="confirmToggleStatus('{{ $user->id }}', '{{ $user->name }}', 'aktifkan')">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                    <div style="display: flex; gap: 0.375rem;">
+                                        <form action="{{ route('admin.users.toggle-status', $user->id) }}" method="POST" style="margin:0;" id="toggleForm_{{ $user->id }}">
+                                            @csrf
+                                            <button type="button" class="btn btn-amber btn-xs btn-icon" style="background-color: #f59e0b; color: #fff;" title="Aktifkan Akun" onclick="confirmToggleStatus('{{ $user->id }}', '{{ $user->name }}', 'aktifkan')">
+                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                            </button>
+                                        </form>
+                                        @if(!is_null($user->suspension_reason))
+                                        <button type="button" class="btn btn-success btn-xs btn-icon" style="background-color: #10b981; color: #fff; border: none;" title="Chat Banding" onclick="openChatModal('{{ $user->id }}', '{{ $user->name }}')">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                                         </button>
-                                    </form>
+                                        @endif
+                                    </div>
                                     @endif
 
                                     <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="margin:0;" id="deleteUserForm_{{ $user->id }}">
@@ -1269,6 +1327,29 @@ body.no-scroll { overflow: hidden; }
     </div>
 </div>
 
+{{-- MODAL CHAT BANDING --}}
+<div class="modal-overlay" id="modal-chatUser">
+    <div class="modal" style="width: min(600px, 95vw); display: flex; flex-direction: column;">
+        <div class="modal-hdr">
+            <div class="modal-title">Obrolan Banding — <span id="chatTargetName" style="color: var(--blue-600); font-weight: bold;"></span></div>
+            <button class="modal-close" onclick="closeChatModal()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <div class="modal-body" style="padding: 0; background: var(--blue-25); display: flex; flex-direction: column; gap: 0;">
+            <!-- Messages container -->
+            <div id="adminChatMessages" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; height: 350px; overflow-y: auto;">
+                <!-- Filled dynamically -->
+            </div>
+            <!-- Input Form -->
+            <form id="adminChatForm" style="border-top: 1.5px solid var(--border); padding: 0.75rem 1.25rem; background: var(--surface); display: flex; gap: 0.625rem; align-items: center; margin: 0;">
+                @csrf
+                <input type="hidden" id="chatUserId" value="">
+                <input type="text" id="adminChatInput" placeholder="Tulis tanggapan Anda di sini..." autocomplete="off" required style="flex: 1; font-family: inherit; font-size: 0.8125rem; padding: 0.625rem 0.875rem; border: 1.5px solid var(--border-md); border-radius: var(--r-sm); outline: none; background: var(--bg);">
+                <button type="submit" class="btn btn-primary" style="padding: 0.625rem 1.25rem; font-weight: bold;">Kirim</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function openModal(id){
@@ -1379,7 +1460,19 @@ function confirmToggleStatus(userId, userName, action) {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                const form = document.getElementById('toggleForm_' + userId);
+                let form = document.getElementById('toggleForm_' + userId);
+                if (!form) {
+                    form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/admin/users/' + userId + '/toggle-status';
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+                    document.body.appendChild(form);
+                }
                 const reasonInput = document.createElement('input');
                 reasonInput.type = 'hidden';
                 reasonInput.name = 'suspension_reason';
@@ -1400,7 +1493,20 @@ function confirmToggleStatus(userId, userName, action) {
             cancelButtonText: 'Batal'
         }).then((result) => {
             if (result.isConfirmed) {
-                document.getElementById('toggleForm_' + userId).submit();
+                let form = document.getElementById('toggleForm_' + userId);
+                if (!form) {
+                    form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/admin/users/' + userId + '/toggle-status';
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+                    document.body.appendChild(form);
+                }
+                form.submit();
             }
         });
     }
@@ -1439,4 +1545,251 @@ function confirmAdminLogout() {
         }
     });
 }
+
+let adminChatInterval = null;
+let currentChatUserId = null;
+
+function openChatModal(userId, userName) {
+    currentChatUserId = userId;
+    document.getElementById('chatUserId').value = userId;
+    document.getElementById('chatTargetName').innerText = userName;
+    document.getElementById('modal-chatUser').classList.add('open');
+    document.body.classList.add('no-scroll');
+    
+    // Clear old messages
+    const container = document.getElementById('adminChatMessages');
+    container.innerHTML = '<div style="text-align:center; color:var(--faint); font-size:0.8125rem; padding-top:2rem;">Memuat pesan...</div>';
+    
+    // Load messages immediately
+    fetchAdminMessages(userId);
+    
+    // Start polling every 3 seconds
+    if (adminChatInterval) clearInterval(adminChatInterval);
+    adminChatInterval = setInterval(() => fetchAdminMessages(userId), 3000);
+}
+
+function closeChatModal() {
+    document.getElementById('modal-chatUser').classList.remove('open');
+    document.body.classList.remove('no-scroll');
+    if (adminChatInterval) {
+        clearInterval(adminChatInterval);
+        adminChatInterval = null;
+    }
+    currentChatUserId = null;
+}
+
+function fetchAdminMessages(userId) {
+    if (currentChatUserId !== userId) return;
+    const url = `/admin/users/${userId}/messages`;
+    
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (currentChatUserId !== userId) return;
+        const container = document.getElementById('adminChatMessages');
+        if (Array.isArray(data)) {
+            if (data.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:var(--faint); font-size:0.8125rem; padding-top:2rem;">Belum ada obrolan dengan pengguna ini.</div>';
+                return;
+            }
+            
+            const currentBubbleCount = container.querySelectorAll('.chat-bubble-wrap').length;
+            if (data.length > currentBubbleCount || container.innerText.includes('Memuat')) {
+                container.innerHTML = "";
+                data.forEach(msg => {
+                    const isAdmin = msg.sender === 'admin';
+                    const wrap = document.createElement('div');
+                    wrap.className = 'chat-bubble-wrap';
+                    wrap.style.display = 'flex';
+                    wrap.style.flexDirection = 'column';
+                    wrap.style.alignItems = isAdmin ? 'flex-end' : 'flex-start';
+                    wrap.style.width = '100%';
+                    wrap.style.marginBottom = '0.5rem';
+                    
+                    const timeString = new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    wrap.innerHTML = `
+                        <div style="max-width: 80%; background: ${isAdmin ? 'var(--blue-500)' : 'var(--white)'}; color: ${isAdmin ? 'var(--white)' : 'var(--ink)'}; font-size: 0.8125rem; padding: 0.625rem 0.875rem; border-radius: 12px; border-bottom-${isAdmin ? 'right' : 'left'}-radius: 2px; border: ${isAdmin ? 'none' : '1px solid var(--border-md)'}; box-shadow: var(--shadow-sm); line-height: 1.4; word-break: break-word;">
+                            ${escapeHTML(msg.message)}
+                        </div>
+                        <span style="font-size: 10px; color: var(--faint); margin-top: 4px; font-weight: 500;">
+                            ${isAdmin ? 'Anda' : 'Pengguna'} • ${timeString}
+                        </span>
+                    `;
+                    container.appendChild(wrap);
+                });
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+    })
+    .catch(err => console.error("Error fetching messages:", err));
+}
+
+// Send admin message
+document.addEventListener('DOMContentLoaded', () => {
+    const adminChatForm = document.getElementById('adminChatForm');
+    if (adminChatForm) {
+        adminChatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('chatUserId').value;
+            const messageInput = document.getElementById('adminChatInput');
+            const messageText = messageInput.value.trim();
+            if (!messageText || !userId) return;
+            
+            const url = `/admin/users/${userId}/messages`;
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ message: messageText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    messageInput.value = "";
+                    fetchAdminMessages(userId);
+                }
+            })
+            .catch(err => console.error("Error sending admin message:", err));
+        });
+    }
+});
+
+function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+    );
+}
+</script>
+
+<style>
+/* ─── SPOTLIGHT EFFECT ─── */
+body.spotlight-active .content > *,
+body.spotlight-active .two-col > *,
+body.spotlight-active .sec,
+body.spotlight-active .stat-card {
+    transition: opacity 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+body.spotlight-active .spotlight-dim {
+    opacity: 0.15 !important;
+    transform: scale(0.98);
+    pointer-events: none;
+    filter: grayscale(100%);
+}
+
+body.spotlight-active .spotlight-focus {
+    opacity: 1 !important;
+    transform: scale(1.02);
+    box-shadow: 0 0 0 2px var(--blue-400), 0 8px 32px rgba(67,97,245,0.25) !important;
+    z-index: 10;
+    position: relative;
+}
+
+mark.spotlight-text {
+    background-color: var(--amber-500);
+    color: white;
+    padding: 0 2px;
+    border-radius: 3px;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('globalSearch');
+    if (!searchInput) return;
+
+    // Elemen-elemen yang ingin disorot
+    const searchableSelectors = [
+        '.stat-card',
+        '.toko-row',
+        '.keluhan-card',
+        '#sec-user tbody tr',
+        '.pending-card',
+        '.artikel-row',
+        '.setting-card'
+    ];
+    
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim().toLowerCase();
+        const items = document.querySelectorAll(searchableSelectors.join(', '));
+        
+        if (query.length === 0) {
+            document.body.classList.remove('spotlight-active');
+            items.forEach(item => {
+                item.classList.remove('spotlight-dim', 'spotlight-focus');
+                unmark(item);
+            });
+            return;
+        }
+        
+        document.body.classList.add('spotlight-active');
+        
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(query)) {
+                item.classList.remove('spotlight-dim');
+                item.classList.add('spotlight-focus');
+                
+                unmark(item);
+                mark(item, query);
+            } else {
+                item.classList.remove('spotlight-focus');
+                item.classList.add('spotlight-dim');
+                unmark(item);
+            }
+        });
+    });
+    
+    function mark(element, keyword) {
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+        const nodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+            if (node.nodeValue.trim() !== '' && 
+                node.nodeValue.toLowerCase().includes(keyword) && 
+                node.parentNode.nodeName !== 'MARK' && 
+                node.parentNode.nodeName !== 'SCRIPT' && 
+                node.parentNode.nodeName !== 'STYLE') {
+                nodes.push(node);
+            }
+        }
+        
+        const escapedKeyword = escapeRegExp(keyword);
+        const regex = new RegExp(`(${escapedKeyword})`, 'gi');
+        
+        nodes.forEach(n => {
+            const tempDiv = document.createElement('div');
+            const safeText = n.nodeValue.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            tempDiv.innerHTML = safeText.replace(regex, '<mark class="spotlight-text">$1</mark>');
+            while (tempDiv.firstChild) {
+                n.parentNode.insertBefore(tempDiv.firstChild, n);
+            }
+            n.parentNode.removeChild(n);
+        });
+    }
+
+    function unmark(element) {
+        const marks = element.querySelectorAll('mark.spotlight-text');
+        marks.forEach(mark => {
+            const parent = mark.parentNode;
+            if (parent) {
+                parent.replaceChild(document.createTextNode(mark.textContent), mark);
+                parent.normalize();
+            }
+        });
+    }
+});
 </script>

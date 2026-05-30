@@ -76,6 +76,26 @@ class User extends Authenticatable
         return $this->hasOne(UserVerification::class);
     }
 
+    public function suspensionMessages()
+    {
+        return $this->hasMany(SuspensionMessage::class);
+    }
+
+    public function verifications()
+    {
+        return $this->hasMany(UserVerification::class);
+    }
+
+    public function followers()
+    {
+        return $this->hasMany(Follow::class, 'followed_id');
+    }
+
+    public function following()
+    {
+        return $this->hasMany(Follow::class, 'follower_id');
+    }
+
     /**
      * Get the readable store status.
      *

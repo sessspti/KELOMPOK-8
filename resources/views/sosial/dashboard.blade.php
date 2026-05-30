@@ -1016,8 +1016,15 @@ body::after {
                                 </svg>
                             </div>
                         </template>
-                        {{-- OVERLAY TOKO TUTUP --}}
-                            <template x-if="product.store_is_open == 0">
+                        {{-- OVERLAY TOKO TUTUP / DITANGGUHKAN --}}
+                            <template x-if="product.store_is_suspended == 1">
+                                <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.55); backdrop-filter: blur(1px);">
+                                    <div style="background: #dc2626; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); text-align: center;">
+                                        Toko Tutup
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="product.store_is_open == 0 && !product.store_is_suspended">
                                 <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.4); backdrop-filter: blur(1px);">
                                     <div style="background: #ef4444; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
                                         Toko Tutup
@@ -1038,12 +1045,11 @@ body::after {
                     <div class="pcard-body">
                         <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 block transition-colors" x-text="product.store"></a>                        <h3 class="pcard-name" x-text="product.name"></h3>
                         
-                        {{-- Status Badge untuk Lembaga --}}
-                        <div class="bdg-status" :class="product.display_status.toLowerCase()" style="margin-bottom: 0.75rem;">
-                            <svg fill="currentColor" viewBox="0 0 24 24" width="12" height="12">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                            </svg>
-                            <span x-text="product.display_status"></span>
+                        {{-- Rating Badge --}}
+                        <div @click="openReviewModal(product)" class="hover:bg-gray-100 cursor-pointer transition-colors" style="display: flex; align-items: center; gap: 4px; margin-top: -8px; margin-bottom: 12px; background-color: #f9fafb; padding: 4px 8px; border-radius: 6px; border: 1px solid #f3f4f6; width: fit-content;">
+                            <span style="color: #fbbf24; font-size: 13px;">⭐</span>
+                            <span style="font-size: 12px; font-weight: 700; color: #374151;" x-text="product.reviews_avg_rating > 0 ? parseFloat(product.reviews_avg_rating).toFixed(1) : '0.0'"></span>
+                            <span style="font-size: 11px; color: #6b7280; margin-left: 2px;" x-text="'(' + (product.reviews_count || 0) + ' Ulasan)'"></span>
                         </div>
 
                         
@@ -1062,14 +1068,15 @@ body::after {
                             </div>
                             {{-- Button untuk Lembaga (disabled jika toko tutup) --}}
                             <template x-if="product.store_is_open == 1">
-                                <button class="req-btn" @click="openCart(); addItemToPickup({
+                                <button class="req-btn" @click="if (product.store_is_suspended == 1) { Swal.fire({ icon: 'error', title: 'Toko Ditangguhkan', text: 'Toko ini sedang Tutup. Tidak bisa mengajukan pengambilan dari toko ini.', confirmButtonColor: '#ef4444' }); return; } openCart(); addItemToPickup({
                                     id: product.id,
                                     name: product.name,
                                     store: product.store,
                                     stock: product.stock,
                                     price: 'Rp 0',
                                     image: product.image_url,
-                                    urgent: product.discount > 50 ? 'Sangat Murah!' : 'Hari Ini'
+                                    urgent: product.discount > 50 ? 'Sangat Murah!' : 'Hari Ini',
+                                    store_is_suspended: product.store_is_suspended
                                 })" aria-label="Ajukan pengambilan">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/>
@@ -1143,6 +1150,88 @@ body::after {
             </div>
         </div>
     </section>
+
+    {{-- ══ REVIEW MODAL ══ --}}
+    <div class="fixed inset-0 z-[500] flex items-center justify-center p-4" x-show="showReviewModal" style="display:none; pointer-events: none;">
+        <div class="bg-white rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col" 
+             style="max-height: 85vh; pointer-events: auto;"
+             @click.stop
+             x-show="showReviewModal"
+             x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95 translate-y-4" x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-100 translate-y-0" x-transition:leave-end="opacity-0 transform scale-95 translate-y-4">
+            
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between flex-shrink-0 relative overflow-hidden rounded-t-[2rem]">
+                <div class="absolute inset-0 bg-gradient-to-r from-green-50 to-emerald-50 z-0"></div>
+                <div class="relative z-10">
+                    <h3 class="text-xl font-black text-gray-900 tracking-tight" x-text="activeProduct ? 'Ulasan ' + activeProduct.name : 'Ulasan'"></h3>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-yellow-400 font-bold text-sm">⭐ <span x-text="activeProduct && activeProduct.reviews_avg_rating > 0 ? parseFloat(activeProduct.reviews_avg_rating).toFixed(1) : '0.0'"></span></span>
+                        <span class="text-xs text-gray-500 font-medium" x-text="'• ' + (activeProduct ? (activeProduct.reviews_count || 0) : 0) + ' Penilaian'"></span>
+                    </div>
+                </div>
+                <button @click="showReviewModal = false" class="relative z-10 w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all shadow-sm">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+                <template x-if="activeReviews && activeReviews.length > 0">
+                    <div class="space-y-4">
+                        <template x-for="review in activeReviews" :key="review.id">
+                            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center font-bold text-gray-500 text-sm overflow-hidden border border-gray-200">
+                                            <template x-if="review.user && review.user.avatar">
+                                                <img :src="'/storage/' + review.user.avatar" class="w-full h-full object-cover">
+                                            </template>
+                                            <template x-if="!review.user || !review.user.avatar">
+                                                <span x-text="review.user ? review.user.name.substring(0,2).toUpperCase() : '??'"></span>
+                                            </template>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-gray-900 text-sm" x-text="review.user ? review.user.name : 'Pengguna'"></div>
+                                            <div class="text-[11px] text-gray-400 font-medium" x-text="new Date(review.created_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})"></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-0.5">
+                                        <template x-for="i in 5">
+                                            <svg class="w-4 h-4" :class="i <= review.rating ? 'text-yellow-400' : 'text-gray-200'" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                        </template>
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 text-sm leading-relaxed mb-3" x-text="review.comment || 'Tidak ada teks ulasan.'"></p>
+                                
+                                <template x-if="review.photo_path">
+                                    <div class="mt-3 rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+                                        <img :src="'/storage/' + review.photo_path" class="w-full h-auto max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity" @click="window.open('/storage/' + review.photo_path, '_blank')">
+                                    </div>
+                                </template>
+
+                                {{-- Menampilkan balasan seller jika ada --}}
+                                <template x-if="review.merchant_reply">
+                                    <div class="mt-4 bg-green-50 rounded-lg p-3 border-l-4 border-green-500 text-sm">
+                                        <div class="font-bold text-green-700 mb-1">Balasan Seller:</div>
+                                        <div class="text-green-800" x-text="review.merchant_reply"></div>
+                                        <template x-if="review.replied_at">
+                                            <div class="text-xs text-green-600 mt-1" x-text="new Date(review.replied_at).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'})"></div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template x-if="!activeReviews || activeReviews.length === 0">
+                    <div class="text-center py-12">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📝</div>
+                        <h4 class="text-gray-900 font-bold mb-1">Belum Ada Ulasan</h4>
+                        <p class="text-gray-500 text-sm max-w-xs mx-auto">Jadilah yang pertama untuk mencoba dan memberikan ulasan pada menu ini!</p>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
 
 </div>
 
@@ -1320,6 +1409,18 @@ function updateCount(){
 
     // 3. Fungsi Utama: Tambah ke Daftar Pengambilan
     window.addItemToPickup = function(product) {
+        // Cek batasan: toko ditangguhkan
+        if (product.store_is_suspended == 1) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Toko Tutup',
+                text: 'Toko ini sedang Tutup. Tidak bisa mengajukan pengambilan dari toko ini.',
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Kembali'
+            });
+            return;
+        }
+
         const today = getToday();
         
         // Cek batasan: satu produk hanya boleh satu kali per hari
@@ -1564,7 +1665,16 @@ function updateCount(){
 function foodSaveApp() {
     return {
         searchQuery: '',
+        showReviewModal: false,
+        activeProduct: null,
+        activeReviews: [],
         products: @json($menus),
+
+        openReviewModal(product) {
+            this.activeProduct = product;
+            this.activeReviews = product.reviews || [];
+            this.showReviewModal = true;
+        },
 
         get filteredProducts() {
             const q = (this.searchQuery || '').toLowerCase().trim();
