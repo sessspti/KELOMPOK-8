@@ -160,6 +160,19 @@
                                         </div>
                                         @error('address') <p class="mt-2 text-sm text-red-600 font-medium">{{ $message }}</p> @enderror
                                     </div>
+                                    <div class="md:col-span-2">
+                                        <label for="city" class="block text-sm font-bold text-gray-700 mb-2">Kota Operasional <span class="text-red-555">*</span></label>
+                                        <div class="relative">
+                                            <select name="city" id="city" required
+                                                class="block w-full text-sm text-gray-900 border border-green-200 rounded-2xl bg-white focus:ring-4 focus:ring-green-150 focus:border-green-500 p-4 shadow-sm transition-all hover:border-green-300 outline-none">
+                                                <option value="" disabled {{ old('city', $user->city) == '' ? 'selected' : '' }}>Pilih Kota</option>
+                                                <option value="jakarta" {{ old('city', $user->city) == 'jakarta' ? 'selected' : '' }}>Jakarta</option>
+                                                <option value="tangerang" {{ old('city', $user->city) == 'tangerang' ? 'selected' : '' }}>Tangerang</option>
+                                                <option value="purwakarta" {{ old('city', $user->city) == 'purwakarta' ? 'selected' : '' }}>Purwakarta</option>
+                                            </select>
+                                        </div>
+                                        @error('city') <p class="mt-2 text-sm text-red-600 font-medium">{{ $message }}</p> @enderror
+                                    </div>
                                 </div>
                             </div>
 

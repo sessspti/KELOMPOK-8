@@ -129,7 +129,15 @@ public function toggleStatus()
      */
     public function consumerDashboard(ProductVisibilityService $visibilityService)
     {
+        $kota = request('kota');
         $menus = $visibilityService->getVisibleProductsForConsumer();
+        
+        // Terapkan filter kota secara case-insensitive
+        if ($kota) {
+            $menus = $menus->filter(function ($menu) use ($kota) {
+                return $menu->user && strtolower($menu->user->city ?? '') === strtolower($kota);
+            })->values();
+        }
         
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
@@ -151,7 +159,15 @@ public function toggleStatus()
      */
     public function institutionDashboard(ProductVisibilityService $visibilityService)
     {
+        $kota = request('kota');
         $menus = $visibilityService->getVisibleProductsForInstitution();
+        
+        // Terapkan filter kota secara case-insensitive
+        if ($kota) {
+            $menus = $menus->filter(function ($menu) use ($kota) {
+                return $menu->user && strtolower($menu->user->city ?? '') === strtolower($kota);
+            })->values();
+        }
         
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {

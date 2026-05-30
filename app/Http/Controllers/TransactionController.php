@@ -214,9 +214,16 @@ class TransactionController extends Controller
         $userId = Auth::id();
         $items = $request->input('items', []);
         $transactionId = 'CLM-' . strtoupper(bin2hex(random_bytes(4)));
+        // [BARU] Ambil jadwal pengambilan dari request (sama seperti alur Konsumen)
+        $pickupSchedule = $request->input('pickup_schedule');
 
         if (empty($items)) {
             return response()->json(['success' => false, 'message' => 'Daftar pengambilan kosong.'], 400);
+        }
+
+        // [BARU] Validasi: jadwal pengambilan wajib diisi
+        if (empty($pickupSchedule)) {
+            return response()->json(['success' => false, 'message' => 'Jadwal pengambilan wajib dipilih.'], 422);
         }
 
         try {
@@ -232,12 +239,14 @@ class TransactionController extends Controller
                 $claimQty = 1; 
 
                 Order::create([
-                    'id_user' => $userId,
-                    'menu_id' => $menu->id,
-                    'quantity' => $claimQty,
-                    'status' => 'proses',
-                    'transaction_id' => $transactionId,
-                    'payment_method' => 'Donasi',
+                    'id_user'         => $userId,
+                    'menu_id'         => $menu->id,
+                    'quantity'        => $claimQty,
+                    'status'          => 'proses',
+                    'transaction_id'  => $transactionId,
+                    'payment_method'  => 'Donasi',
+                    'pickup_method'   => 'self-pickup',          // Lembaga selalu self-pickup
+                    'pickup_schedule' => $pickupSchedule,        // [BARU] Simpan jadwal ke DB
                 ]);
 
                 $menu->decrement('stock', $claimQty);

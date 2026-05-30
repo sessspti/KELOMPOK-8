@@ -27,7 +27,16 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->safe()->except('avatar'));
+        // Menggunakan method validated() agar lebih aman dan kompatibel
+        $validatedData = $request->validated();
+        
+        // Buang avatar dari array jika ada, karena avatar ditangani secara khusus
+        if (array_key_exists('avatar', $validatedData)) {
+            unset($validatedData['avatar']);
+        }
+
+        // Mass assignment data yang sudah tervalidasi
+        $request->user()->fill($validatedData);
 
         if ($request->hasFile('avatar')) {
             if ($request->user()->avatar) {

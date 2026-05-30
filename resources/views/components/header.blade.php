@@ -11,7 +11,16 @@
             <input type="text" placeholder="Cari makanan yang bisa diselamatkan..." x-model="searchQuery">
         </div>
         <div class="hdr-right">
-
+            <!-- Form Filter Kota Konsumen/Lembaga -->
+            <form method="GET" action="{{ url()->current() }}" class="inline-flex items-center mr-2">
+                <select name="kota" onchange="this.form.submit()" class="flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all focus:outline-none focus:ring-2 focus:ring-green-500 shadow-sm text-sm font-semibold text-gray-700 appearance-none pl-4 pr-10 cursor-pointer bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%208l5%205%205-5%22%20stroke%3D%22%239CA3AF%22%20stroke-width%3D%222%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_0.75rem_center]">
+                    <option value="" {{ request('kota') == '' ? 'selected' : '' }}>🌍 Semua Kota</option>
+                    <option value="jakarta" {{ request('kota') == 'jakarta' ? 'selected' : '' }}>🏢 Jakarta</option>
+                    <option value="tangerang" {{ request('kota') == 'tangerang' ? 'selected' : '' }}>🌆 Tangerang</option>
+                    <option value="purwakarta" {{ request('kota') == 'purwakarta' ? 'selected' : '' }}>🏭 Purwakarta</option>
+                </select>
+            </form>
+            
             {{-- Notifikasi Bell --}}
             @auth
             <div class="relative ml-2" x-data="{ open: false }" @click.outside="open = false">

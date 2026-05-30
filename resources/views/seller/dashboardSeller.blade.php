@@ -551,8 +551,41 @@ body::before {
         <div class="hdr-divider"></div>
         <span class="hdr-role">✦ Seller Dashboard</span>
         <div class="hdr-right">
+            {{-- Map Dropdown Filter --}}
+            <div class="relative flex items-center mr-2" x-data="{ openMap: false }" @click.outside="openMap = false">
+                <button @click="openMap = !openMap" class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all focus:outline-none shadow-sm text-sm font-semibold text-gray-700">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>{{ request('kota') ? ucfirst(request('kota')) : 'Semua Kota' }}</span>
+                    <svg class="w-3.5 h-3.5 text-gray-400 transition-transform duration-200" :class="{'rotate-180': openMap}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
 
-
+                <div x-show="openMap" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="transform opacity-0 scale-95 translate-y-2"
+                     x-transition:enter-end="transform opacity-100 scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="transform opacity-100 scale-100 translate-y-0"
+                     x-transition:leave-end="transform opacity-0 scale-95 translate-y-2"
+                     class="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-100 rounded-lg shadow-lg z-[130] py-1 overflow-hidden"
+                     style="display: none;">
+                    
+                    <a href="{{ url()->current() }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        🌍 Semua Kota
+                    </a>
+                    <a href="{{ url()->current() }}?kota=jakarta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        🏢 Jakarta
+                    </a>
+                    <a href="{{ url()->current() }}?kota=purwakarta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        🏭 Purwakarta
+                    </a>
+                    <a href="{{ url()->current() }}?kota=tangerang" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        🌆 Tangerang
+                    </a>
+                </div>
+            </div>
 
         {{-- Status Toko (Sudah terhubung ke database) --}}
             <form action="{{ route('seller.toggle-status') }}" method="POST" style="display: inline-block;">
