@@ -11,6 +11,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
+use App\Http\Controllers\Admin\ArticleController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -51,7 +52,10 @@ Route::get('/home', function () {
     // 2. Karena guest belum login, buatlah $orders kosong (menggunakan collect())
     $orders = collect(); 
 
-    return view('dashboard', compact('menus', 'orders'));
+    // 3. Ambil artikel edukasi yang berstatus published (maksimal 5 artikel terbaru)
+    $articles = \App\Models\Article::where('status', 'published')->latest()->take(5)->get();
+
+    return view('dashboard', compact('menus', 'orders', 'articles'));
 })->name('guest.dashboard');
 
 // Halaman Detail Toko (Public)
@@ -314,7 +318,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $complaintsList = \App\Models\Complaint::with(['reporter', 'seller'])->latest()->get();
             $totalComplaints = \App\Models\Complaint::where('status', 'pending')->count();
 
-            return view('admin.dashboard', compact('ordersGrouped', 'pendingVerifications', 'usersList', 'totalUsers', 'activeSellers', 'complaintsList', 'totalComplaints'));
+            // Ambil data artikel untuk section edukasi
+            $articles = \App\Models\Article::latest()->get();
+
+            // Hitung Total Transaksi & Donasi (Order yang sudah selesai/berhasil)
+            $totalTransactions = \App\Models\Order::whereHas('user', function($q) {
+                $q->where('role', 'konsumen');
+            })->whereIn('status', ['selesai', 'paid', 'proses', 'siap_diambil'])->count();
+            
+            $totalDonations = \App\Models\Order::whereHas('user', function($q) {
+                $q->where('role', 'lembaga_sosial');
+            })->whereIn('status', ['selesai', 'paid', 'proses', 'siap_diambil'])->count();
+            
+            $grandTotalTransaksiDonasi = $totalTransactions + $totalDonations;
+
+            return view('admin.dashboard', compact('ordersGrouped', 'pendingVerifications', 'usersList', 'totalUsers', 'activeSellers', 'complaintsList', 'totalComplaints', 'articles', 'grandTotalTransaksiDonasi'));
         })->name('admin.dashboard');
 
         Route::post('/verifications/{user}/approve', [AdminVerificationController::class, 'approve'])->name('admin.verifications.approve');
@@ -326,7 +344,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/users', fn() => view('admin.users.index'))->name('admin.users.index');
         Route::get('/verifikasi', fn() => view('admin.verifikasi'))->name('admin.verifikasi');
-        Route::get('/edukasi', fn() => view('admin.edukasi.index'))->name('admin.edukasi');
+        
+        // Route Manajemen Artikel Edukasi
+        Route::get('/edukasi', [ArticleController::class, 'index'])->name('admin.edukasi');
+        Route::post('/edukasi/store', [ArticleController::class, 'store'])->name('admin.edukasi.store');
+        Route::put('/edukasi/{article}', [ArticleController::class, 'update'])->name('admin.edukasi.update');
+        Route::delete('/edukasi/{article}', [ArticleController::class, 'destroy'])->name('admin.edukasi.destroy');
 
         // Jalur Khusus Admin untuk melihat & merespon Tiket Keluhan
         Route::get('/complaints/{complaint}', [ComplaintController::class, 'adminShow'])->name('admin.complaints.show');

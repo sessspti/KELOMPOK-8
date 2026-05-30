@@ -1126,32 +1126,47 @@ body::after {
         </div>
 
         <div class="edu-grid">
-            <div class="edu-card">
-                <div class="edu-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500" alt="Tips Penyimpanan">
+            @forelse($articles as $article)
+                <div class="edu-card">
+                    <div class="edu-img-wrap">
+                        @if($article->image)
+                            <img src="{{ asset('storage/' . $article->image) }}" alt="{{ $article->title }}">
+                        @else
+                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500" alt="{{ $article->title }}">
+                        @endif
+                    </div>
+                    <span class="edu-tag">{{ $article->category }}</span>
+                    <h3 class="edu-title">{{ $article->title }}</h3>
+                    <p class="edu-desc">{{ Str::limit(strip_tags($article->content), 120) }}</p>
                 </div>
-                <span class="edu-tag">Keamanan Pangan</span>
-                <h3 class="edu-title">Prosedur Keamanan Pangan (Food Safety) untuk Makanan Surplus</h3>
-                <p class="edu-desc">Panduan lengkap memeriksa kelayakan makanan surplus sebelum didistribusikan kepada penerima manfaat agar tetap aman dikonsumsi.</p>
-            </div>
+            @empty
+                <div class="edu-card">
+                    <div class="edu-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500" alt="Tips Penyimpanan">
+                    </div>
+                    <span class="edu-tag">Keamanan Pangan</span>
+                    <h3 class="edu-title">Prosedur Keamanan Pangan (Food Safety) untuk Makanan Surplus</h3>
+                    <p class="edu-desc">Panduan lengkap memeriksa kelayakan makanan surplus sebelum didistribusikan kepada penerima manfaat agar tetap aman dikonsumsi.</p>
+                </div>
 
-            <div class="edu-card">
-                <div class="edu-img-wrap">
-                    <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=500" alt="Global Issue">
+                <div class="edu-card">
+                    <div class="edu-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=500" alt="Global Issue">
+                    </div>
+                    <span class="edu-tag" style="color:#0284c7;">Panduan Distribusi</span>
+                    <h3 class="edu-title">Cara Mendistribusikan Makanan Cepat Saji agar Tetap Layak Konsumsi</h3>
+                    <p class="edu-desc">Teknik pengemasan, transportasi, dan batas waktu distribusi makanan cepat saji yang aman dari dapur restoran ke tangan penerima.</p>
                 </div>
-                <span class="edu-tag" style="color:#0284c7;">Panduan Distribusi</span>
-                <h3 class="edu-title">Cara Mendistribusikan Makanan Cepat Saji agar Tetap Layak Konsumsi</h3>
-                <p class="edu-desc">Teknik pengemasan, transportasi, dan batas waktu distribusi makanan cepat saji yang aman dari dapur restoran ke tangan penerima.</p>
-            </div>
 
-            <div class="edu-empty">
-                <div class="edu-empty-ico">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
+                <div class="edu-empty">
+                    <div class="edu-empty-ico">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                    </div>
+                    <p>Artikel lainnya sedang disiapkan oleh Admin kami...</p>
                 </div>
-                <p>Artikel lainnya sedang disiapkan oleh Admin kami...</p>
-            </div>
+            @endforelse
         </div>
     </section>
 
