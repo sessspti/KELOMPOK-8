@@ -22,7 +22,7 @@ class ProfileUpdateRequest extends FormRequest
             'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
             'phone_number' => ['required', 'string', 'max:20'],
             'address' => ['required', 'string', 'max:500'],
-            'city' => ['required', 'string', 'in:jakarta,tangerang,purwakarta'],
+            'city' => ['required', 'string', Rule::in(array_keys(User::getCities()))],
         ];
     }
 }

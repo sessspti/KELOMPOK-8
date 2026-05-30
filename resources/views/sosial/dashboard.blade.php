@@ -736,21 +736,17 @@ body::after {
                      x-transition:leave="transition ease-in duration-150"
                      x-transition:leave-start="transform opacity-100 scale-100 translate-y-0"
                      x-transition:leave-end="transform opacity-0 scale-95 translate-y-2"
-                     class="absolute right-0 top-full mt-2 w-40 bg-white border border-gray-100 rounded-lg shadow-lg z-[130] py-1 overflow-hidden"
+                     class="absolute right-0 top-full mt-2 w-44 bg-white border border-gray-100 rounded-lg shadow-lg z-[130] py-1 max-h-64 overflow-y-auto"
                      style="display: none;">
                     
                     <a href="{{ url()->current() }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
                         🌍 Semua Kota
                     </a>
-                    <a href="{{ url()->current() }}?kota=jakarta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
-                        🏢 Jakarta
-                    </a>
-                    <a href="{{ url()->current() }}?kota=purwakarta" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
-                        🏭 Purwakarta
-                    </a>
-                    <a href="{{ url()->current() }}?kota=tangerang" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
-                        🌆 Tangerang
-                    </a>
+                    @foreach(\App\Models\User::getCities() as $key => $city)
+                        <a href="{{ url()->current() }}?kota={{ $key }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                            {{ $city['emoji'] }} {{ $city['name'] }}
+                        </a>
+                    @endforeach
                 </div>
             </div>
 
@@ -1043,7 +1039,15 @@ body::after {
                         <div class="bdg-gratis">Gratis</div>
                     </div>
                     <div class="pcard-body">
-                        <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 block transition-colors" x-text="product.store"></a>                        <h3 class="pcard-name" x-text="product.name"></h3>
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap;">
+                            <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 transition-colors" x-text="product.store"></a>
+                            <template x-if="product.city_name">
+                                <span style="font-size: 0.65rem; font-weight: 700; color: #9ca3af; display: inline-flex; align-items: center; gap: 2px; text-transform: none; letter-spacing: normal; margin-bottom: 0.3rem;">
+                                    • <span x-text="product.city_name"></span>
+                                </span>
+                            </template>
+                        </div>
+                        <h3 class="pcard-name" x-text="product.name"></h3>
                         
                         {{-- Rating Badge --}}
                         <div @click="openReviewModal(product)" class="hover:bg-gray-100 cursor-pointer transition-colors" style="display: flex; align-items: center; gap: 4px; margin-top: -8px; margin-bottom: 12px; background-color: #f9fafb; padding: 4px 8px; border-radius: 6px; border: 1px solid #f3f4f6; width: fit-content;">

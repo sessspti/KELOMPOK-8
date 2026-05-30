@@ -891,7 +891,15 @@ body::after {
                             </template>
                         </div>
                         <div class="pcard-body">
-                            <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 block transition-colors" x-text="product.store"></a>                            <h3 class="pcard-name" x-text="product.name"></h3>
+                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap;">
+                                <a :href="'/store/' + product.user_id" class="pcard-store hover:underline hover:text-mint-700 transition-colors" x-text="product.store"></a>
+                                <template x-if="product.city_name">
+                                    <span style="font-size: 0.65rem; font-weight: 700; color: #9ca3af; display: inline-flex; align-items: center; gap: 2px; text-transform: none; letter-spacing: normal; margin-bottom: 0.3rem;">
+                                        • <span x-text="product.city_name"></span>
+                                    </span>
+                                </template>
+                            </div>
+                            <h3 class="pcard-name" x-text="product.name"></h3>
                             
                             {{-- Rating Badge --}}
                             <div @click="openReviewModal(product)" class="hover:bg-gray-100 cursor-pointer transition-colors" style="display: flex; align-items: center; gap: 4px; margin-top: -8px; margin-bottom: 12px; background-color: #f9fafb; padding: 4px 8px; border-radius: 6px; border: 1px solid #f3f4f6; width: fit-content;">

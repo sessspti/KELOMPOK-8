@@ -1029,12 +1029,12 @@ body::before {
         <div class="sb-identity">
             <div>
                     @if($seller->account_status === 'rejected')
-                    <div class="sb-status" style="background-color: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2);">
+                    <div class="sb-status" style="background-color: #ffffff; color: #dc2626; border: 1.5px solid rgba(220, 38, 38, 0.2); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                         <span class="sb-status-dot" style="background-color: #ef4444;"></span>
                         Toko Tutup
                     </div>
                     @else
-                    <div class="sb-status" style="background-color: {{ $seller->is_open ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)' }}; color: {{ $seller->is_open ? '#22c55e' : '#ef4444' }}; border: 1px solid {{ $seller->is_open ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)' }};">
+                    <div class="sb-status" style="background-color: #ffffff; color: {{ $seller->is_open ? '#16a34a' : '#dc2626' }}; border: 1.5px solid {{ $seller->is_open ? 'rgba(22, 163, 74, 0.25)' : 'rgba(220, 38, 38, 0.25)' }}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                         <span class="sb-status-dot" style="background-color: {{ $seller->is_open ? '#22c55e' : '#ef4444' }};"></span>
                         {{ $seller->is_open ? 'Toko Buka' : 'Toko Tutup' }}
                     </div>
@@ -1175,7 +1175,18 @@ body::before {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
         </svg>
-        <span>{{ $seller->address ?? 'Lokasi tidak tersedia' }}</span>
+        @php
+            $cityKey = strtolower($seller->city ?? '');
+            $cityInfo = \App\Models\User::getCities()[$cityKey] ?? null;
+            $cityDisplay = $cityInfo ? ($cityInfo['emoji'] . ' ' . $cityInfo['name']) : ($seller->city ? ucfirst($seller->city) : null);
+        @endphp
+        <span>
+            @if($seller->address)
+                {{ $seller->address }}@if($cityDisplay), {{ $cityDisplay }}@endif
+            @else
+                {{ $cityDisplay ?? 'Lokasi tidak tersedia' }}
+            @endif
+        </span>
     </div>
 </div>
 

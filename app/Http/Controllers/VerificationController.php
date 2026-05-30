@@ -61,7 +61,7 @@ class VerificationController extends Controller
         $request->validate([
             'phone_number' => 'required|string|max:20',
             'address' => 'required|string|max:500',
-            'city' => 'required|in:jakarta,tangerang,purwakarta',
+            'city' => ['required', \Illuminate\Validation\Rule::in(array_keys(\App\Models\User::getCities()))],
             'ktp' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'nib' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'surat_izin' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',

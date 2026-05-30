@@ -10,10 +10,11 @@ class PatchSellerCity extends Command
     protected $signature   = 'patch:seller-city';
     protected $description = 'Mengisi kolom city yang masih NULL pada seller yang sudah ada';
 
-    private array $validCities = ['jakarta', 'tangerang', 'purwakarta'];
+    private array $validCities = [];
 
     public function handle(): int
     {
+        $this->validCities = array_keys(User::getCities());
         $sellers = User::where('role', 'seller')->whereNull('city')->get();
 
         if ($sellers->isEmpty()) {

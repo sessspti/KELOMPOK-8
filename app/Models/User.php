@@ -115,4 +115,34 @@ class User extends Authenticatable
     {
         return $this->store_status === 'Buka';
     }
+
+    /**
+     * Get the list of supported cities.
+     * Sorted alphabetically for professional presentation.
+     *
+     * @return array
+     */
+    public static function getCities(): array
+    {
+        return [
+            'balikpapan' => ['name' => 'Balikpapan', 'emoji' => '🚢'],
+            'bandung'    => ['name' => 'Bandung', 'emoji' => '🏔️'],
+            'bekasi'     => ['name' => 'Bekasi', 'emoji' => '🏙️'],
+            'bogor'      => ['name' => 'Bogor', 'emoji' => '🌧️'],
+            'denpasar'   => ['name' => 'Denpasar', 'emoji' => '🌴'],
+            'depok'      => ['name' => 'Depok', 'emoji' => '🏡'],
+            'jakarta'    => ['name' => 'Jakarta', 'emoji' => '🏢'],
+            'makassar'   => ['name' => 'Makassar', 'emoji' => '⚓'],
+            'malang'     => ['name' => 'Malang', 'emoji' => '🍎'],
+            'medan'      => ['name' => 'Medan', 'emoji' => '🏝️'],
+            'palembang'  => ['name' => 'Palembang', 'emoji' => '🌉'],
+            'purwakarta' => ['name' => 'Purwakarta', 'emoji' => '🏭'],
+            'samarinda'  => ['name' => 'Samarinda', 'emoji' => '🌳'],
+            'semarang'   => ['name' => 'Semarang', 'emoji' => '🏛️'],
+            'solo'       => ['name' => 'Solo', 'emoji' => '🎨'],
+            'surabaya'   => ['name' => 'Surabaya', 'emoji' => '🌊'],
+            'tangerang'  => ['name' => 'Tangerang', 'emoji' => '🌆'],
+            'yogyakarta' => ['name' => 'Yogyakarta', 'emoji' => '🕌'],
+        ];
+    }
 }

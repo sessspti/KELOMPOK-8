@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Menu extends Model
 {
     protected $fillable = ['user_id', 'name', 'price', 'discount', 'stock', 'image', 'expiry_date'];
-    protected $appends = ['final_price', 'image_url', 'formatted_expiry_date', 'store', 'store_is_open', 'store_is_suspended'];
+    protected $appends = ['final_price', 'image_url', 'formatted_expiry_date', 'store', 'store_is_open', 'store_is_suspended', 'city_name'];
 
     protected $casts = [
         'reviews_avg_rating' => 'float',
@@ -22,6 +22,20 @@ class Menu extends Model
             // Hapus semua order yang terkait dengan menu ini
             $menu->orders()->delete();
         });
+    }
+
+    // Accessor untuk Kota Toko
+    public function getCityNameAttribute()
+    {
+        if (!$this->user || !$this->user->city) {
+            return null;
+        }
+        $cities = User::getCities();
+        $cityData = $cities[strtolower($this->user->city)] ?? null;
+        if ($cityData) {
+            return $cityData['emoji'] . ' ' . $cityData['name'];
+        }
+        return '📍 ' . ucfirst($this->user->city);
     }
 
     // Accessor untuk Nama Toko
