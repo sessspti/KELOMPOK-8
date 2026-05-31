@@ -703,10 +703,6 @@ body.no-scroll { overflow: hidden; }
                 <svg class="tb-search-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <input type="text" placeholder="Cari pengguna, transaksi...">
             </div>        
-            <button class="tb-icon-btn" title="Notifikasi">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                <span class="tb-notif-dot"></span>
-            </button>
             <form id="logoutForm" method="POST" action="{{ route('logout') }}" style="display:inline;">
                 @csrf
                 <button type="button" onclick="confirmAdminLogout()" class="pts-pill" style="cursor:pointer; background: #fee2e2; color: #dc2626; border: 1.5px solid #fecaca; display: flex; align-items: center; gap: 0.375rem; transition: background 0.2s; padding: 0.35rem 1rem; border-radius: 9999px;" onmouseover="this.style.background='#fca5a5'" onmouseout="this.style.background='#fee2e2'">
@@ -1183,72 +1179,70 @@ body.no-scroll { overflow: hidden; }
         </div>
 
         {{-- ══ 4. PENGATURAN SISTEM ══ --}}
-        <div id="sec-setting" class="sec">
-            <div class="sec-hdr">
-                <div class="sec-hdr-left">
-                    <div class="sec-kicker">Pengaturan Sistem</div>
-                    <div class="sec-title">Pengendalian Platform</div>
-                </div>
-            </div>
-            <div class="setting-grid">
-                {{-- Kategori Makanan --}}
-                <div class="setting-card">
-                    <div class="setting-top">
-                        <div>
-                            <div class="setting-title">Kategori Makanan</div>
-                            <div class="setting-sub">Kelola kategori yang tersedia untuk Seller saat membuat listing.</div>
-                        </div>
-                        <div class="setting-icon blue">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                        </div>
-                    </div>
-                    <div class="cat-wrap">
-                        <div class="cat-chip">🥬 Sayuran <span class="cat-chip-del">×</span></div>
-                        <div class="cat-chip">🍱 Makanan Siap Saji <span class="cat-chip-del">×</span></div>
-                        <div class="cat-chip">🍞 Roti & Kue <span class="cat-chip-del">×</span></div>
-                        <div class="cat-chip">🍚 Nasi & Lauk <span class="cat-chip-del">×</span></div>
-                        <div class="cat-chip">🥤 Minuman <span class="cat-chip-del">×</span></div>
-                        <div class="cat-chip">🍖 Daging & Protein <span class="cat-chip-del">×</span></div>
-                        <div class="cat-chip">🧁 Snack & Camilan <span class="cat-chip-del">×</span></div>
-                        <div class="cat-add" onclick="alert('Tambah kategori baru')">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                            Tambah Kategori
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Notifikasi Sistem --}}
-                <div class="setting-card">
-                    <div class="setting-top">
-                        <div>
-                            <div class="setting-title">Kirim Notifikasi Massal</div>
-                            <div class="setting-sub">Pengumuman ke semua pengguna, misal: jadwal maintenance server.</div>
-                        </div>
-                        <div class="setting-icon violet">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                        </div>
-                    </div>
-                    <div class="notif-form">
-                        <div class="nf-row">
-                            <select class="nf-input" style="max-width:160px;">
-                                <option>Semua Pengguna</option>
-                                <option>Konsumen Saja</option>
-                                <option>Seller Saja</option>
-                                <option>Lembaga Saja</option>
-                            </select>
-                            <input type="text" class="nf-input" placeholder="Judul notifikasi...">
-                        </div>
-                        <textarea class="nf-input" placeholder="Isi pesan pengumuman..."></textarea>
-                        <div>
-                            <button class="btn btn-primary">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                                Kirim Sekarang
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div id="sec-setting" class="sec">
+    <div class="sec-hdr">
+        <div class="sec-hdr-left">
+            <div class="sec-kicker">Pengaturan Sistem</div>
+            <div class="sec-title">Pengendalian Platform</div>
         </div>
+    </div>
+    
+    <div class="setting-grid">
+        {{-- Form Notifikasi Massal - Ditambahkan grid-column agar full width --}}
+        <form action="{{ route('admin.notifications.bulk') }}" method="POST" style="width: 100%; grid-column: 1 / -1;">
+            @csrf
+            <div class="setting-card" style="background: #ffffff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border: 1px solid #f3f4f6; width: 100%;">
+                
+                <div class="setting-top" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; gap: 16px;">
+                    <div>
+                        <div class="setting-title" style="font-size: 18px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">Kirim Notifikasi Massal</div>
+                        <div class="setting-sub" style="font-size: 14px; color: #6b7280; line-height: 1.5;">Pengumuman ke semua pengguna, misal: jadwal maintenance server.</div>
+                    </div>
+                    <div class="setting-icon violet" style="background: #e0e7ff; color: #4f46e5; padding: 10px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    </div>
+                </div>
+                
+                <div class="notif-form" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="nf-row" style="display: flex; gap: 12px; width: 100%; flex-wrap: wrap;">
+                        <select name="target_role" class="nf-input" style="flex: 1; min-width: 160px; max-width: 220px; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background-color: #f9fafb; color: #374151; height: 46px;" required>
+                            <option value="all">🌍 Semua Pengguna</option>
+                            <option value="konsumen">🛍️ Konsumen Saja</option>
+                            <option value="seller">🏪 Seller Saja</option>
+                            <option value="lembaga_sosial">🏢 Lembaga Saja</option>
+                        </select>
+                        <input type="text" name="title" class="nf-input" placeholder="Masukkan judul notifikasi..." style="flex: 4; min-width: 240px; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #1f2937; height: 46px;" required>
+                    </div>
+                    
+                    <textarea name="message" class="nf-input" placeholder="Tulis isi pesan pengumuman di sini secara lengkap..." style="width: 100%; min-height: 140px; padding: 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; color: #1f2937; resize: vertical; font-family: inherit; line-height: 1.5;" required></textarea>
+                    
+                    <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                        <button type="submit" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: background 0.2s; background-color: #4f46e5; color: white; border: none;">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                            Kirim Sekarang
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{--  SweetAlert2  --}}
+@if(session('success_notif'))
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Berhasil Dikirim!',
+                text: "{{ session('success_notif') }}",
+                icon: 'success',
+                confirmButtonColor: '#4f46e5',
+                confirmButtonText: 'Oke, Mantap!'
+            });
+        });
+    </script>
+@endif
 
     </div>{{-- /.content --}}
 </div>{{-- /.main --}}

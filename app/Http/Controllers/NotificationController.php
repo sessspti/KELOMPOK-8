@@ -20,6 +20,7 @@ class NotificationController extends Controller
         auth()->user()->unreadNotifications->markAsRead();
         return back();
     }
+
     public function sendMass(Request $request)
     {
         $request->validate([
@@ -39,5 +40,33 @@ class NotificationController extends Controller
         \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\GeneralNotification($request->title, $request->message));
 
         return back()->with('success', 'Notifikasi massal berhasil dikirim ke ' . $users->count() . ' pengguna.');
+    }
+
+    /**
+     * Kirim Notifikasi Massal dari Admin Dashboard
+     */
+    public function sendBulkNotification(Request $request)
+    {
+        $request->validate([
+            'target_role' => 'required|in:all,konsumen,seller,lembaga_sosial',
+            'title' => 'required|string|max:255',
+            'message' => 'required|string'
+        ]);
+
+        $query = \App\Models\User::where('role', '!=', 'admin');
+
+        if ($request->target_role !== 'all') {
+            $query->where('role', $request->target_role);
+        }
+
+        $users = $query->get();
+
+        \Illuminate\Support\Facades\Notification::send($users, new \App\Notifications\GeneralNotification(
+            $request->title,
+            $request->message,
+            '📢'
+        ));
+
+        return back()->with('success_notif', 'Notifikasi massal berhasil dikirim ke ' . $users->count() . ' pengguna!');
     }
 }

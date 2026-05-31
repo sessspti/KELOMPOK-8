@@ -266,6 +266,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('seller.manage');
 
         // Route Inventory & Menu Management
+        // Route Inventory & Menu Management
         Route::post('/menus', [MenuController::class, 'store'])->name('seller.menus.store');
         Route::get('/menus/{menu}/edit', [MenuController::class, 'editMenu'])->name('seller.menus.editMenu');
         Route::put('/menus/{menu}/update', [MenuController::class, 'updateMenu'])->name('seller.menus.updateMenu');
@@ -407,6 +408,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/complaints/{complaint}', [ComplaintController::class, 'adminShow'])->name('admin.complaints.show');
         Route::post('/complaints/{complaint}/reply', [ComplaintController::class, 'adminReply'])->name('admin.complaints.reply');
         Route::post('/admin/complaints/{complaint}/status', [ComplaintController::class, 'updateStatus'])->name('admin.complaints.status');
+
+        // ROUTE UPDATE: Fitur Notifikasi Massal Admin
+        Route::post('/notifications/bulk', [\App\Http\Controllers\NotificationController::class, 'sendBulkNotification'])->name('admin.notifications.bulk');
     });
 
 }); // <─── PENUTUP MIDDLEWARE GLOBAL LOGIN
