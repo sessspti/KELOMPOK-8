@@ -902,7 +902,14 @@ body::after {
         </div>
 
         {{-- ── RESCUE DEALS ── --}}
-        <section class="sec">
+<section class="sec" x-data="{
+            scrollNext() {
+                this.$refs.productSlider.scrollBy({ left: 340, behavior: 'smooth' });
+            },
+            scrollPrev() {
+                this.$refs.productSlider.scrollBy({ left: -340, behavior: 'smooth' });
+            }
+        }">
             <div class="sec-hdr">
                 <div>
                     <p class="sec-label"><span class="sec-label-dot"></span> Penawaran Terbaik</p>
@@ -910,15 +917,14 @@ body::after {
                     <p class="sec-sub">Makanan berkualitas dengan harga penyelamat.</p>
                 </div>
                 <div class="arrow-row">
-                    <button class="arr-btn" aria-label="Sebelumnya">←</button>
-                    <button class="arr-btn" aria-label="Berikutnya">→</button>
+                    <button class="arr-btn" @click="scrollPrev()" aria-label="Sebelumnya">←</button>
+                    <button class="arr-btn" @click="scrollNext()" aria-label="Berikutnya">→</button>
                 </div>
             </div>
 
-            <!-- Product Grid (Dynamic Search) -->
-            <div class="pgrid">
+            <div x-ref="productSlider" class="pgrid-slider" style="display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding-bottom: 16px; -ms-overflow-style: none; scrollbar-width: none;">
                 <template x-for="product in filteredProducts" :key="product.id">
-                    <div class="pcard">
+                    <div class="pcard" style="flex: 0 0 300px; scroll-snap-align: start;">
                         <div class="pcard-img">
                             <template x-if="product.image_url">
                                 <img :src="product.image_url" :alt="product.name">
@@ -938,10 +944,7 @@ body::after {
                             </div>
                             <div class="bdg-urgent" x-text="product.urgent"></div>
 
-
-                            <div class="bdg-urgent" x-text="product.urgent"></div>
-
-                        {{-- OVERLAY TOKO TUTUP / DITANGGUHKAN --}}
+                            {{-- OVERLAY TOKO TUTUP / DITANGGUHKAN --}}
                             <template x-if="product.store_is_suspended == 1">
                                 <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none" style="background: rgba(17, 25, 23, 0.55); backdrop-filter: blur(1px);">
                                     <div style="background: #dc2626; color: white; padding: 0.4rem 1rem; border-radius: 999px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); text-align: center;">
@@ -997,7 +1000,7 @@ body::after {
                                     </template>
                                     <div class="price-now" x-text="formatRupiah(product.final_price)"></div>
                                 </div>
-                                {{-- Tombol Keranjang untuk KONSUMEN dan LEMBAGA (hanya jika toko buka) --}}
+                                {{-- Tombol Keranjang untuk KONSUMEN dan LEMBAGA --}}
                                 <template x-if="product.store_is_open == 1">
                                     <button @click="addToCart(product, $event)" class="add-btn" :aria-label="isKonsumen ? 'Tambah ke keranjang' : 'Ajukan ke Seller'">
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22">
@@ -1006,7 +1009,7 @@ body::after {
                                     </button>
                                 </template>
 
-                                {{-- Tombol disabled untuk KONSUMEN dan LEMBAGA (jika toko tutup) --}}
+                                {{-- Tombol disabled jika toko tutup --}}
                                 <template x-if="product.store_is_open == 0">
                                     <button disabled class="add-btn" aria-label="Toko Tutup" style="background: #e2e8f0; color: #94a3b8; cursor: not-allowed; box-shadow: none;">
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
@@ -1015,7 +1018,7 @@ body::after {
                                     </button>
                                 </template>
 
-                                {{-- CTA Masuk untuk guest / role bukan konsumen --}}
+                                {{-- CTA Masuk untuk guest --}}
                                 <a x-show="!isKonsumen" href="{{ route('login') }}"
                                    class="add-btn" aria-label="Masuk untuk membeli"
                                    style="background: var(--mint-600); color: var(--white); text-decoration: none; width: auto; padding: 0 12px; font-family: 'Space Grotesk', sans-serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.03em; gap: 5px; white-space: nowrap; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);">
@@ -1025,18 +1028,15 @@ body::after {
                                     Masuk
                                 </a>
                             </div>
-
                         </div>
                     </div>
                 </template>
             </div>
 
-            <!-- Empty State -->
             <div x-show="filteredProducts.length === 0" class="text-center py-20">
                 <p class="text-gray-400 italic">Maaf, makanan tidak ditemukan...</p>
             </div>
         </section>
-
         <hr class="divider">
 
         {{-- ── EDUKASI ── --}}

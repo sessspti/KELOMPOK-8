@@ -1027,7 +1027,14 @@ body::after {
     </div>
 
     {{-- ── RESCUE DEALS ── --}}
-    <section class="sec">
+<section class="sec" x-data="{
+        scrollNextDonasi() {
+            this.$refs.donasiSlider.scrollBy({ left: 340, behavior: 'smooth' });
+        },
+        scrollPrevDonasi() {
+            this.$refs.donasiSlider.scrollBy({ left: -340, behavior: 'smooth' });
+        }
+    }">
         <div class="sec-hdr">
             <div>
                 <p class="sec-label"><span class="sec-label-dot"></span> Siap Disalurkan</p>
@@ -1035,8 +1042,8 @@ body::after {
                 <p class="sec-sub">Makanan surplus dari mitra restoran, siap diambil dan disalurkan kepada yang membutuhkan.</p>
             </div>
             <div class="arrow-row">
-                <button class="arr-btn" aria-label="Sebelumnya">←</button>
-                <button class="arr-btn" aria-label="Berikutnya">→</button>
+                <button class="arr-btn" @click="scrollPrevDonasi()" aria-label="Sebelumnya">←</button>
+                <button class="arr-btn" @click="scrollNextDonasi()" aria-label="Berikutnya">→</button>
             </div>
         </div>
 
@@ -1055,9 +1062,9 @@ body::after {
         .loc-pill svg{width:11px;height:11px;color:var(--mint-600);}
         </style>
         
-        <div class="pgrid">
+        <div x-ref="donasiSlider" class="pgrid-slider" style="display: flex; gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding-bottom: 16px; -ms-overflow-style: none; scrollbar-width: none;">
             <template x-for="product in filteredProducts" :key="product.id">
-                <div class="pcard">
+                <div class="pcard" style="flex: 0 0 300px; scroll-snap-align: start;">
                     <div class="pcard-img">
                         <template x-if="product.image_url">
                             <img :src="product.image_url" :alt="product.name">
@@ -1720,8 +1727,6 @@ function updateCount(){
         });
     };
 
-    // 7. Event Delegation untuk Tombol "Ajukan"
-    // 7. Klik 'Ajukan' dihilangkan karena ditangani oleh Alpine.js
 
 
     // 8. Event Listener untuk Tombol Konfirmasi
