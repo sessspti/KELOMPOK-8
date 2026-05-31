@@ -4,19 +4,45 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-// TAMBAHKAN 'role', 'provider', dan 'provider_id' di sini
-#[Fillable(['name', 'email', 'password', 'role', 'provider', 'provider_id', 'avatar', 'phone_number', 'address', 'account_status', 'is_open', 'suspension_reason'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'provider',
+        'provider_id',
+        'avatar',
+        'phone_number',
+        'address',
+        'city',
+        'account_status',
+        'is_open',
+        'suspension_reason',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -93,5 +119,35 @@ class User extends Authenticatable
     public function getIsStoreOpenAttribute(): bool
     {
         return $this->store_status === 'Buka';
+    }
+
+    /**
+     * Get the list of supported cities.
+     * Sorted alphabetically for professional presentation.
+     *
+     * @return array
+     */
+    public static function getCities(): array
+    {
+        return [
+            'balikpapan' => ['name' => 'Balikpapan', 'emoji' => '🚢'],
+            'bandung'    => ['name' => 'Bandung', 'emoji' => '🏔️'],
+            'bekasi'     => ['name' => 'Bekasi', 'emoji' => '🏙️'],
+            'bogor'      => ['name' => 'Bogor', 'emoji' => '🌧️'],
+            'denpasar'   => ['name' => 'Denpasar', 'emoji' => '🌴'],
+            'depok'      => ['name' => 'Depok', 'emoji' => '🏡'],
+            'jakarta'    => ['name' => 'Jakarta', 'emoji' => '🏢'],
+            'makassar'   => ['name' => 'Makassar', 'emoji' => '⚓'],
+            'malang'     => ['name' => 'Malang', 'emoji' => '🍎'],
+            'medan'      => ['name' => 'Medan', 'emoji' => '🏝️'],
+            'palembang'  => ['name' => 'Palembang', 'emoji' => '🌉'],
+            'purwakarta' => ['name' => 'Purwakarta', 'emoji' => '🏭'],
+            'samarinda'  => ['name' => 'Samarinda', 'emoji' => '🌳'],
+            'semarang'   => ['name' => 'Semarang', 'emoji' => '🏛️'],
+            'solo'       => ['name' => 'Solo', 'emoji' => '🎨'],
+            'surabaya'   => ['name' => 'Surabaya', 'emoji' => '🌊'],
+            'tangerang'  => ['name' => 'Tangerang', 'emoji' => '🌆'],
+            'yogyakarta' => ['name' => 'Yogyakarta', 'emoji' => '🕌'],
+        ];
     }
 }

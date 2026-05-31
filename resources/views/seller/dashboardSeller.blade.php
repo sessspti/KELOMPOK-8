@@ -611,10 +611,7 @@ body::before {
         <div class="hdr-divider"></div>
         <span class="hdr-role">✦ Seller Dashboard</span>
         <div class="hdr-right">
-
-
-
-        {{-- Status Toko (Sudah terhubung ke database) --}}
+{{-- Status Toko (Sudah terhubung ke database) --}}
             <form action="{{ route('seller.toggle-status') }}" method="POST" style="display: inline-block;">
                 @csrf
                 <button type="submit" class="store-btn" id="storeBtn" 
@@ -937,8 +934,6 @@ body::before {
                                             Diserahkan: {{ $order->picked_up_at->format('H:i') }} WIB
                                         </div>
                                     @endif
-
-                                    {{-- AREA ULASAN TELAH DIPINDAH KE TAB ULASAN --}}
                                 </td>
                             </tr>
                             @empty

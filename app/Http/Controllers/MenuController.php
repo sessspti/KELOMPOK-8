@@ -155,10 +155,18 @@ class MenuController extends Controller
      */
     public function consumerDashboard(ProductVisibilityService $visibilityService)
     {
+        $kota = request('kota');
         $menus = $visibilityService->getVisibleProductsForConsumer();
 
         //(Karena data dari Service, gunakan loadAvg & loadCount & load)
         $menus->loadAvg('reviews', 'rating')->loadCount('reviews')->load('reviews.user');
+        
+        // Terapkan filter kota secara case-insensitive
+        if ($kota) {
+            $menus = $menus->filter(function ($menu) use ($kota) {
+                return $menu->user && strtolower($menu->user->city ?? '') === strtolower($kota);
+            })->values();
+        }
         
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
@@ -182,9 +190,16 @@ class MenuController extends Controller
      */
     public function institutionDashboard(ProductVisibilityService $visibilityService)
     {
+        $kota = request('kota');
         $menus = $visibilityService->getVisibleProductsForInstitution();
         
-        $menus->loadAvg('reviews', 'rating')->loadCount('reviews')->load('reviews.user');
+        // Terapkan filter kota secara case-insensitive
+        if ($kota) {
+            $menus = $menus->filter(function ($menu) use ($kota) {
+                return $menu->user && strtolower($menu->user->city ?? '') === strtolower($kota);
+            })->values();
+        }
+        
         // Add store_is_open information to each menu
         $menus = $menus->map(function ($menu) {
             $menu->store_is_open = ($menu->user && $menu->user->is_open && $menu->user->account_status !== 'rejected') ? 1 : 0;
