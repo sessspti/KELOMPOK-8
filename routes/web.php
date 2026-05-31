@@ -13,9 +13,9 @@ use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\Admin\ImpactDashboardController as AdminImpactController;
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 use App\Http\Controllers\Admin\ArticleController;
-use App\Services\ImpactCalculatorService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ImpactCalculatorService;
 
 // ─── ROOT: Redirect berdasarkan role ───
 Route::get('/', function () {
@@ -51,7 +51,7 @@ Route::get('/home', function () {
         return $menu;
     });
 
-    // 2. Karena guest belum login, buatlah $orders kosong (menggunakan collect())
+    // 2. Because guest belum login, buatlah $orders kosong (menggunakan collect())
     $orders = collect(); 
 
     // 3. Ambil artikel edukasi yang berstatus published (maksimal 5 artikel terbaru)
@@ -185,9 +185,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 $otherUser = $msg->sender_id == $userId ? $msg->receiver : $msg->sender;
                 if (!$contacts->has($otherUser->id)) {
                     $unreadCount = \App\Models\Message::where('sender_id', $otherUser->id)
-                                          ->where('receiver_id', $userId)
-                                          ->where('is_read', false)
-                                          ->count();
+                                                      ->where('receiver_id', $userId)
+                                                      ->where('is_read', false)
+                                                      ->count();
                     $contacts->put($otherUser->id, (object)[
                         'user' => $otherUser,
                         'last_message' => $msg,
@@ -265,6 +265,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return view('seller.etalase', compact('menus'));
         })->name('seller.manage');
 
+        // Route Inventory & Menu Management
         Route::post('/menus', [MenuController::class, 'store'])->name('seller.menus.store');
         Route::get('/menus/{menu}/edit', [MenuController::class, 'editMenu'])->name('seller.menus.editMenu');
         Route::put('/menus/{menu}/update', [MenuController::class, 'updateMenu'])->name('seller.menus.updateMenu');
@@ -283,7 +284,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // 7. Fitur Lembaga Sosial
     Route::prefix('sosial')->middleware(['role:lembaga_sosial', 'approved'])->group(function () {
-        Route::get('/dashboard', [MenuController::class, 'institutionDashboard'])->name('sosial.dashboard');
+        // 💡 PERBAIKAN SINKRONISASI ARTIKEL: Menyediakan data $articles agar view tidak memicu eror undefined variable
+        Route::get('/dashboard', function (ImpactCalculatorService $impactCalculator) {
+            $menus = \App\Models\Menu::where('stock', '>', 0)
+                ->where(function($query) {
+                    $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()->toDateString());
+                })->latest()->get();
+
+            $orders = \App\Models\Order::where('id_user', auth()->id())->latest()->get();
+
+            // Hitung kontribusi / impact dari servis internal
+            $contribution = $impactCalculator->syncForUser(auth()->id());
+
+            // Ambil artikel edukasi berstatus published untuk komponen edukasi di bawah dashboard
+            $articles = \App\Models\Article::where('status', 'published')->latest()->take(5)->get();
+
+            return view('sosial.dashboard', compact('menus', 'orders', 'contribution', 'articles'));
+        })->name('sosial.dashboard');
+
         Route::post('/claim', [TransactionController::class, 'claimDonation'])->name('sosial.claim');
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('sosial.profile.edit');
     });
@@ -296,7 +314,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('transaction.checkout');
     })->middleware('role:konsumen')->name('checkout.summary');
 
-    // 9b. Fitur Ulasan / Review Makanan (Konsumen dan Lembaga Sosial)
+    // 9b. Fitur Makanan / Review Makanan (Konsumen dan Lembaga Sosial)
     Route::post('/reviews/store', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
 
     // ==============================================================================
@@ -305,10 +323,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/complaints/store/{sellerId}', [ComplaintController::class, 'store'])->name('complaints.store');
     Route::get('/complaints', [ComplaintController::class, 'myComplaints'])->name('complaints.index');
     Route::get('/complaints/{complaint}', [ComplaintController::class, 'show'])->name('complaints.show');
-    
-    // 💡 DIUBAH: disesuaikan dengan 'complaints.sendMessage' bawaan Controller kamu
     Route::post('/complaints/{complaint}/send', [ComplaintController::class, 'sendMessage'])->name('complaints.sendMessage');
-
 
     // ==============================================================================
     // 10. Fitur Admin (Pusat Kendali Platform)
@@ -337,32 +352,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $totalUsers = \App\Models\User::count();
             $activeSellers = \App\Models\User::where('role', 'seller')->where('account_status', 'approved')->count();
 
-            // Hitung global impact dari semua transaksi selesai
-            $completedOrders = \App\Models\Order::where('status', 'selesai')->get();
-            
-            $globalFoodSaved = 0;
-            $globalTransactions = $completedOrders->count();
-            
-            // Hitung total makanan diselamatkan (asumsi 0.5kg per item)
-            foreach ($completedOrders as $order) {
-                $averageWeight = 0.5; // 500 gram per item makanan
-                $globalFoodSaved += $order->quantity * $averageWeight;
+            // ─── MODEL DIKOREKSI MENJADI EnvironmentalImpact ───
+            $globalFoodSaved = \App\Models\EnvironmentalImpact::sum('food_saved_kg') ?? 0.0;
+            if ($globalFoodSaved == 0) {
+                // Fallback aman: hitung akumulasi kuantitas pesanan valid
+                $suksesOrderQty = \App\Models\Order::whereIn('status', ['selesai', 'paid', 'proses', 'siap_diambil'])->sum('quantity');
+                $globalFoodSaved = $suksesOrderQty * 0.5; 
             }
+
+            $globalTransactions = \App\Models\Order::whereNotNull('transaction_id')->count();
+            $grandTotalTransaksiDonasi = \App\Models\Donation::count();
+            $totalRescues = $globalTransactions + $grandTotalTransaksiDonasi;
             
-            // Tambahkan donasi yang sudah diterima jika ada
-            $completedDonations = \App\Models\Donation::count(); // Hitung total donasi sebagai transaksi
-            $globalTransactions += $completedDonations;
-            
-            // Buat object global impact
             $globalImpact = (object) [
-                'food_saved_kg' => $globalFoodSaved,
-                'total_rescues' => $globalTransactions
+                'food_saved_kg' => (float) $globalFoodSaved,
+                'total_rescues' => (int) $totalRescues
             ];
 
             $complaintsList = \App\Models\Complaint::with(['reporter', 'seller'])->latest()->get();
             $totalComplaints = \App\Models\Complaint::where('status', 'pending')->count();
 
-            return view('admin.dashboard', compact('ordersGrouped', 'pendingVerifications', 'usersList', 'totalUsers', 'activeSellers', 'complaintsList', 'totalComplaints'));
+            $articles = \App\Models\Article::all(); 
+
+            return view('admin.dashboard', compact(
+                'ordersGrouped', 
+                'pendingVerifications', 
+                'usersList', 
+                'totalUsers', 
+                'activeSellers', 
+                'complaintsList', 
+                'totalComplaints', 
+                'grandTotalTransaksiDonasi', 
+                'articles',
+                'globalImpact'
+            ));
         })->name('admin.dashboard');
 
         Route::post('/verifications/{user}/approve', [AdminVerificationController::class, 'approve'])->name('admin.verifications.approve');
@@ -376,13 +399,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/verifikasi', fn() => view('admin.verifikasi'))->name('admin.verifikasi');
         Route::get('/edukasi', fn() => view('admin.edukasi.index'))->name('admin.edukasi');
 
+        // Mengatur Fitur Kelola Edukasi (Tambah & Hapus Artikel)
+        Route::post('/edukasi/store', [ArticleController::class, 'store'])->name('admin.edukasi.store');
+        Route::delete('/edukasi/{article}', [ArticleController::class, 'destroy'])->name('admin.edukasi.destroy');
+
         // Jalur Khusus Admin untuk melihat & merespon Tiket Keluhan
         Route::get('/complaints/{complaint}', [ComplaintController::class, 'adminShow'])->name('admin.complaints.show');
         Route::post('/complaints/{complaint}/reply', [ComplaintController::class, 'adminReply'])->name('admin.complaints.reply');
         Route::post('/admin/complaints/{complaint}/status', [ComplaintController::class, 'updateStatus'])->name('admin.complaints.status');
     });
 
-}); // <─── PENUTUP MIDDLEWARE GLOBAL LOGIN YANG BENAR
+}); // <─── PENUTUP MIDDLEWARE GLOBAL LOGIN
 
 // --- Auth & Donasi (Akses Publik / Tanpa Batasan) ---
 Route::get('/donasi', [DonationController::class, 'index'])->name('donations.index');
