@@ -1249,14 +1249,6 @@ body::before {
                         </div>
                     </template>
 
-                    {{-- Distance badge --}}
-                    <div class="bdg-dist">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        </svg>
-                        <span x-text="product.distance + ' km'"></span>
-                    </div>
-
                     {{-- Stock urgency badge --}}
                     <div class="bdg-stock"
                          :class="product.stock === 0 ? 'empty' : product.stock <= 2 ? 'low' : 'ok'"
@@ -1310,22 +1302,22 @@ body::before {
                                     </button>
                                 @elseif(auth()->user()->role === 'lembaga_sosial')
                                     {{-- Lembaga dapat mengajukan pengambilan --}}
-                                    <button class="pcard-btn"
-                                            @click="addToCart(product, $event)"
-                                            :disabled="product.stock === 0"
-                                            :class="{ 'added': justAdded === product.id }"
-                                            style="background: linear-gradient(135deg, #0ea5e9, #0284c7);">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                :d="product.stock === 0
-                                                    ? 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636'
-                                                    : justAdded === product.id
-                                                    ? 'M5 13l4 4L19 7'
-                                                    : 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'">
-                                            </path>
-                                        </svg>
-                                        <span x-text="product.stock === 0 ? 'Stok Habis' : justAdded === product.id ? 'Ditambahkan!' : 'Ajukan Pengambilan'"></span>
-                                    </button>
+<button class="pcard-btn"
+        @click="addToCart(product, $event)"
+        :disabled="product.stock === 0"
+        :class="{ 'added': justAdded === product.id }"
+        style="background: linear-gradient(135deg, #4ade80, #22c55e);">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+            :d="product.stock === 0
+                ? 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636'
+                : justAdded === product.id
+                ? 'M5 13l4 4L19 7'
+                : 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'">
+        </path>
+    </svg>
+    <span x-text="product.stock === 0 ? 'Stok Habis' : justAdded === product.id ? 'Ditambahkan!' : 'Ajukan Pengambilan'"></span>
+</button>
                                 @else
                                     {{-- Role lain (seller, admin) tidak dapat memesan --}}
                                     <button class="pcard-btn" disabled style="background-color: #f1f5f9; color: #64748b; cursor: not-allowed; border: none; opacity: 0.8;">
@@ -1460,8 +1452,14 @@ function storePage() {
             this.justAdded = product.id;
             setTimeout(() => { this.justAdded = null; }, 1500);
 
-            // toast notifikasi
-            this.showToast(product.name + ' ditambahkan ke keranjang', '🛒');
+            // SweetAlert notifikasi saat produk berhasil ditambahkan
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: product.name + ' ditambahkan ke keranjang',
+                showConfirmButton: false,
+                timer: 1500
+            });
 
             // FLY-TO-CART ANIMATION
             if (event) {
