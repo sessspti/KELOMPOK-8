@@ -12,6 +12,7 @@ use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\ComplaintController;
 use App\Http\Controllers\Admin\ImpactDashboardController as AdminImpactController;
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
+use App\Http\Controllers\Admin\ArticleController;
 use App\Services\ImpactCalculatorService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -53,7 +54,10 @@ Route::get('/home', function () {
     // 2. Karena guest belum login, buatlah $orders kosong (menggunakan collect())
     $orders = collect(); 
 
-    return view('dashboard', compact('menus', 'orders'));
+    // 3. Ambil artikel edukasi yang berstatus published (maksimal 5 artikel terbaru)
+    $articles = \App\Models\Article::where('status', 'published')->latest()->take(5)->get();
+
+    return view('dashboard', compact('menus', 'orders', 'articles'));
 })->name('guest.dashboard');
 
 // Halaman Detail Toko (Public)
@@ -358,7 +362,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $complaintsList = \App\Models\Complaint::with(['reporter', 'seller'])->latest()->get();
             $totalComplaints = \App\Models\Complaint::where('status', 'pending')->count();
 
-            return view('admin.dashboard', compact('ordersGrouped', 'pendingVerifications', 'usersList', 'totalUsers', 'activeSellers', 'complaintsList', 'totalComplaints', 'globalImpact'));
+            return view('admin.dashboard', compact('ordersGrouped', 'pendingVerifications', 'usersList', 'totalUsers', 'activeSellers', 'complaintsList', 'totalComplaints'));
         })->name('admin.dashboard');
 
         Route::post('/verifications/{user}/approve', [AdminVerificationController::class, 'approve'])->name('admin.verifications.approve');
@@ -371,7 +375,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/users', fn() => view('admin.users.index'))->name('admin.users.index');
         Route::get('/verifikasi', fn() => view('admin.verifikasi'))->name('admin.verifikasi');
         Route::get('/edukasi', fn() => view('admin.edukasi.index'))->name('admin.edukasi');
-        Route::get('/impact/stats', [AdminImpactController::class, 'globalStats'])->name('admin.impact.stats');
 
         // Jalur Khusus Admin untuk melihat & merespon Tiket Keluhan
         Route::get('/complaints/{complaint}', [ComplaintController::class, 'adminShow'])->name('admin.complaints.show');

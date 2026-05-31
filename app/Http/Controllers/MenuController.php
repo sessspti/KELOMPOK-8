@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Menu;
 use App\Models\Complaint; // 💡 TAMBAHAN AMAN: Meng-import model Complaint agar bisa digunakan
+use App\Models\Article; // Import model Article untuk edukasi
 use App\Services\ImpactCalculatorService;
 use App\Services\ProductVisibilityService;
 
@@ -182,7 +183,10 @@ class MenuController extends Controller
 
         $impact = app(ImpactCalculatorService::class)->syncForUser(auth()->id());
 
-        return view('dashboard', compact('menus', 'orders', 'impact'));
+        // Ambil artikel edukasi yang berstatus published (maksimal 5 artikel terbaru)
+        $articles = Article::where('status', 'published')->latest()->take(5)->get();
+
+        return view('dashboard', compact('menus', 'orders', 'impact', 'articles'));
     }
 
     /**
@@ -214,6 +218,6 @@ class MenuController extends Controller
 
         $impact = app(ImpactCalculatorService::class)->syncForUser(auth()->id());
 
-        return view('sosial.dashboard', compact('menus', 'orders', 'impact'));
+        return view('sosial.dashboard', compact('menus', 'orders', 'contribution'));
     }
 }

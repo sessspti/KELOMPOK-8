@@ -751,6 +751,7 @@ body.no-scroll { overflow: hidden; }
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                 </div>
                 <div class="stat-label">Total Transaksi & Donasi</div>
+                <div class="stat-num">{{ number_format($grandTotalTransaksiDonasi, 0, ',', '.') }}</div>
                 <div class="stat-num">{{ number_format((int) ($globalImpact->total_rescues ?? 0), 0, ',', '.') }}</div>
                 <div class="stat-delta up">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
@@ -1125,44 +1126,57 @@ body.no-scroll { overflow: hidden; }
                     </button>
                 </div>
             </div>
-            <div class="artikel-row">
-                <div class="artikel-thumb"><img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=200" alt=""></div>
-                <div class="artikel-info">
-                    <div class="artikel-title-row">5 Cara Agar Sayuran Tetap Segar Selama Seminggu</div>
-                    <div class="artikel-meta"><span class="pill aktif">Publikasi</span> Tips Penyimpanan · Admin FoodSave · 2 jam lalu</div>
-                </div>
-                <div class="actions" style="flex-shrink:0;">
-                    <button class="btn btn-outline btn-xs btn-icon" title="Edit"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                    <button class="btn btn-amber btn-xs btn-icon" title="Sembunyikan"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg></button>
-                    <button class="btn btn-danger btn-xs btn-icon" title="Hapus"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                </div>
+
+            {{-- Flash Message Success --}}
+            @if(session('success'))
+            <div style="padding: 1rem 1.75rem; background: var(--mint-100); border-bottom: 1.5px solid var(--border); display: flex; align-items: center; gap: 0.75rem; color: var(--mint-600);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span style="font-size: 0.875rem; font-weight: 600;">{{ session('success') }}</span>
             </div>
+            @endif
+
+            {{-- Daftar Artikel dari Database --}}
+            @forelse($articles as $article)
             <div class="artikel-row">
-                <div class="artikel-thumb"><img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=200" alt=""></div>
-                <div class="artikel-info">
-                    <div class="artikel-title-row">Dampak Mengerikan Food Waste bagi Perubahan Iklim</div>
-                    <div class="artikel-meta"><span class="pill aktif">Publikasi</span> Global Issue · Admin FoodSave · 1 hari lalu</div>
-                </div>
-                <div class="actions" style="flex-shrink:0;">
-                    <button class="btn btn-outline btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                    <button class="btn btn-amber btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg></button>
-                    <button class="btn btn-danger btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                </div>
-            </div>
-            <div class="artikel-row">
-                <div class="artikel-thumb" style="background:var(--blue-100);display:flex;align-items:center;justify-content:center;color:var(--blue-400);">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                <div class="artikel-thumb" @if(!$article->image) style="background:var(--blue-100);display:flex;align-items:center;justify-content:center;color:var(--blue-400);" @endif>
+                    @if($article->image)
+                        <img src="{{ asset('storage/' . $article->image) }}" alt="{{ $article->title }}">
+                    @else
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    @endif
                 </div>
                 <div class="artikel-info">
-                    <div class="artikel-title-row">Prosedur Food Safety untuk Distribusi Makanan Surplus</div>
-                    <div class="artikel-meta"><span class="pill suspend">Draft</span> Keamanan Pangan · Admin FoodSave · 3 hari lalu</div>
+                    <div class="artikel-title-row">{{ $article->title }}</div>
+                    <div class="artikel-meta">
+                        <span class="pill {{ $article->status === 'published' ? 'aktif' : 'suspend' }}">{{ $article->status === 'published' ? 'Published' : 'Draft' }}</span>
+                        {{ $article->category }} · Admin FoodSave · {{ $article->created_at->diffForHumans() }}
+                    </div>
                 </div>
                 <div class="actions" style="flex-shrink:0;">
-                    <button class="btn btn-success btn-xs">Publish</button>
-                    <button class="btn btn-outline btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                    <button class="btn btn-danger btn-xs btn-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+                    @if($article->status === 'draft')
+                        <button class="btn btn-success btn-xs">Publish</button>
+                    @endif
+                    <button class="btn btn-outline btn-xs btn-icon" title="Edit" 
+                        onclick="openEditModal({{ $article->id }}, '{{ addslashes($article->title) }}', '{{ addslashes($article->category) }}', '{{ addslashes($article->content) }}', '{{ $article->status }}')">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </button>
+                    <form action="{{ route('admin.edukasi.destroy', $article->id) }}" method="POST" class="delete-article-form" style="display:inline;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-xs btn-icon" title="Hapus">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </form>
                 </div>
             </div>
+            @empty
+            {{-- Empty State dengan style konsisten --}}
+            <div style="padding: 4rem 2rem; text-align: center; color: var(--muted);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="48" height="48" style="margin: 0 auto 1rem; opacity: 0.3;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                <p style="font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.375rem;">Belum Ada Artikel Edukasi</p>
+                <p style="font-size: 0.8125rem;">Klik tombol "Artikel Baru" untuk membuat artikel edukasi pertama Anda.</p>
+            </div>
+            @endforelse
         </div>
 
         {{-- ══ 4. PENGATURAN SISTEM ══ --}}
@@ -1265,38 +1279,136 @@ body.no-scroll { overflow: hidden; }
 {{-- ══ MODAL: Tambah Artikel ══ --}}
 <div class="modal-overlay" id="modal-addArtikel">
     <div class="modal">
-        <div class="modal-hdr">
-            <div class="modal-title">Buat Artikel Baru</div>
-            <button class="modal-close" onclick="closeModal('addArtikel')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
-        </div>
-        <div class="modal-body">
-            <div class="field"><label>Judul Artikel</label><input type="text" placeholder="Judul yang menarik..."></div>
-            <div class="field"><label>Kategori</label>
-                <select>
-                    <option>Tips Penyimpanan</option>
-                    <option>Keamanan Pangan</option>
-                    <option>Global Issue</option>
-                    <option>Panduan Distribusi</option>
-                    <option>Inspirasi Seller</option>
-                    <option>Kebijakan Pemerintah</option>
-                </select>
+        <form action="{{ route('admin.edukasi.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="modal-hdr">
+                <div class="modal-title">Buat Artikel Baru</div>
+                <button type="button" class="modal-close" onclick="closeModal('addArtikel')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
             </div>
-            <div class="field"><label>Target Pembaca</label>
-                <select>
-                    <option>Semua Pengguna</option>
-                    <option>Konsumen</option>
-                    <option>F&B Seller</option>
-                    <option>Lembaga Sosial</option>
-                </select>
+            <div class="modal-body">
+                {{-- Judul --}}
+                <div class="field">
+                    <label>Judul Artikel <span style="color: var(--red-500);">*</span></label>
+                    <input type="text" name="title" placeholder="Judul yang menarik..." value="{{ old('title') }}" required>
+                    @error('title')
+                        <span style="color: var(--red-500); font-size: 0.75rem; margin-top: 0.25rem; display: block;">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                {{-- Kategori --}}
+                <div class="field">
+                    <label>Kategori <span style="color: var(--red-500);">*</span></label>
+                    <select name="category" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="Edukasi Lingkungan" {{ old('category') == 'Edukasi Lingkungan' ? 'selected' : '' }}>Edukasi Lingkungan</option>
+                        <option value="Edukasi Makanan" {{ old('category') == 'Edukasi Makanan' ? 'selected' : '' }}>Edukasi Makanan</option>
+                        <option value="Tips Penyimpanan" {{ old('category') == 'Tips Penyimpanan' ? 'selected' : '' }}>Tips Penyimpanan</option>
+                        <option value="Keamanan Pangan" {{ old('category') == 'Keamanan Pangan' ? 'selected' : '' }}>Keamanan Pangan</option>
+                        <option value="Global Issue" {{ old('category') == 'Global Issue' ? 'selected' : '' }}>Global Issue</option>
+                        <option value="Panduan Distribusi" {{ old('category') == 'Panduan Distribusi' ? 'selected' : '' }}>Panduan Distribusi</option>
+                    </select>
+                    @error('category')
+                        <span style="color: var(--red-500); font-size: 0.75rem; margin-top: 0.25rem; display: block;">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                {{-- Konten Edukasi --}}
+                <div class="field">
+                    <label>Konten Edukasi <span style="color: var(--red-500);">*</span></label>
+                    <textarea name="content" placeholder="Tulis konten artikel di sini..." style="height: 120px;" required>{{ old('content') }}</textarea>
+                    @error('content')
+                        <span style="color: var(--red-500); font-size: 0.75rem; margin-top: 0.25rem; display: block;">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                {{-- Foto Thumbnail --}}
+                <div class="field">
+                    <label>Foto Thumbnail</label>
+                    <input type="file" name="image" accept="image/*" style="padding: 0.4rem 0.75rem;">
+                    <span style="font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; display: block;">Format: JPEG, PNG, JPG, WEBP. Maksimal 2MB.</span>
+                    @error('image')
+                        <span style="color: var(--red-500); font-size: 0.75rem; margin-top: 0.25rem; display: block;">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                {{-- Status --}}
+                <div class="field">
+                    <label>Status <span style="color: var(--red-500);">*</span></label>
+                    <select name="status" required>
+                        <option value="published" {{ old('status') == 'published' ? 'selected' : '' }}>Published</option>
+                        <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                    </select>
+                    @error('status')
+                        <span style="color: var(--red-500); font-size: 0.75rem; margin-top: 0.25rem; display: block;">{{ $message }}</span>
+                    @enderror
+                </div>
             </div>
-            <div class="field"><label>Ringkasan / Excerpt</label><textarea placeholder="Deskripsi singkat artikel (max 200 karakter)..."></textarea></div>
-            <div class="field"><label>URL Gambar Thumbnail</label><input type="text" placeholder="https://..."></div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeModal('addArtikel')">Batal</button>
-            <button class="btn btn-amber">Simpan Draft</button>
-            <button class="btn btn-primary">Publish</button>
-        </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('addArtikel')">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan Artikel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- ══ MODAL: Edit Artikel ══ --}}
+<div class="modal-overlay" id="modal-editArtikel">
+    <div class="modal">
+        <form id="form-edit-artikel" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <div class="modal-hdr">
+                <div class="modal-title">Edit Artikel</div>
+                <button type="button" class="modal-close" onclick="closeModal('editArtikel')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div class="modal-body">
+                {{-- Judul --}}
+                <div class="field">
+                    <label>Judul Artikel <span style="color: var(--red-500);">*</span></label>
+                    <input type="text" id="edit-title" name="title" placeholder="Judul yang menarik..." required>
+                </div>
+
+                {{-- Kategori --}}
+                <div class="field">
+                    <label>Kategori <span style="color: var(--red-500);">*</span></label>
+                    <select id="edit-category" name="category" required>
+                        <option value="">Pilih Kategori</option>
+                        <option value="Edukasi Lingkungan">Edukasi Lingkungan</option>
+                        <option value="Edukasi Makanan">Edukasi Makanan</option>
+                        <option value="Tips Penyimpanan">Tips Penyimpanan</option>
+                        <option value="Keamanan Pangan">Keamanan Pangan</option>
+                        <option value="Global Issue">Global Issue</option>
+                        <option value="Panduan Distribusi">Panduan Distribusi</option>
+                    </select>
+                </div>
+
+                {{-- Konten Edukasi --}}
+                <div class="field">
+                    <label>Konten Edukasi <span style="color: var(--red-500);">*</span></label>
+                    <textarea id="edit-content" name="content" placeholder="Tulis konten artikel di sini..." style="height: 120px;" required></textarea>
+                </div>
+
+                {{-- Foto Thumbnail --}}
+                <div class="field">
+                    <label>Foto Thumbnail (Kosongkan jika tidak ingin mengubah)</label>
+                    <input type="file" name="image" accept="image/*" style="padding: 0.4rem 0.75rem;">
+                    <span style="font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; display: block;">Format: JPEG, PNG, JPG, WEBP. Maksimal 2MB.</span>
+                </div>
+
+                {{-- Status --}}
+                <div class="field">
+                    <label>Status <span style="color: var(--red-500);">*</span></label>
+                    <select id="edit-status" name="status" required>
+                        <option value="published">Published</option>
+                        <option value="draft">Draft</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('editArtikel')">Batal</button>
+                <button type="submit" class="btn btn-primary">Perbarui Artikel</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -1362,6 +1474,29 @@ function closeModal(id){
 document.querySelectorAll('.modal-overlay').forEach(el=>{
     el.addEventListener('click', e=>{ if(e.target===el) el.classList.remove('open'); });
 });
+
+// Auto-open modal jika ada validation error untuk form artikel
+@if($errors->any())
+    @if(old('title') || old('category') || old('content'))
+        openModal('addArtikel');
+    @endif
+@endif
+
+// Function untuk membuka modal edit dengan data artikel
+function openEditModal(id, title, category, content, status) {
+    // Set action URL untuk form edit
+    document.getElementById('form-edit-artikel').action = '/admin/edukasi/' + id;
+    
+    // Populate form dengan data artikel
+    document.getElementById('edit-title').value = title;
+    document.getElementById('edit-category').value = category;
+    document.getElementById('edit-content').value = content;
+    document.getElementById('edit-status').value = status;
+    
+    // Buka modal
+    openModal('editArtikel');
+}
+
 function setTab(btn, val){
     btn.closest('.filter-tabs').querySelectorAll('.ftab').forEach(t=>t.classList.remove('on'));
     btn.classList.add('on');
@@ -1790,5 +1925,40 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+});
+</script>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// SweetAlert2 - Konfirmasi Hapus Artikel Edukasi
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+    // Tangkap semua form dengan class 'delete-article-form'
+    const deleteArticleForms = document.querySelectorAll('.delete-article-form');
+    
+    deleteArticleForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            // Cegah submit otomatis
+            e.preventDefault();
+            
+            // Tampilkan SweetAlert2 konfirmasi
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Artikel edukasi ini akan dihapus secara permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                // Jika admin menekan 'Ya, Hapus!', submit form
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
 });
 </script>
