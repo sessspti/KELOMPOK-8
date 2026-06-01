@@ -292,22 +292,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 7. Fitur Lembaga Sosial
     Route::prefix('sosial')->middleware(['role:lembaga_sosial', 'approved'])->group(function () {
         // 💡 PERBAIKAN SINKRONISASI ARTIKEL: Menyediakan data $articles agar view tidak memicu eror undefined variable
-        Route::get('/dashboard', function (ImpactCalculatorService $impactCalculator) {
-            $menus = \App\Models\Menu::where('stock', '>', 0)
-                ->where(function($query) {
-                    $query->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()->toDateString());
-                })->latest()->get();
-
-            $orders = \App\Models\Order::where('id_user', auth()->id())->latest()->get();
-
-            // Hitung kontribusi / impact dari servis internal
-            $contribution = $impactCalculator->syncForUser(auth()->id());
-
-            // Ambil artikel edukasi berstatus published untuk komponen edukasi di bawah dashboard
-            $articles = \App\Models\Article::where('status', 'published')->latest()->take(4)->get();
-
-            return view('sosial.dashboard', compact('menus', 'orders', 'contribution', 'articles'));
-        })->name('sosial.dashboard');
+        Route::get('/dashboard', [MenuController::class, 'institutionDashboard'])->name('sosial.dashboard');
 
         Route::post('/claim', [TransactionController::class, 'claimDonation'])->name('sosial.claim');
         Route::get('/profile-edit', [ProfileController::class, 'edit'])->name('sosial.profile.edit');

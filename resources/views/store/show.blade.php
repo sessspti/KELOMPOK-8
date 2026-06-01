@@ -89,7 +89,7 @@ body::before {
     30%{transform:translateY(-3px) rotate(-4deg)}
     60%{transform:translateY(-1px) rotate(2deg)}
 }
-.logo-save { color: var(--mint-600); }
+.logo-save, .logo-text-save { color: var(--mint-600); }
 
 .hdr-search {
     flex: 1; max-width: 400px; position: relative; display: none;
@@ -610,13 +610,9 @@ body::before {
 <header class="hdr">
     <div class="hdr-inner">
             <a href="{{ route('dashboard') }}" class="logo">
-                <span class="logo-icon">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                </svg>
-            </span>
-            Food<span class="logo-save">Save</span>
-        </a>
+                <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave" class="h-14 w-auto object-contain">
+                <span class="ml-2">Food<span class="logo-text-save">Save</span></span>
+            </a>
 
         <div class="hdr-search">
             <svg class="hdr-search-ico" fill="none" stroke="currentColor" viewBox="0 0 24 24">

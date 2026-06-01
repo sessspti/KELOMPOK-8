@@ -189,9 +189,6 @@ class MenuController extends Controller
         return view('dashboard', compact('menus', 'orders', 'impact', 'articles'));
     }
 
-    /**
-     * Display institution dashboard with visible products only.
-     */
     public function institutionDashboard(ProductVisibilityService $visibilityService)
     {
         $kota = request('kota');
@@ -216,8 +213,9 @@ class MenuController extends Controller
             ->latest()
             ->get();
 
-        $impact = app(ImpactCalculatorService::class)->syncForUser(auth()->id());
+        $contribution = app(ImpactCalculatorService::class)->syncForUser(auth()->id());
+        $articles = Article::where('status', 'published')->latest()->take(4)->get();
 
-        return view('sosial.dashboard', compact('menus', 'orders', 'contribution'));
+        return view('sosial.dashboard', compact('menus', 'orders', 'contribution', 'articles'));
     }
 }

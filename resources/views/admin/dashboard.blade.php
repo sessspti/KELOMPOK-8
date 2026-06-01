@@ -107,12 +107,13 @@ body::before {
     border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 .sb-logo {
-    width: 34px; height: 34px; border-radius: 10px;
-    background: linear-gradient(135deg, var(--blue-400), var(--indigo-500));
+    width: 36px; height: 36px; border-radius: 8px;
+    background: #ffffff;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px rgba(67,97,245,0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 4px;
 }
-.sb-logo svg { width: 18px; height: 18px; color: #fff; }
+.sb-logo img { width: 100%; height: 100%; object-fit: contain; }
 .sb-name {
     font-family: 'Bricolage Grotesque', sans-serif;
     font-weight: 700; font-size: 1.1875rem; letter-spacing: -0.04em; color: #fff;
@@ -638,7 +639,7 @@ body.no-scroll { overflow: hidden; }
     <div class="sb-brand">
         <a href="{{ route('admin.dashboard') }}" style="display:flex; align-items:center; gap:0.75rem; text-decoration:none; width:100%;">
             <div class="sb-logo">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <img src="{{ asset('images/logo-foodsave.png') }}" alt="FoodSave">
             </div>
             <span class="sb-name">FoodSave</span>
             <span class="sb-admin-tag">Admin</span>
