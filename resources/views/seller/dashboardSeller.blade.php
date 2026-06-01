@@ -765,44 +765,94 @@ body::before {
         </div>
 
         {{-- CARD 4 — Edukasi Artikel --}}
-        <div class="bc c-artikel">
-            <div class="card-hdr">
-                <div>
-                    <div class="kicker">Edukasi & Wawasan</div>
-                    <div class="card-hdr-title">Artikel Terbaru</div>
+        <div class="c-artikel" x-data="{
+                showModal: false,
+                article: { title: '', category: '', image: '', content: '' },
+                openModal(data) {
+                    this.article = data;
+                    this.showModal = true;
+                    document.body.style.overflow = 'hidden';
+                },
+                closeModal() {
+                    this.showModal = false;
+                    document.body.style.overflow = '';
+                    setTimeout(() => { this.article = { title: '', category: '', image: '', content: '' } }, 300);
+                }
+            }">
+            <div class="bc h-full flex flex-col transition-shadow duration-300 hover:shadow-lg hover:shadow-green-500/40" style="transform: none !important;">
+                <div class="card-hdr">
+                    <div>
+                        <div class="kicker">Edukasi & Wawasan</div>
+                        <div class="card-hdr-title">Artikel Terbaru</div>
+                    </div>
+                    <a href="{{ route('articles.index') }}" class="see-all">Lihat Semua →</a>
                 </div>
-                <a href="#" class="see-all">Lihat Semua →</a>
+                
+                @if($articles->isEmpty())
+                    {{-- Placeholder jika belum ada artikel published --}}
+                    <div class="art-item" style="opacity: 0.55; cursor: default;">
+                        <div class="art-thumb" style="background: var(--mint-100); display:flex; align-items:center; justify-content:center;">
+                            <svg width="28" height="28" fill="none" stroke="var(--mint-400)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l6 6v8a2 2 0 01-2 2zM14 4v4h4M12 11v6M9 14h6"/></svg>
+                        </div>
+                        <div>
+                            <div class="art-tag">Belum Ada Artikel</div>
+                            <div class="art-name">Admin belum menerbitkan artikel edukasi saat ini.</div>
+                            <div class="art-time">—</div>
+                        </div>
+                    </div>
+                @else
+                    <div class="max-h-[320px] overflow-y-auto pr-2">
+                        @foreach($articles as $article)
+                        <div class="art-item" @click="openModal({
+                                title: '{{ addslashes($article->title) }}',
+                                category: '{{ addslashes($article->category) }}',
+                                image: '{{ $article->image ? asset('storage/' . $article->image) : 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=200' }}',
+                                content: `{{ addslashes($article->content) }}`
+                            })">
+                            <div class="art-thumb">
+                                <img src="{{ $article->image ? asset('storage/' . $article->image) : 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=200' }}"
+                                     alt="{{ $article->title }}">
+                            </div>
+                            <div>
+                                <div class="art-tag">{{ strtoupper($article->category) }}</div>
+                                <div class="art-name">{{ $article->title }}</div>
+                                <div class="art-time">{{ $article->created_at->diffForHumans() }}</div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
-            <div class="art-item">
-                <div class="art-thumb">
-                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=200" alt="">
+
+            {{-- MODAL ARTIKEL LENGKAP --}}
+            <template x-teleport="body">
+                <div x-show="showModal" style="display: none;" class="fixed inset-0 z-[600] flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" @click.self="closeModal()">
+                    
+                    {{-- Modal panel --}}
+                    <div x-show="showModal"
+                         x-transition:enter="ease-out duration-250" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                         class="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col mx-4">
+                        
+                        {{-- Header Gambar & Tombol Close --}}
+                        <div class="relative w-full h-64 shrink-0">
+                            <img :src="article.image" alt="Article Cover" class="w-full h-full object-cover">
+                            <button @click="closeModal()" class="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white rounded-full p-2 w-8 h-8 flex items-center justify-center transition">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+
+                        {{-- Konten Artikel --}}
+                        <div class="p-6 md:p-8 overflow-y-auto">
+                            <span class="inline-block px-3 py-1 mb-4 text-xs font-semibold text-green-700 bg-green-100 rounded-full" x-text="article.category"></span>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4" x-text="article.title" style="font-family: 'Space Grotesk', sans-serif;"></h3>
+                            
+                            {{-- Gunakan x-html agar tag HTML (jika ada) ter-render --}}
+                            <div class="text-gray-600 leading-relaxed text-sm md:text-base prose prose-green max-w-none" style="white-space: pre-wrap;" x-html="article.content"></div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <div class="art-tag">Tips Operasional</div>
-                    <div class="art-name">5 Cara Efektif Mengurangi Food Waste di Dapur Katering</div>
-                    <div class="art-time">2 jam lalu</div>
-                </div>
-            </div>
-            <div class="art-item">
-                <div class="art-thumb">
-                    <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=200" alt="">
-                </div>
-                <div>
-                    <div class="art-tag">Kebijakan Pemerintah</div>
-                    <div class="art-name">Regulasi Terbaru: Insentif Pajak untuk Bisnis Ramah Lingkungan 2025</div>
-                    <div class="art-time">1 hari lalu</div>
-                </div>
-            </div>
-            <div class="art-item">
-                <div class="art-thumb">
-                    <img src="https://images.unsplash.com/photo-1466637574441-749b8f19452f?q=80&w=200" alt="">
-                </div>
-                <div>
-                    <div class="art-tag">Inspirasi Seller</div>
-                    <div class="art-name">Seller of the Month: Warung Bu Sari Selamatkan 200 kg Makanan</div>
-                    <div class="art-time">3 hari lalu</div>
-                </div>
-            </div>
+            </template>
         </div>
 
         {{-- CARD 5 — Notifikasi & Riwayat --}}

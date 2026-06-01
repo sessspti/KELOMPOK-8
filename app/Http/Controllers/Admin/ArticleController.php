@@ -176,4 +176,30 @@ class ArticleController extends Controller
             ->back()
             ->with('success', 'Artikel berhasil dihapus!');
     }
+
+    /**
+     * Quick Publish — Ubah status artikel dari 'draft' ke 'published' secara instan.
+     * Dipanggil via AJAX (fetch) dari tombol Quick Publish di admin dashboard.
+     * Mengembalikan JSON response.
+     */
+    public function publish(Article $article)
+    {
+        // Guard: jika artikel sudah published, kembalikan pesan informatif
+        if ($article->status === 'published') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Artikel sudah berstatus Published.',
+            ], 422);
+        }
+
+        // Update status ke 'published'
+        $article->update(['status' => 'published']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Artikel berhasil dipublish!',
+            'title'   => $article->title,
+            'status'  => $article->status,
+        ]);
+    }
 }

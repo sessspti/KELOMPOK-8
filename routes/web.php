@@ -54,14 +54,17 @@ Route::get('/home', function () {
     // 2. Because guest belum login, buatlah $orders kosong (menggunakan collect())
     $orders = collect(); 
 
-    // 3. Ambil artikel edukasi yang berstatus published (maksimal 5 artikel terbaru)
-    $articles = \App\Models\Article::where('status', 'published')->latest()->take(5)->get();
+    // 3. Ambil artikel edukasi yang berstatus published (maksimal 4 artikel terbaru)
+    $articles = \App\Models\Article::where('status', 'published')->latest()->take(4)->get();
 
     return view('dashboard', compact('menus', 'orders', 'articles'));
 })->name('guest.dashboard');
 
 // Halaman Detail Toko (Public)
 Route::get('/store/{id}', [MenuController::class, 'showStore'])->name('store.show');
+
+// Halaman Arsip Semua Artikel (Public)
+Route::get('/edukasi', [\App\Http\Controllers\ArticleController::class, 'indexPublic'])->name('articles.index');
 
 // ==============================================================================
 // ─── GROUP ROUTE KHUSUS USER YANG LOGGED IN ───
@@ -198,7 +201,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             $impact = $impactCalculator->syncForUser(auth()->id());
 
-            return view('seller.dashboardSeller', compact('menus', 'orders', 'activeMenusCount', 'lowStockMenusCount', 'totalClaimsCount', 'performance', 'avgRating', 'allReviews', 'contacts', 'impact'));
+            // ── Artikel Edukasi Terbaru (Dinamis dari Admin) ──
+            $articles = \App\Models\Article::where('status', 'published')->latest()->take(4)->get();
+
+            return view('seller.dashboardSeller', compact('menus', 'orders', 'activeMenusCount', 'lowStockMenusCount', 'totalClaimsCount', 'performance', 'avgRating', 'allReviews', 'contacts', 'impact', 'articles'));
         })->name('seller.dashboard');
 
         // Route untuk update status pesanan
@@ -298,7 +304,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $contribution = $impactCalculator->syncForUser(auth()->id());
 
             // Ambil artikel edukasi berstatus published untuk komponen edukasi di bawah dashboard
-            $articles = \App\Models\Article::where('status', 'published')->latest()->take(5)->get();
+            $articles = \App\Models\Article::where('status', 'published')->latest()->take(4)->get();
 
             return view('sosial.dashboard', compact('menus', 'orders', 'contribution', 'articles'));
         })->name('sosial.dashboard');
@@ -373,7 +379,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             $complaintsList = \App\Models\Complaint::with(['reporter', 'seller'])->latest()->get();
             $totalComplaints = \App\Models\Complaint::where('status', 'pending')->count();
 
-            $articles = \App\Models\Article::all(); 
+            $articles = \App\Models\Article::latest()->get(); 
 
             return view('admin.dashboard', compact(
                 'ordersGrouped', 
@@ -403,6 +409,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Mengatur Fitur Kelola Edukasi (Tambah & Hapus Artikel)
         Route::post('/edukasi/store', [ArticleController::class, 'store'])->name('admin.edukasi.store');
         Route::delete('/edukasi/{article}', [ArticleController::class, 'destroy'])->name('admin.edukasi.destroy');
+        Route::put('/edukasi/{article}', [ArticleController::class, 'update'])->name('admin.edukasi.update');
+        // ✅ Quick Publish: ubah status draft → published via AJAX tanpa halaman edit
+        Route::patch('/edukasi/{article}/publish', [ArticleController::class, 'publish'])->name('admin.edukasi.publish');
 
         // Jalur Khusus Admin untuk melihat & merespon Tiket Keluhan
         Route::get('/complaints/{complaint}', [ComplaintController::class, 'adminShow'])->name('admin.complaints.show');

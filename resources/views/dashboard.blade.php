@@ -936,13 +936,23 @@ body::after {
                                     </svg>
                                 </div>
                             </template>
-                            <div class="bdg-dist">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="10" height="10">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                </svg>
-                                <span x-text="product.distance"></span>
-                            </div>
-                            <div class="bdg-urgent" x-text="product.urgent"></div>
+                            {{-- ✅ BADGE JUMLAH PORSI HIJAU (pojok kanan atas) — menggantikan bdg-dist & bdg-urgent --}}
+                            <div
+    style="position:absolute; top:0.75rem; right:0.75rem;
+           background: rgba(22,163,74,0.92);
+           color:#fff;
+           border-radius:999px;
+           padding:0.25rem 0.7rem;
+           font-family:'Space Grotesk',sans-serif;
+           font-size:0.6rem; font-weight:800;
+           letter-spacing:0.08em; text-transform:uppercase;
+           display:flex; align-items:center; gap:4px;
+           backdrop-filter:blur(6px);
+           border:1.5px solid rgba(255,255,255,0.35);
+           box-shadow:0 2px 8px rgba(22,163,74,0.3);">
+           
+    <span x-text="product.stock + ' PORSI'"></span>
+</div>
 
                             {{-- OVERLAY TOKO TUTUP / DITANGGUHKAN --}}
                             <template x-if="product.store_is_suspended == 1">
@@ -1046,7 +1056,7 @@ body::after {
                     <p class="sec-label"><span class="sec-label-dot"></span> Wawasan & Inspirasi</p>
                     <h2 class="sec-title">Edukasi & Lingkungan</h2>
                 </div>
-                <a href="#" class="see-all">
+                <a href="{{ route('articles.index') }}" class="see-all">
                     Lihat Semua Artikel
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
@@ -1054,48 +1064,110 @@ body::after {
                 </a>
             </div>
 
-            <div class="edu-grid">
-                @forelse($articles as $article)
-                    <div class="edu-card">
-                        <div class="edu-img-wrap">
-                            @if($article->image)
-                                <img src="{{ asset('storage/' . $article->image) }}" alt="{{ $article->title }}">
-                            @else
-                                <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500" alt="{{ $article->title }}">
-                            @endif
+            <div x-data="{
+                showModal: false,
+                article: { title: '', category: '', image: '', content: '' },
+                openModal(data) {
+                    this.article = data;
+                    this.showModal = true;
+                    document.body.style.overflow = 'hidden';
+                },
+                closeModal() {
+                    this.showModal = false;
+                    document.body.style.overflow = '';
+                    setTimeout(() => { this.article = { title: '', category: '', image: '', content: '' } }, 300);
+                }
+            }">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+                    @forelse($articles as $article)
+                        <div @click="openModal({
+                                title: '{{ addslashes($article->title) }}',
+                                category: '{{ addslashes($article->category) }}',
+                                image: '{{ $article->image ? asset('storage/' . $article->image) : 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500' }}',
+                                content: `{{ addslashes($article->content) }}`
+                            })" 
+                            class="cursor-pointer bg-white shadow-sm rounded-xl overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all border border-gray-100 flex flex-col h-full">
+                            <div class="w-full aspect-video relative overflow-hidden bg-gray-50">
+                                @if($article->image)
+                                    <img src="{{ asset('storage/' . $article->image) }}" alt="{{ $article->title }}" class="w-full h-full object-cover">
+                                @else
+                                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500" alt="{{ $article->title }}" class="w-full h-full object-cover">
+                                @endif
+                            </div>
+                            <div class="p-5 flex flex-col flex-grow">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-green-100 text-green-800 mb-3 w-max">
+                                    {{ $article->category }}
+                                </span>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 leading-snug">{{ $article->title }}</h3>
+                                <p class="text-sm text-gray-500 line-clamp-2 flex-grow">{{ Str::limit(strip_tags($article->content), 120) }}</p>
+                            </div>
                         </div>
-                        <span class="edu-tag">{{ $article->category }}</span>
-                        <h3 class="edu-title">{{ $article->title }}</h3>
-                        <p class="edu-desc">{{ Str::limit(strip_tags($article->content), 120) }}</p>
-                    </div>
-                @empty
-                    <div class="edu-card">
-                        <div class="edu-img-wrap">
-                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500" alt="Tips Penyimpanan">
+                    @empty
+                        <div class="bg-white shadow-sm rounded-xl overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all border border-gray-100 flex flex-col h-full">
+                            <div class="w-full aspect-video relative overflow-hidden bg-gray-50">
+                                <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=500" alt="Tips Penyimpanan" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-5 flex flex-col flex-grow">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-green-100 text-green-800 mb-3 w-max">Tips Penyimpanan</span>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 leading-snug">5 Cara Agar Sayuran Tetap Segar Selama Seminggu</h3>
+                                <p class="text-sm text-gray-500 line-clamp-2 flex-grow">Admin FoodSave membagikan tips rahasia menyimpan bahan makanan agar tidak cepat terbuang dan tetap bergizi optimal.</p>
+                            </div>
                         </div>
-                        <span class="edu-tag">Tips Penyimpanan</span>
-                        <h3 class="edu-title">5 Cara Agar Sayuran Tetap Segar Selama Seminggu</h3>
-                        <p class="edu-desc">Admin FoodSave membagikan tips rahasia menyimpan bahan makanan agar tidak cepat terbuang dan tetap bergizi optimal.</p>
-                    </div>
 
-                    <div class="edu-card">
-                        <div class="edu-img-wrap">
-                            <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=500" alt="Global Issue">
+                        <div class="bg-white shadow-sm rounded-xl overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all border border-gray-100 flex flex-col h-full">
+                            <div class="w-full aspect-video relative overflow-hidden bg-gray-50">
+                                <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=500" alt="Global Issue" class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-5 flex flex-col flex-grow">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-green-100 text-green-800 mb-3 w-max">Isu Global</span>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2 leading-snug">Dampak Mengerikan Food Waste bagi Perubahan Iklim</h3>
+                                <p class="text-sm text-gray-500 line-clamp-2 flex-grow">Mengetahui seberapa besar pengaruh sisa makanan terhadap lapisan ozon bumi kita.</p>
+                            </div>
                         </div>
-                        <span class="edu-tag">Isu Global</span>
-                        <h3 class="edu-title">Dampak Mengerikan Food Waste bagi Perubahan Iklim</h3>
-                        <p class="edu-desc">Mengetahui seberapa besar pengaruh sisa makanan terhadap lapisan ozon bumi kita.</p>
-                    </div>
 
-                    <div class="edu-empty">
-                        <div class="edu-empty-ico">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                            </svg>
+                        <div class="bg-green-50 shadow-sm rounded-xl overflow-hidden border border-green-200 border-dashed flex flex-col h-full items-center justify-center p-8 text-center text-green-700 min-h-[250px]">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="48" height="48" class="mb-4 opacity-50"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                            <p class="font-medium text-sm">Artikel lainnya sedang disiapkan oleh Admin kami...</p>
                         </div>
-                        <p>Artikel lainnya sedang disiapkan oleh Admin kami...</p>
+                    @endforelse
+                </div>
+
+                {{-- MODAL ARTIKEL LENGKAP --}}
+                <div x-show="showModal" style="display: none;" class="fixed inset-0 z-[600] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        {{-- Background overlay --}}
+                        <div x-show="showModal" 
+                             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                             class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" @click="closeModal()"></div>
+
+                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                        {{-- Modal panel --}}
+                        <div x-show="showModal"
+                             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                             class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl w-full">
+                            
+                            {{-- Header Gambar --}}
+                            <div class="relative w-full aspect-[21/9] bg-gray-100">
+                                <img :src="article.image" alt="Article Cover" class="w-full h-full object-cover">
+                                <button @click="closeModal()" class="absolute top-4 right-4 bg-black bg-opacity-50 hover:bg-opacity-70 text-white rounded-full p-2 transition-colors">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+
+                            {{-- Konten Artikel --}}
+                            <div class="px-6 py-8 sm:px-10 sm:py-10">
+                                <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-bold bg-green-100 text-green-800 mb-4" x-text="article.category"></span>
+                                <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 leading-tight" x-text="article.title" style="font-family: 'Space Grotesk', sans-serif;"></h3>
+                                
+                                {{-- Gunakan x-html agar tag HTML (jika ada) ter-render, atau gunakan whitespace-pre-wrap jika murni teks --}}
+                                <div class="prose prose-green max-w-none text-gray-600 leading-relaxed text-base sm:text-lg" style="white-space: pre-wrap;" x-html="article.content"></div>
+                            </div>
+                        </div>
                     </div>
-                @endforelse
+                </div>
             </div>
         </section>
 

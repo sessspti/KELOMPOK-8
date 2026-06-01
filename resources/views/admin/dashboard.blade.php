@@ -1128,15 +1128,24 @@ body.no-scroll { overflow: hidden; }
 
             {{-- Flash Message Success --}}
             @if(session('success'))
-            <div style="padding: 1rem 1.75rem; background: var(--mint-100); border-bottom: 1.5px solid var(--border); display: flex; align-items: center; gap: 0.75rem; color: var(--mint-600);">
+            <div id="flashSuccess" style="padding: 1rem 1.75rem; background: var(--mint-100); border-bottom: 1.5px solid var(--border); display: flex; align-items: center; gap: 0.75rem; color: var(--mint-600);">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span style="font-size: 0.875rem; font-weight: 600;">{{ session('success') }}</span>
             </div>
             @endif
 
+            {{-- ✅ INLINE SUCCESS BANNER (diisi oleh JS setelah Quick Publish) --}}
+            <div id="publishBanner" style="display:none; padding: 1rem 1.75rem; background: var(--mint-100); border-bottom: 1.5px solid var(--border); align-items: center; gap: 0.75rem; color: var(--mint-600);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span id="publishBannerText" style="font-size: 0.875rem; font-weight: 600;"></span>
+            </div>
+
+            {{-- ✅ SCROLLABLE ARTICLE LIST CONTAINER (max-height agar tidak memanjang) --}}
+            <div id="artikelListContainer" style="max-height: 480px; overflow-y: auto;">
+
             {{-- Daftar Artikel dari Database --}}
             @forelse($articles as $article)
-            <div class="artikel-row">
+            <div class="artikel-row" id="artikel-row-{{ $article->id }}">
                 <div class="artikel-thumb" @if(!$article->image) style="background:var(--blue-100);display:flex;align-items:center;justify-content:center;color:var(--blue-400);" @endif>
                     @if($article->image)
                         <img src="{{ asset('storage/' . $article->image) }}" alt="{{ $article->title }}">
@@ -1146,14 +1155,22 @@ body.no-scroll { overflow: hidden; }
                 </div>
                 <div class="artikel-info">
                     <div class="artikel-title-row">{{ $article->title }}</div>
-                    <div class="artikel-meta">
-                        <span class="pill {{ $article->status === 'published' ? 'aktif' : 'suspend' }}">{{ $article->status === 'published' ? 'Published' : 'Draft' }}</span>
+                    <div class="artikel-meta" id="artikel-meta-{{ $article->id }}">
+                        <span class="pill {{ $article->status === 'published' ? 'aktif' : 'suspend' }}" id="artikel-pill-{{ $article->id }}">{{ $article->status === 'published' ? 'Published' : 'Draft' }}</span>
                         {{ $article->category }} · Admin FoodSave · {{ $article->created_at->diffForHumans() }}
                     </div>
                 </div>
                 <div class="actions" style="flex-shrink:0;">
                     @if($article->status === 'draft')
-                        <button class="btn btn-success btn-xs">Publish</button>
+                        {{-- ✅ TOMBOL QUICK PUBLISH AKTIF (AJAX) --}}
+                        <button
+                            class="btn btn-success btn-xs"
+                            id="publish-btn-{{ $article->id }}"
+                            onclick="quickPublishArtikel({{ $article->id }}, this)"
+                            title="Publish sekarang tanpa halaman edit">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            Publish
+                        </button>
                     @endif
                     <button class="btn btn-outline btn-xs btn-icon" title="Edit" 
                         onclick="openEditModal({{ $article->id }}, '{{ addslashes($article->title) }}', '{{ addslashes($article->category) }}', '{{ addslashes($article->content) }}', '{{ $article->status }}')">
@@ -1176,6 +1193,8 @@ body.no-scroll { overflow: hidden; }
                 <p style="font-size: 0.8125rem;">Klik tombol "Artikel Baru" untuk membuat artikel edukasi pertama Anda.</p>
             </div>
             @endforelse
+
+            </div>{{-- /.artikelListContainer --}}
         </div>
 
         {{-- ══ 4. PENGATURAN SISTEM ══ --}}
@@ -1493,6 +1512,69 @@ function openEditModal(id, title, category, content, status) {
     // Buka modal
     openModal('editArtikel');
 }
+
+/**
+ * ✅ QUICK PUBLISH — Publish artikel DRAFT secara instan via AJAX
+ * Tanpa harus buka modal Edit. Status diubah di DB & UI diperbarui langsung.
+ */
+async function quickPublishArtikel(articleId, btnEl) {
+    // Disable tombol sementara dan tampilkan loading state
+    btnEl.disabled = true;
+    btnEl.innerHTML = '<svg style="animation:spin 0.8s linear infinite;width:12px;height:12px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Memproses...';
+
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+            || '{{ csrf_token() }}';
+
+        const response = await fetch(`/admin/edukasi/${articleId}/publish`, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // 1. Sembunyikan tombol Publish (tidak diperlukan lagi)
+            btnEl.remove();
+
+            // 2. Perbarui pill status di baris artikel
+            const pill = document.getElementById(`artikel-pill-${articleId}`);
+            if (pill) {
+                pill.className = 'pill aktif';
+                pill.textContent = 'Published';
+            }
+
+            // 3. Tampilkan banner sukses inline di dalam container
+            const banner = document.getElementById('publishBanner');
+            const bannerText = document.getElementById('publishBannerText');
+            if (banner && bannerText) {
+                bannerText.textContent = `✓ Artikel "${data.title}" berhasil dipublish!`;
+                banner.style.display = 'flex';
+
+                // Auto-hide banner setelah 4 detik
+                setTimeout(() => { banner.style.display = 'none'; }, 4000);
+            }
+        } else {
+            // Restore tombol jika gagal
+            btnEl.disabled = false;
+            btnEl.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Publish';
+            Swal.fire({ icon: 'error', title: 'Gagal!', text: data.message || 'Terjadi kesalahan. Coba lagi.', confirmButtonColor: '#ef4444' });
+        }
+    } catch (error) {
+        btnEl.disabled = false;
+        btnEl.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Publish';
+        Swal.fire({ icon: 'error', title: 'Error Koneksi', text: 'Gagal terhubung ke server. Periksa koneksi internet Anda.', confirmButtonColor: '#ef4444' });
+    }
+}
+
+// Animasi spin untuk loading icon
+const spinStyle = document.createElement('style');
+spinStyle.textContent = '@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }';
+document.head.appendChild(spinStyle);
 
 function setTab(btn, val){
     btn.closest('.filter-tabs').querySelectorAll('.ftab').forEach(t=>t.classList.remove('on'));

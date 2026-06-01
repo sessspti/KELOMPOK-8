@@ -183,8 +183,8 @@ class MenuController extends Controller
 
         $impact = app(ImpactCalculatorService::class)->syncForUser(auth()->id());
 
-        // Ambil artikel edukasi yang berstatus published (maksimal 5 artikel terbaru)
-        $articles = Article::where('status', 'published')->latest()->take(5)->get();
+        // Ambil artikel edukasi yang berstatus published (maksimal 4 artikel terbaru)
+        $articles = Article::where('status', 'published')->latest()->take(4)->get();
 
         return view('dashboard', compact('menus', 'orders', 'impact', 'articles'));
     }
