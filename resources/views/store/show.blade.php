@@ -990,6 +990,41 @@ body::before {
             </div>
 
             <div class="drawer-footer">
+                @if($isLembaga)
+                {{-- ── JADWAL PENGAMBILAN ── --}}
+                <div style="background:#ffffff;border:1.5px solid #e2e8f0;border-radius:14px;padding:1rem 1rem 0.875rem;margin-bottom:1rem;">
+                    <label for="pickupScheduleSelect" style="display:flex;align-items:center;gap:7px;font-family:'Space Grotesk',sans-serif;font-size:.6875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mint-700);margin-bottom:.625rem;">
+                        <span style="width:22px;height:22px;border-radius:6px;background:var(--mint-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--mint-600);">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </span>
+                        Jadwal Pengambilan&nbsp;<span style="color:#ef4444;">*</span>
+                    </label>
+                    <div style="position:relative;">
+                        <span style="position:absolute;left:.875rem;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none;line-height:1;">⏰</span>
+                        <select id="pickupScheduleSelect" x-model="selectedSchedule"
+                            style="width:100%;padding:.7rem .875rem .7rem 2.5rem;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:.875rem;color:var(--ink);background:#ffffff;outline:none;cursor:pointer;transition:border-color .2s,box-shadow .2s;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%2316a34a%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 9l6 6 6-6%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right .875rem center;background-size:15px;"
+                            onfocus="this.style.borderColor='var(--mint-400)';this.style.boxShadow='0 0 0 3px rgba(74,222,128,0.18)'"
+                            onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                            <option value="">— Pilih jam pengambilan —</option>
+                            <option value="09:00-09:30">09:00 – 09:30</option>
+                            <option value="10:00-10:30">10:00 – 10:30</option>
+                            <option value="11:00-11:30">11:00 – 11:30</option>
+                            <option value="12:00-12:30">12:00 – 12:30</option>
+                            <option value="13:00-13:30">13:00 – 13:30</option>
+                            <option value="14:00-14:30">14:00 – 14:30</option>
+                            <option value="15:00-15:30">15:00 – 15:30</option>
+                            <option value="16:00-16:30">16:00 – 16:30</option>
+                            <option value="17:00-17:30">17:00 – 17:30</option>
+                            <option value="18:00-18:30">18:00 – 18:30</option>
+                            <option value="19:00-19:30">19:00 – 19:30</option>
+                            <option value="20:00-20:30">20:00 – 20:30</option>
+                        </select>
+                    </div>
+                </div>
+                {{-- ── /JADWAL PENGAMBILAN ── --}}
+                @endif
                 @if(!$isLembaga)
                     <div class="drawer-subtotal">
                         <span class="subtotal-label">Subtotal</span>
@@ -1381,6 +1416,7 @@ function storePage() {
         justAdded: null,
         cartAnimation: false,
         isLembaga: {{ (Auth::check() && Auth::user()->role === 'lembaga_sosial') ? 'true' : 'false' }},
+        selectedSchedule: '',
 
         openReviewModal(product) {
             this.activeProduct = product;
@@ -1546,6 +1582,30 @@ function storePage() {
             if (this.cart.length === 0) return;
 
             if (this.isLembaga) {
+                if (!this.selectedSchedule) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Jadwal Belum Dipilih!',
+                        text: 'Harap pilih jadwal pengambilan terlebih dahulu sebelum mengajukan klaim donasi.',
+                        confirmButtonColor: '#22c55e',
+                        confirmButtonText: 'OK, Pilih Jadwal'
+                    }).then(() => {
+                        const scheduleSelect = document.getElementById('pickupScheduleSelect');
+                        if (scheduleSelect) {
+                            scheduleSelect.focus();
+                            scheduleSelect.style.borderColor = '#ef4444';
+                            scheduleSelect.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.2)';
+                            setTimeout(() => {
+                                scheduleSelect.style.borderColor = '#e2e8f0';
+                                scheduleSelect.style.boxShadow = 'none';
+                            }, 2500);
+                        }
+                    });
+                    return;
+                }
+
+                this.showToast('Memproses pengajuan...', '⏳');
+
                 // ── LEMBAGA: Kirim klaim donasi ke sosial.claim ──
                 const items = this.cart.map(item => ({
                     id: item.id,
@@ -1566,7 +1626,7 @@ function storePage() {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: JSON.stringify({ items: items })
+                    body: JSON.stringify({ items: items, pickup_schedule: this.selectedSchedule })
                 })
                 .then(response => response.json())
                 .then(data => {
