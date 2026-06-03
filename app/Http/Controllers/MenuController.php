@@ -213,9 +213,9 @@ class MenuController extends Controller
             ->latest()
             ->get();
 
-        $contribution = app(ImpactCalculatorService::class)->syncForUser(auth()->id());
+        $impact = app(ImpactCalculatorService::class)->syncForUser(auth()->id());
         $articles = Article::where('status', 'published')->latest()->take(4)->get();
 
-        return view('sosial.dashboard', compact('menus', 'orders', 'contribution', 'articles'));
+        return view('sosial.dashboard', compact('menus', 'orders', 'impact', 'articles'));
     }
 }
