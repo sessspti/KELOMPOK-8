@@ -59,39 +59,11 @@
                         Metode Pengambilan
                     </h2>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <!-- Opsi 1: Ambil di Tempat (Antre) -->
-                        <label 
-                            :class="pickupMethod === 'antri' ? 'border-green-500 bg-green-50/30' : 'border-gray-100 hover:border-gray-200'"
-                            class="flex items-center p-4 rounded-2xl border-2 cursor-pointer transition-all group"
-                        >
-                            <input type="radio" x-model="pickupMethod" value="antri" class="hidden">
-                            <div 
-                                class="h-10 w-10 rounded-xl flex items-center justify-center mr-4"
-                                :class="pickupMethod === 'antri' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-400 group-hover:bg-gray-200'"
-                            >
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                            </div>
-                            <div class="flex-grow">
-                                <p class="font-bold text-gray-900 text-sm">Ambil di Tempat (Antre)</p>
-                                <p class="text-xs text-gray-500">Datang & ambil di antrean biasa</p>
-                            </div>
-                            <div 
-                                class="h-6 w-6 rounded-full border-2 flex items-center justify-center"
-                                :class="pickupMethod === 'antri' ? 'border-green-600 bg-green-600' : 'border-gray-200'"
-                            >
-                                <svg x-show="pickupMethod === 'antri'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                        </label>
-
-                        <!-- Opsi 2: Self-Pickup -->
+                    <div class="grid grid-cols-1 gap-4">
+                        <!-- Opsi: Self-Pickup -->
                         <label 
                             :class="pickupMethod === 'self-pickup' ? 'border-green-500 bg-green-50/30' : 'border-gray-100 hover:border-gray-200'"
-                            class="flex items-center p-4 rounded-2xl border-2 cursor-pointer transition-all group"
+                            class="flex items-center p-4 rounded-2xl border-2 cursor-pointer transition-all group w-full"
                         >
                             <input type="radio" x-model="pickupMethod" value="self-pickup" class="hidden">
                             <div 
@@ -254,7 +226,7 @@
             return {
                 cart: JSON.parse(localStorage.getItem('foodsave_cart')) || [],
                 selectedMethod: '',
-                pickupMethod: 'antri',
+                pickupMethod: 'self-pickup',
                 pickupTime: '14:00 - 14:30',
                 pickupTimeSlots: [
                     '09:00 - 09:30',
