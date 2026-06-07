@@ -236,6 +236,38 @@ class TransactionController extends Controller
             return response()->json(['success' => false, 'message' => 'Jadwal pengambilan wajib dipilih.'], 422);
         }
 
+        // [BARU] Validasi: Lembaga hanya dapat mengajukan 1 produk dari 1 toko pada hari yang sama
+        $storeIds = [];
+        foreach ($items as $item) {
+            $menu = Menu::with('user')->find($item['id']);
+            if (!$menu) continue;
+            
+            $storeId = $menu->user_id;
+            
+            // 1. Cek apakah di keranjang saat ini ada lebih dari 1 item dari toko yang sama
+            if (isset($storeIds[$storeId])) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => "Anda hanya dapat mengajukan satu produk makanan dari toko yang sama pada hari ini."
+                ], 422);
+            }
+            $storeIds[$storeId] = true;
+            
+            // 2. Cek apakah hari ini sudah pernah pesan dari toko ini
+            $hasOrderedToday = Order::where('id_user', $userId)
+                ->whereDate('created_at', now()->toDateString())
+                ->whereHas('menu', function ($query) use ($storeId) {
+                    $query->where('user_id', $storeId);
+                })->exists();
+                
+            if ($hasOrderedToday) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => "Anda sudah mengajukan produk dari toko {$menu->user->name} hari ini. Batas maksimal adalah 1 produk per toko per hari."
+                ], 422);
+            }
+        }
+
         try {
             DB::beginTransaction();
 
