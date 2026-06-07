@@ -194,6 +194,9 @@ class MenuController extends Controller
         $kota = request('kota');
         $menus = $visibilityService->getVisibleProductsForInstitution();
         
+        // Load reviews data sama seperti konsumen
+        $menus->loadAvg('reviews', 'rating')->loadCount('reviews')->load('reviews.user');
+
         // Terapkan filter kota secara case-insensitive
         if ($kota) {
             $menus = $menus->filter(function ($menu) use ($kota) {

@@ -23,6 +23,8 @@ class ProductVisibilityService
     public function getVisibleProductsForInstitution()
     {
         return Menu::visibleForPublic()
+            ->whereNotNull('expiry_date')
+            ->whereDate('expiry_date', '<=', now()->addDays(3)->toDateString())
             ->with('user:id,name,is_open,account_status,city')
             ->latest()
             ->get();
