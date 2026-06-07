@@ -132,8 +132,11 @@ class MenuController extends Controller
                 ->first();
         }
 
-        // 5. Kirim data penjual ($seller), daftar makanan ($menus), dan $activeComplaint ke file tampilan
-        return view('store.show', compact('seller', 'menus', 'followersCount', 'isFollowed', 'activeComplaint'));
+        // 5. Calculate impact data for the seller
+        $impact = app(ImpactCalculatorService::class)->syncForUser($id);
+
+        // 6. Kirim data penjual ($seller), daftar makanan ($menus), $activeComplaint, dan $impact ke file tampilan
+        return view('store.show', compact('seller', 'menus', 'followersCount', 'isFollowed', 'activeComplaint', 'impact'));
     }
 
     public function toggleStatus()
