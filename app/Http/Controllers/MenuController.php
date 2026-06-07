@@ -94,13 +94,20 @@ class MenuController extends Controller
         $seller = \App\Models\User::where('role', 'seller')->findOrFail($id);
 
         // 2. Ambil SEMUA makanan dari tabel menus yang kolom 'user_id'-nya COCOK dengan ID penjual ini
-        $menus = \App\Models\Menu::with('reviews.user')
+        $menusQuery = \App\Models\Menu::with('reviews.user')
                                 ->where('user_id', $id)
                                 ->withAvg('reviews', 'rating')
                                 ->withCount('reviews')
                                 ->notExpired()
-                                ->latest()
-                                ->get();
+                                ->latest();
+
+        // Jika user yang login adalah lembaga_sosial, terapkan filter H-3
+        if (auth()->check() && auth()->user()->role === 'lembaga_sosial') {
+            $menusQuery->whereNotNull('expiry_date')
+                       ->whereDate('expiry_date', '<=', now()->addDays(3)->toDateString());
+        }
+
+        $menus = $menusQuery->get();
 
     // 3. Tambahkan informasi store status ke setiap menu
     $menus = $menus->map(function ($menu) use ($seller) {
